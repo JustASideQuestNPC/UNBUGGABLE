@@ -1,0 +1,62 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="UNBUGGABLE.App"
+             xmlns:local="using:UNBUGGABLE"
+             xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:dialogHostAvalonia="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
+             RequestedThemeVariant="Default">
+             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+
+    <Application.DataTemplates>
+        <local:ViewLocator/>
+    </Application.DataTemplates>
+  
+    <Application.Styles>
+        <FluentTheme />
+        <avalonia:MaterialIconStyles />
+        <dialogHostAvalonia:DialogHostStyles/>
+    </Application.Styles>
+    
+     <Application.Resources>
+         <!-- These brushes are only here to make autocomplete work in my IDE; colors are set at 
+              runtime from the color theme file. -->
+         <SolidColorBrush x:Key="Accent" />
+         <SolidColorBrush x:Key="WindowBackgroundPrimary" />
+         <SolidColorBrush x:Key="WindowBackgroundSecondary" />
+         <SolidColorBrush x:Key="EditorBackground" />
+         <SolidColorBrush x:Key="TextPrimary" />
+         <SolidColorBrush x:Key="TextSecondary" />
+         <SolidColorBrush x:Key="TextDark" />
+         <SolidColorBrush x:Key="SingleNote" />
+         <SolidColorBrush x:Key="Spike" />
+         <SolidColorBrush x:Key="DoubleNote" />
+         <SolidColorBrush x:Key="Freestyle" />
+         <SolidColorBrush x:Key="NoteOutline" />
+         <SolidColorBrush x:Key="SelectedNoteOverlay" />
+         <SolidColorBrush x:Key="SelectDragOverlay" />
+         <SolidColorBrush x:Key="DeleteDragOverlay" />
+         <SolidColorBrush x:Key="CameraChange" />
+         <SolidColorBrush x:Key="ViewableArea" />
+         <SolidColorBrush x:Key="FullBeatSnapLine" />
+         <SolidColorBrush x:Key="SubBeatSnapLine" />
+         <SolidColorBrush x:Key="CurrentTimeLine" />
+         <SolidColorBrush x:Key="Breakpoint" />
+         <SolidColorBrush x:Key="Marker1" />
+         <SolidColorBrush x:Key="Marker2" />
+         <SolidColorBrush x:Key="Marker3" />
+         <SolidColorBrush x:Key="BpmChange" />
+         <SolidColorBrush x:Key="Label" />
+         <SolidColorBrush x:Key="ThemeBackgroundBrush" />
+         <SolidColorBrush x:Key="Cop1" />
+         <SolidColorBrush x:Key="Cop2" />
+         <SolidColorBrush x:Key="Cop3" />
+         <SolidColorBrush x:Key="Cop4" />
+         
+         <FontFamily x:Key="RobotoMono">avares://UNBUGGABLE/Assets/RobotoMono-Regular.ttf#Roboto Mono</FontFamily>
+         <FontFamily x:Key="RobotoMonoBold">avares://UNBUGGABLE/Assets/RobotoMono-Bold.ttf#Roboto Mono</FontFamily>
+         <FontFamily x:Key="RobotoMonoItalic">avares://UNBUGGABLE/Assets/RobotoMono-Italic.ttf#Roboto Mono</FontFamily>
+         <FontFamily x:Key="SourceCodePro">avares://UNBUGGABLE/Assets/SourceCodePro-Regular.ttf#Source Code Pro</FontFamily>
+         <FontFamily x:Key="SourceCodeProBold">avares://UNBUGGABLE/Assets/SourceCodePro-Bold.ttf#Source Code Pro</FontFamily>
+         <FontFamily x:Key="SourceCodeProItalic">avares://UNBUGGABLE/Assets/SourceCodePro-Italic.ttf#Source Code Pro</FontFamily>
+     </Application.Resources>
+</Application>

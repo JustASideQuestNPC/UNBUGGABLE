@@ -1,0 +1,66 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UNBEATABLEChartEditor.Dialogs.ChartMetadataDialog"
+             Background="Transparent">
+    
+    <UserControl.Styles>
+        <StyleInclude Source="/Dialogs/DialogStyles.axaml" />
+    </UserControl.Styles>
+    
+    <Border Classes="Container">
+        <Grid RowDefinitions="50, 50, 50, 50, 50, 50, 50, 50, 50, 50" ColumnDefinitions="Auto, 400"
+              RowSpacing="5" ColumnSpacing="10">
+            <TextBlock Grid.Row="0" Grid.Column="0">song name</TextBlock>
+            <TextBox Grid.Row="0" Grid.Column="1" Name="SongNameBox" />
+        
+            <TextBlock Grid.Row="1" Grid.Column="0">artist</TextBlock>
+            <TextBox Grid.Row="1" Grid.Column="1" Name="ArtistNameBox" />
+        
+            <TextBlock Grid.Row="2" Grid.Column="0">cover artist</TextBlock>
+            <TextBox Grid.Row="2" Grid.Column="1" Name="CoverArtistNameBox" />
+        
+            <TextBlock Grid.Row="3" Grid.Column="0">charter</TextBlock>
+            <TextBox Grid.Row="3" Grid.Column="1" Name="CharterNameBox" />
+            
+            <TextBlock Grid.Row="4" Grid.Column="0">offset</TextBlock>
+            <TextBox Classes="NumberBox" Grid.Row="4" Grid.Column="1" Name="OffsetBox" Text="0"
+                     LostFocus="OffsetBoxLostFocus" />
+        
+            <TextBlock Grid.Row="5" Grid.Column="0">difficulty slot</TextBlock>
+            <ComboBox Grid.Row="5" Grid.Column="1" SelectedIndex="0" Name="DifficultySlotBox"
+                      SelectionChanged="DifficultySlotChanged">
+                <ComboBoxItem Name="BeginnerDifficultySlot">Beginner</ComboBoxItem>
+                <ComboBoxItem Name="NormalDifficultySlot">Normal</ComboBoxItem>
+                <ComboBoxItem Name="HardDifficultySlot">Hard</ComboBoxItem>
+                <ComboBoxItem Name="ExpertDifficultySlot">Expert</ComboBoxItem>
+                <ComboBoxItem Name="UnbeatableDifficultySlot">UNBEATABLE</ComboBoxItem>
+                <ComboBoxItem Name="StarDifficultySlot">Star</ComboBoxItem>
+            </ComboBox>
+        
+            <TextBlock Grid.Row="6" Grid.Column="0">difficulty name</TextBlock>
+            <TextBox Grid.Row="6" Grid.Column="1" Name="DifficultyNameBox" IsEnabled="False" />
+        
+            <TextBlock Grid.Row="7" Grid.Column="0">difficulty level</TextBlock>
+            <NumericUpDown Grid.Row="7" Grid.Column="1" Name="DifficultyLevelBox" Value="0"
+                           ShowButtonSpinner="False" FormatString="N0"
+                           ParsingNumberStyle="Integer" />
+            
+            <TextBlock Grid.Row="8" Grid.Column="0">flavor text</TextBlock>
+            <TextBox Grid.Row="8" Grid.Column="1" Name="FlavorTextBox" />
+        
+            <StackPanel Grid.Row="9" Grid.Column="0" Orientation="Horizontal">
+                <Button Classes="SquareIconButton" Click="ConfirmButtonClick">
+                    <materialIcons:MaterialIcon Kind="Check" />
+                </Button>
+        
+                <Button Classes="SquareIconButton" Click="CancelButtonClick">
+                    <materialIcons:MaterialIcon Kind="Cancel" />
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

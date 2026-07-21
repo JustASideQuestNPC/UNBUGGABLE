@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AvaloniaProject">
+    <option name="projectPerEditor">
+      <map>
+        <entry key="UNBEATABLEChartEditor/App.axaml" value="UNBEATABLEChartEditor/UNBEATABLEChartEditor.csproj" />
+        <entry key="UNBEATABLEChartEditor/Views/CustomSkiaPage.axaml" value="UNBEATABLEChartEditor/UNBEATABLEChartEditor.csproj" />
+        <entry key="UNBEATABLEChartEditor/Views/MainWindow.axaml" value="UNBEATABLEChartEditor/UNBEATABLEChartEditor.csproj" />
+        <entry key="UNBUGGABLE/App.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Dialogs/ChartMetadataDialog.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Dialogs/DialogStyles.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Dialogs/NumberEntryDialog.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Dialogs/TextEntryDialog.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Resources.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Views/ListStyles.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Views/MainWindow.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Views/WindowStyles.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+      </map>
+    </option>
+  </component>
+</project>

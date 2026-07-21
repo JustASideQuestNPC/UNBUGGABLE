@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AvaloniaProject">
+    <option name="projectPerEditor">
+      <map>
+        <entry key="UNBEATABLEChartEditor/App.axaml" value="UNBEATABLEChartEditor/UNBEATABLEChartEditor.csproj" />
+        <entry key="UNBEATABLEChartEditor/Views/CustomSkiaPage.axaml" value="UNBEATABLEChartEditor/UNBEATABLEChartEditor.csproj" />
+        <entry key="UNBEATABLEChartEditor/Views/MainWindow.axaml" value="UNBEATABLEChartEditor/UNBEATABLEChartEditor.csproj" />
+        <entry key="UNBUGGABLE/App.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+      </map>
+    </option>
+  </component>
+</project>

@@ -1,0 +1,288 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:UNBUGGABLE.ViewModels"
+        xmlns:views="clr-namespace:UNBUGGABLE.Views"
+        xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+        xmlns:dialogs="using:AvaloniaDialogs.Views"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="UNBUGGABLE.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="UNBUGGABLE"
+        Background="{DynamicResource EditorBackground}"
+        Width="1600" Height="900">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look
+             at App.axaml.cs) -->
+        <views:MainWindow/>
+    </Design.DataContext>
+    
+    <Window.Styles>
+        <StyleInclude Source="WindowStyles.axaml" />
+        <StyleInclude Source="/Dialogs/DialogStyles.axaml" />
+    </Window.Styles>
+    
+    <!-- This only has keybinds that require modifier keys, AND that don't change depending on what
+         modifier keys are pressed. -->
+    <Window.KeyBindings>
+        <KeyBinding Gesture="Ctrl+o" Command="{Binding LoadFileCommand}" />
+        <KeyBinding Gesture="Ctrl+s" Command="{Binding SaveBeatFileCommand}" />
+        <KeyBinding Gesture="Ctrl+Shift+s" Command="{Binding SaveNewBeatFileCommand}" />
+        <KeyBinding Gesture="Ctrl+z" Command="{Binding UndoCommand}" />
+        <KeyBinding Gesture="Ctrl+y" Command="{Binding RedoCommand}" />
+        <KeyBinding Gesture="Ctrl+a" Command="{Binding SelectAllCommand}" />
+        <KeyBinding Gesture="Ctrl+x" Command="{Binding CutCommand}" />
+        <KeyBinding Gesture="Ctrl+c" Command="{Binding CopyCommand}" />
+        <KeyBinding Gesture="Ctrl+v" Command="{Binding PasteCommand}" />
+    </Window.KeyBindings>
+    
+    <dialogs:ReactiveDialogHost CloseOnClickAway="True" DialogMargin="0">
+        <DockPanel Name="Container">
+            <StackPanel DockPanel.Dock="Top" Name="TopButtonBar" Orientation="Horizontal"
+                        Margin="0 0" Background="{DynamicResource WindowBackgroundPrimary}"
+                        Height="50">
+                <Button Classes="SquareIconButton" ToolTip.Tip="Chart Metadata"
+                        Command="{Binding EditChartMetadataCommand}"
+                        IsEnabled="{Binding SongLoaded}">
+                    <materialIcons:MaterialIcon Kind="TableEdit" />
+                </Button>
+                    
+                <Panel Classes="Spacer" />
+                
+                <Button Classes="SquareIconButton" ToolTip.Tip="Open File"
+                        Command="{Binding LoadFileCommand}">
+                    <materialIcons:MaterialIcon Kind="FolderOpen" />
+                </Button>
+                
+                <Button Classes="SquareIconButton" ToolTip.Tip="{Binding SaveButtonToolTip}"
+                        Command="{Binding DefaultSaveCommand}"
+                        IsEnabled="{Binding EditorUiEnabled}">
+                    <materialIcons:MaterialIcon Kind="ContentSave" />
+                    <Button.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Save .beat.txt"
+                                      Command="{Binding SaveNewBeatFileCommand}" />
+                            <MenuItem Header="Save as new .beat.txt"
+                                      Command="{Binding SaveNewBeatFileCommand}" />
+                            <MenuItem Header="Save .txt"
+                                      Command="{Binding SaveStandardFileCommand}" />
+                            <MenuItem Header="Save as new .txt"
+                                      Command="{Binding SaveNewStandardFileCommand}" />
+                        </ContextMenu>
+                    </Button.ContextMenu>
+                </Button>
+                
+                <Panel Classes="Spacer" />
+                
+                <materialIcons:MaterialIcon IconSize="22" Kind="Music" />
+                <Panel Classes="Spacer" Width="5" />
+                <Slider Name="MusicVolumeSlider" Minimum="0" Maximum="100" TickFrequency="1"
+                        IsSnapToTickEnabled="True" Width="150" Orientation="Horizontal"
+                        VerticalAlignment="Stretch" Value="{Binding SongVolume}"
+                        IsEnabled="{Binding SongLoaded}" />
+                <Panel Classes="Spacer" Width="5" />
+                <TextBlock FontSize="15" Foreground="{DynamicResource Accent}"
+                           Text="{Binding #MusicVolumeSlider.Value, StringFormat=\{0:000\}%}" />
+                
+                <Panel Classes="Spacer" />
+                
+                <materialIcons:MaterialIcon IconSize="22" Kind="VolumeHigh" />
+                <Panel Classes="Spacer" Width="5" />
+                <Slider Name="SfxVolumeSlider" Minimum="0" Maximum="100" TickFrequency="1"
+                        IsSnapToTickEnabled="True" Width="150" Orientation="Horizontal"
+                        VerticalAlignment="Stretch" Value="{Binding SfxVolume}"
+                        IsEnabled="{Binding SongLoaded}" />
+                <Panel Classes="Spacer" Width="5" />
+                <TextBlock FontSize="15" Foreground="{DynamicResource Accent}"
+                           Text="{Binding #SfxVolumeSlider.Value, StringFormat=\{0:000\}%}" />
+                
+                <Panel Classes="Spacer" />
+                
+                <materialIcons:MaterialIcon IconSize="22" Kind="FastForward" />
+                <Panel Classes="Spacer" Width="5" />
+                <Slider Name="PlaySpeedSlider" Minimum="1" Maximum="200" TickFrequency="1"
+                        IsSnapToTickEnabled="True" Width="400" Orientation="Horizontal"
+                        VerticalAlignment="Stretch" Value="{Binding PlaySpeed}"
+                        IsEnabled="{Binding EditorUiEnabled}" />
+                <Panel Classes="Spacer" Width="5" />
+                <TextBlock FontSize="15" Foreground="{DynamicResource Accent}"
+                           Text="{Binding #PlaySpeedSlider.Value, StringFormat={}{0:n0}%}" />
+                
+                <Panel Classes="Spacer" />
+                <!-- <ContentControl Content="{Binding SaveIndicator}" /> -->
+            </StackPanel>
+
+            <Panel>
+                <Grid RowDefinitions="*, 350" ColumnDefinitions="560, *" ColumnSpacing="30"
+                      RowSpacing="40" Margin="10 20 20 20" Focusable="True">
+                    <Grid Grid.Row="0" Grid.Column="1" RowDefinitions="*, *"
+                          ColumnDefinitions="*, *, 400" ColumnSpacing="20">
+                        <StackPanel Grid.Column="0" Grid.RowSpan="2"
+                                    Orientation="Vertical" Spacing="5">
+                            <StackPanel Orientation="Vertical" Spacing="0">
+                                <TextBlock Classes="SmallText">song time</TextBlock>
+                                <TextBlock Classes="BigText" Text="{Binding SongTimeText}" />
+                            </StackPanel>
+                            
+                            <StackPanel Orientation="Vertical" Spacing="0">
+                                <TextBlock Classes="SmallText">chart time</TextBlock>
+                                <TextBlock Classes="BigText" Text="{Binding ChartTimeText}" />
+                            </StackPanel>
+                            
+                            <StackPanel Orientation="Vertical" Spacing="0">
+                                <TextBlock Classes="SmallText">beat snap</TextBlock>
+                                <!-- this can't be bound to a property because of issues with the UI
+                                     not displaying the new value when it updates -->
+                                <TextBlock Classes="BigText" Name="BeatSnapText" />
+                            </StackPanel>
+                            
+                            <StackPanel Orientation="Vertical" Spacing="0">
+                                <TextBlock Classes="SmallText">zoom</TextBlock>
+                                <TextBlock Classes="BigText" Text="{Binding CurrentZoomText}" />
+                            </StackPanel>
+                            
+                            <StackPanel Orientation="Vertical" Spacing="0">
+                                <TextBlock Classes="SmallText">cops</TextBlock>
+                                <Grid RowDefinitions="Auto Auto Auto Auto"
+                                      ColumnDefinitions="Auto Auto" ColumnSpacing="10">
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Classes="BigText"
+                                               Foreground="{DynamicResource Cop1}">1:</TextBlock>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Classes="BigText" 
+                                               Text="{Binding Cop1State}" />
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Classes="BigText"
+                                               Foreground="{DynamicResource Cop2}">2:</TextBlock>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Classes="BigText" 
+                                               Text="{Binding Cop2State}" />
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Classes="BigText"
+                                               Foreground="{DynamicResource Cop3}">3:</TextBlock>
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Classes="BigText" 
+                                               Text="{Binding Cop3State}" />
+                                    <TextBlock Grid.Row="3" Grid.Column="0" Classes="BigText"
+                                               Foreground="{DynamicResource Cop4}">4:</TextBlock>
+                                    <TextBlock Grid.Row="3" Grid.Column="1" Classes="BigText" 
+                                               Text="{Binding Cop4State}" />
+                                </Grid>
+                            </StackPanel>
+                        </StackPanel>
+                        
+                        <StackPanel Grid.Column="1" Grid.RowSpan="2"
+                                    Orientation="Vertical" Spacing="5">
+                            <StackPanel Orientation="Vertical" Spacing="0">
+                                <TextBlock Classes="SmallText">placing</TextBlock>
+                                <TextBlock Classes="BigText" Text="{Binding CurrentNoteTypeText}" />
+                            </StackPanel>
+                            
+                            <StackPanel Orientation="Vertical" Spacing="0">
+                                <TextBlock Classes="SmallText">title</TextBlock>
+                                <TextBlock Classes="BigText" Text="{Binding SongNameText}" />
+                            </StackPanel>
+                            
+                            <StackPanel Orientation="Vertical" Spacing="0">
+                                <TextBlock Classes="SmallText">artist</TextBlock>
+                                <TextBlock Classes="BigText" Text="{Binding ArtistNameText}" />
+                            </StackPanel>
+                            
+                            <StackPanel Orientation="Vertical" Spacing="0">
+                                <TextBlock Classes="SmallText">difficulty</TextBlock>
+                                <TextBlock Classes="BigText" Text="{Binding DifficultyText}" />
+                            </StackPanel>
+                            
+                            <StackPanel Orientation="Vertical" Spacing="0">
+                                <TextBlock Classes="SmallText">bpm</TextBlock>
+                                <TextBlock Classes="BigText" Text="{Binding SongBpmText}" />
+                            </StackPanel>
+                            
+                            <StackPanel Orientation="Vertical" Spacing="0">
+                                <TextBlock Classes="SmallText">breakpoint</TextBlock>
+                                <TextBlock Classes="BigText" Text="{Binding BreakpointTimeText}" />
+                            </StackPanel>
+                        </StackPanel>
+                        
+                        <Border Grid.Column="2" BorderBrush="{DynamicResource Accent}"
+                                BorderThickness="4" Padding="0" Margin="0">
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Classes="SmallText" Margin="10 5 0 0">
+                                    placement priority
+                                </TextBlock>
+                                <ScrollViewer>
+                                    <ListBox ItemsSource="{Binding ActivePriorityListEntries}"
+                                             Margin="0" BorderBrush="Transparent">
+                                        <ListBox.IsEnabled>
+                                            <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                                <Binding Path="EditorUiEnabled" />
+                                                <Binding Path="PlacementPriorityListEnabled"/>
+                                            </MultiBinding>
+                                        </ListBox.IsEnabled>
+                                        <ListBox.Styles>
+                                            <Style Selector="ListBoxItem">
+                                                <Setter Property="(Interaction.Behaviors)">
+                                                    <BehaviorCollectionTemplate>
+                                                        <BehaviorCollection>
+                                                            <ListReorderDragBehavior
+                                                                Orientation="Vertical" />
+                                                        </BehaviorCollection>
+                                                    </BehaviorCollectionTemplate>
+                                                </Setter>
+                                            </Style>
+                                        </ListBox.Styles>
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Padding="0 2"
+                                                        BorderBrush="{DynamicResource Accent}"
+                                                        BorderThickness="2" CornerRadius="4"
+                                                        Background="{DynamicResource EditorBackground}">
+                                                    <Grid Margin="0" ColumnDefinitions="*, 25"
+                                                          RowDefinitions="Auto">
+                                                        <TextBlock Classes="BigText"
+                                                                   Margin="5 0"
+                                                                   Text="{Binding DisplayName}" />
+                                                        <materialIcons:MaterialIcon Grid.Column="1"
+                                                                Kind="ReorderHorizontal"
+                                                                Foreground="{DynamicResource Accent}"
+                                                                VerticalAlignment="Stretch"
+                                                                HorizontalAlignment="Stretch" />
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </ScrollViewer>
+                            </StackPanel>
+                        </Border>
+                        
+                        <!-- <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Vertical"> -->
+                        <!--     <TextBlock Classes="SmallText" Margin="10 5 0 0"> -->
+                        <!--         jump to time -->
+                        <!--     </TextBlock> -->
+                        <!--     <NumericUpDown Name="JumpToTimeBox" Value="0" ShowButtonSpinner="False" -->
+                        <!--                    Minimum="0" IsEnabled="{Binding EditorUiEnabled}" -->
+                        <!--                    Height="50" /> -->
+                        <!-- </StackPanel> -->
+                    </Grid>
+                    
+                    <!-- Placeholder for custom graphics renderers. -->
+                    <!-- Song Preview -->
+                    <Border Grid.Row="1" Grid.Column="1" BorderBrush="{DynamicResource Accent}"
+                            BorderThickness="4">
+                        <views:GamePreview Name="GamePreview" />
+                    </Border>
+                    
+                    <!-- Note Placement -->
+                    <Border Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" 
+                            BorderBrush="{DynamicResource Accent}" BorderThickness="4"
+                            PointerMoved="OnNoteViewerPointerMove"
+                            PointerPressed="OnNoteViewerPointerPress"
+                            PointerReleased="OnNoteViewerPointerRelease">
+                        <!-- <TextBlock Classes="PanelDescription">note placement</TextBlock> -->
+                        <views:NoteViewer Name="NoteViewer" />
+                    </Border>
+                </Grid>
+                <ContentControl Content="{Binding EventIndicator}" />
+            </Panel>
+        </DockPanel>
+    </dialogs:ReactiveDialogHost>
+</Window>

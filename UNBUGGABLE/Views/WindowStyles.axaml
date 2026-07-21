@@ -1,0 +1,204 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+    <Design.PreviewWith>
+        <Border Padding="20">
+            <!-- Add Controls for Previewer Here -->
+        </Border>
+    </Design.PreviewWith>
+
+    <!-- Add Styles Here -->
+    <Style Selector="Button.SquareIconButton">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Margin" Value="4" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="Width" Value="{Binding $self.Bounds.Height}" />
+    </Style>
+    <Style Selector="Button.SquareIconButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource WindowBackgroundSecondary}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+    </Style>
+    <Style Selector="Button.SquareIconButton ToolTip">
+        <Setter Property="Foreground" Value="{DynamicResource TextDark}" />
+        <Setter Property="Background" Value="{DynamicResource WindowBackgroundPrimary}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="FontFamily" Value="{DynamicResource RobotoMono}" />
+        <Setter Property="FontSize" Value="10" />
+        <Setter Property="ShowDelay" Value="150" />
+    </Style>
+    <Style Selector="materialIcons|MaterialIcon">
+        <Setter Property="Foreground" Value="{DynamicResource Accent}" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="IconSize" Value="20" />
+    </Style>
+    <Style Selector="Button.SquareIconButton:disabled materialIcons|MaterialIcon">
+        <Setter Property="Opacity" Value="0.5" />
+    </Style>
+    
+    <Style Selector="ContextMenu">
+        <Setter Property="FontFamily" Value="{StaticResource RobotoMono}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+        <Setter Property="Background" Value="{DynamicResource EditorBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+    </Style>
+
+    <Style Selector="ContextMenu:dropdownopen /template/ Popup#PART_Popup > Border">
+        <Setter Property="Background" Value="{DynamicResource EditorBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+        <Setter Property="BorderThickness" Value="2" />
+    </Style>
+
+    <Style Selector="MenuItem">
+        <Setter Property="FontFamily" Value="{StaticResource RobotoMono}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+    </Style>
+    
+    <Style Selector="Slider:horizontal">
+        <Style Selector="^ Track">
+            <Style Selector="^ RepeatButton#PART_IncreaseButton Border">
+                <Setter Property="Height" Value="4"/>
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="Background"
+                        Value="{DynamicResource WindowBackgroundSecondary}" />
+            </Style>
+            <Style Selector="^ RepeatButton#PART_DecreaseButton Border">
+                <Setter Property="Height" Value="4"/>
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="Background" Value="{DynamicResource Accent}" />
+            </Style>
+                    
+            <Style Selector="^ Thumb">
+                <Setter Property="Height" Value="18"/>
+                <Setter Property="Width" Value="18"/>
+                <Setter Property="Background" Value="{DynamicResource Accent}"/>
+            </Style>
+        </Style>
+    </Style>
+    
+    <Style Selector="#TopButtonBar Panel.Spacer">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Margin" Value="4" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="Width" Value="30" />
+    </Style>
+    
+    <Style Selector="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource RobotoMono}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <!-- <Setter Property="MaxLines" Value="2" /> -->
+    </Style>
+    
+    <Style Selector="#LeftSidePanel TextBlock">
+        <Setter Property="HorizontalAlignment" Value="Right" />
+    </Style>
+    
+    <Style Selector="TextBlock.BigText">
+        <Setter Property="FontSize" Value="22" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+    </Style>
+    
+    <Style Selector="TextBlock.PanelDescription">
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="Foreground" Value="{DynamicResource Accent}" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="TextAlignment" Value="Center" />
+    </Style>
+    
+    <Style Selector="TextBlock.SmallText">
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
+    </Style>
+    
+    <Style Selector="Border.EventIndicator">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="Background" Value="{DynamicResource Accent}" />
+        <Setter Property="Padding" Value="4" />
+        <Setter Property="Height" Value="40" />
+        <Style.Animations>
+            <Animation Duration="0:0:1.5" FillMode="Forward">
+                <KeyFrame KeyTime="0.0">
+                    <Setter Property="Opacity" Value="0" />
+                </KeyFrame>
+                <KeyFrame KeyTime="0:0:0.25">
+                    <Setter Property="Opacity" Value="1" />
+                </KeyFrame>
+                <KeyFrame KeyTime="0:0:1.0">
+                    <Setter Property="Opacity" Value="1" />
+                </KeyFrame>
+                <KeyFrame KeyTime="0:0:1.5">
+                    <Setter Property="Opacity" Value="0" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+    <Style Selector="Border.EventIndicator TextBlock">
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="Foreground" Value="{DynamicResource TextDark}" />
+        <Setter Property="FontFamily" Value="{DynamicResource RobotoMono}" />
+    </Style>
+    
+    <Style Selector="ListBox">
+        <Setter Property="Padding" Value="3" />
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="ListBoxItem">
+        <Setter Property="Padding" Value="3" />
+        <Setter Property="Background" Value="{DynamicResource EditorBackground}" />
+    </Style>
+    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent"/>	
+    </Style>
+    
+    <Style Selector="NumericUpDown">
+        <Setter Property="FontFamily" Value="{StaticResource RobotoMono}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+        <Setter Property="Background" Value="{DynamicResource EditorBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="Margin" Value="10 10" />
+        <Setter Property="Padding" Value="3" />
+        <Setter Property="FontSize" Value="22" />
+    </Style>
+    <Style Selector="NumericUpDown:focus-within">
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="Padding" Value="3" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="Background" Value="{DynamicResource EditorBackground}" />
+    </Style>
+    <Style Selector="NumericUpDown:pointerover">
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+        <Setter Property="Background" Value="{DynamicResource EditorBackground}" />
+    </Style>
+    <Style Selector="NumericUpDown:focus-within /template/ Border">
+        <Setter Property="Background" Value="{DynamicResource EditorBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+    </Style>
+    <Style Selector="NumericUpDown:pointerover /template/ Border">
+        <Setter Property="Background" Value="{DynamicResource EditorBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+    </Style>
+</Styles>
