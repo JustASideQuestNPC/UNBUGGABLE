@@ -374,8 +374,14 @@ public static partial class Chart
         if (nextLabel != null)
         {
             CurrentTime = nextLabel.Time;
-            SetTimeToNearestSnap();
         }
+        else
+        {
+            var lastNote = NonMarkerNotes[^1];
+            CurrentTime = (lastNote.Instant ? lastNote.Time : lastNote.EndTime);
+        }
+        
+        SetTimeToNearestSnap();
     }
     
     public static void MoveToPreviousLabel()
@@ -390,8 +396,13 @@ public static partial class Chart
         if (previousLabel != null)
         {
             CurrentTime = previousLabel.Time;
-            SetTimeToNearestSnap();
         }
+        else
+        {
+            CurrentTime = 0;
+        }
+        
+        SetTimeToNearestSnap();
     }
 
     /// <summary>
@@ -739,6 +750,13 @@ public static partial class Chart
     /// </summary>
     public static NoteBase? GetNote(double time, NoteLane lane)
         => _notes.FirstOrDefault(n => n.Time.SoftEquals(time) && n.Lane == lane);
+    
+    /// <summary>
+    /// Returns the (non-instant) note in a specific lane that <i>ends</i> at a specific time, or
+    /// null if that note does not exist.
+    /// </summary>
+    public static NoteBase? GetNoteFromEnd(double time, NoteLane lane) =>
+        _notes.FirstOrDefault(n => !n.Instant && n.EndTime.SoftEquals(time) && n.Lane == lane);
 
     public static NoteBase? GetPreviousNote(NoteBase note)
     {
@@ -784,9 +802,8 @@ public static partial class Chart
         }
         else
         {
-            var offset = GetNotesAtTime(CurrentTime).Count;
-            var i = _notes.FindLastIndex(x => x.Time <= Math.Round(note.Time));
-            _notes.Insert(i + offset, note);
+            var i = _notes.FindIndex(x => x.Time > Math.Round(note.Time));
+            _notes.Insert(i, note);
         }
         
         App.MainWindowViewModel.UpdatePriorityListEntries(GetNotesAtTime(CurrentTime));
@@ -1050,9 +1067,6 @@ public static partial class Chart
     private static void PlaySong()
     {
         Playing = true;
-        // _songPlayer.Time = CurrentTime + AdjustedOffset;
-        // _songPlayer.Play();
-        // Console.WriteLine($"PlaySong: {CurrentTime}, {_songPlayer.Time}");
         if (CurrentTime + AdjustedOffset >= 0)
         {
             _mediaPlayer.Play();

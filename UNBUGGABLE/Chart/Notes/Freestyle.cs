@@ -77,4 +77,6 @@ public class FreestyleNote : NoteBase
 
         return null;
     }
+
+    public override string ToString() => $"Freestyle: Time={Time}ms";
 }

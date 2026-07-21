@@ -75,8 +75,10 @@ public static class Config
         public static bool CopHoldEnd { get; private set; } = true;
         public static bool CopMashStart { get; private set; } = true;
         public static bool CopMashEnd { get; private set; } = true;
-        public static bool CameraChange { get; private set; }
-        public static bool Marker { get; private set; }
+        public static bool CameraChange { get; private set; } = false;
+        public static bool Marker1 { get; private set; } = false;
+        public static bool Marker2 { get; private set; } = false;
+        public static bool Marker3 { get; private set; } = false;
 
         public static void TryParseJson(JsonObject json)
         {
@@ -107,8 +109,10 @@ public static class Config
                 CopHoldEnd = json["copHoldEnd"]?.AsValue().GetValue<bool>() ?? true;
                 CopMashStart = json["copMashStart"]?.AsValue().GetValue<bool>() ?? true;
                 CopMashEnd = json["copMashEnd"]?.AsValue().GetValue<bool>() ?? true;
-                CameraChange = json["cameraChange"]?.AsValue().GetValue<bool>() ?? true;
-                Marker = json["marker"]?.AsValue().GetValue<bool>() ?? true;
+                CameraChange = json["cameraChange"]?.AsValue().GetValue<bool>() ?? false;
+                Marker1 = json["marker1"]?.AsValue().GetValue<bool>() ?? false;
+                Marker2 = json["marker2"]?.AsValue().GetValue<bool>() ?? false;
+                Marker3 = json["marker3"]?.AsValue().GetValue<bool>() ?? false;
             }
         }
     }
@@ -155,7 +159,7 @@ public static class Config
     /// <summary>
     /// Offset applied to hit sounds. Positive values play hit sounds later.
     /// </summary>
-    public static int HitSoundOffset { get; private set; } = 0;
+    public static int HitSoundOffset { get; private set; } = -30;
     
     /// <summary>
     /// All possible beat snap values. Beat snap can be changed with the left and right arrow keys.

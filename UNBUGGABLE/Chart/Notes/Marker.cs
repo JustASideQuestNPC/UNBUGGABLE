@@ -52,9 +52,17 @@ public class MarkerDummyNote : NoteBase
     
     public override long? ShouldPlayHitSound(double rangeStart, double rangeEnd)
     {
-        if (Time > rangeStart && Time <= rangeEnd && Config.HitSounds.Marker)
+        if (Time < rangeStart || Time > rangeEnd)
         {
-            return (long)(Time - rangeStart);
+            return null;
+        }
+        
+        var offset = (long)(Time - rangeStart);
+        if ((ColorId == 0 && Config.HitSounds.Marker1) ||
+            (ColorId == 1 && Config.HitSounds.Marker2) ||
+            (ColorId == 2 && Config.HitSounds.Marker3))
+        {
+            return offset;
         }
         
         return null;
@@ -69,4 +77,6 @@ public class MarkerDummyNote : NoteBase
 
         return "";
     }
+
+    public override string ToString() => $"Marker: Type={ColorId} Time={Time}ms";
 }

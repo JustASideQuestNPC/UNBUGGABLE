@@ -224,7 +224,7 @@ public class NoteViewer : Control
             lanes.Add(NoteLane.MARKER);
         }
 
-    return lanes;
+        return lanes;
     }
 
     public static int GetNoteX(NoteLane lane)

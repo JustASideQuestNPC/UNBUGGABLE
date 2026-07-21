@@ -74,13 +74,12 @@ public static class ChartBuilder
                     {
                         CommandInvoker.Execute(new SetNotesCopIdCommand(SelectedNotes, 2));
                     }
+                    else
+                    {
+                        CopId = 2;
+                        App.MainWindowViewModel.CurrentNoteTypeText = NoteTypeNames[CopId];
+                    }
                 }
-                else
-                {
-                    CopId = 2;
-                    App.MainWindowViewModel.CurrentNoteTypeText = NoteTypeNames[CopId];
-                }
-
                 break;
 
             // 3 and 4 are also used to change note cop IDs (which is a non-hold keybind)
@@ -162,6 +161,7 @@ public static class ChartBuilder
                     else
                     {
                         CopId = 1;
+                        App.MainWindowViewModel.CurrentNoteTypeText = NoteTypeNames[CopId];
                     }
                 }
 
@@ -375,7 +375,8 @@ public static class ChartBuilder
         
         var selectedLanes = NoteViewer.GetSelectedLanes();
         var dragEndTime = NoteViewer.ScreenCoordsToTime(MousePosition.Y);
-        var notes = Chart.GetNoteRegion(MouseDragStartTime, dragEndTime, selectedLanes);
+        var notes = Chart.GetNoteRegion(Math.Min(MouseDragStartTime, dragEndTime),
+                                        Math.Max(MouseDragStartTime, dragEndTime), selectedLanes);
 
         var hoveredNote = Chart.Notes.FirstOrDefault(n => n.MouseOver());
         if (hoveredNote != null && !notes.Contains(hoveredNote))
@@ -524,7 +525,8 @@ public static class ChartBuilder
                 var text = await new TextEntryDialog("add label").ShowAsync();
                 if (text.HasValue && text.Value != "")
                 {
-                    CommandInvoker.Execute(new AddLabelCommand(time, text.Value));
+                    CommandInvoker.Execute(new AddLabelCommand(time + Chart.Metadata.ChartOffset,
+                                                               text.Value));
                 }
             }
         }
@@ -589,7 +591,7 @@ public static class ChartBuilder
         // hold notes can also extend from the start of the note
         if (oldNote == null && end.SoftNotEquals(start))
         {
-            oldNote = Chart.GetNote(end, lane);
+            oldNote = Chart.GetNote(end, lane) ?? Chart.GetNoteFromEnd(start, lane);
         }
         Console.WriteLine(oldNote);
         
@@ -640,7 +642,7 @@ public static class ChartBuilder
                         return;
                     }
                     
-                    newNote = new CopNote((start.SoftEquals(end) ? NoteType.SINGLE :
+                    newNote = new CopNote((start.SoftEquals(end) ? NoteType.COP_SINGLE :
                             ShiftPressed ? NoteType.COP_MASH : NoteType.COP_HOLD), CopId)
                     {
                         Time = start,
@@ -665,9 +667,28 @@ public static class ChartBuilder
             // camera and marker lanes can be skipped because they will never appear here
         }
 
+        var shouldReplace = false;
         if (oldNote != null)
         {
-            newNote.EndTime = Math.Max(end, oldNote.EndTime);
+            if (newNote.Time.SoftEquals(oldNote.Time))
+            {
+                shouldReplace = true;
+            }
+
+            if (!shouldReplace && !newNote.Instant && !oldNote.Instant)
+            {
+                if ((newNote.Time.SoftEquals(oldNote.EndTime) ||
+                     oldNote.Time.SoftEquals(newNote.EndTime)) && newNote.Type == oldNote.Type)
+                {
+                    newNote.Time = Math.Min(newNote.Time, oldNote.Time);
+                    newNote.EndTime = Math.Max(newNote.EndTime, oldNote.EndTime);
+                    shouldReplace = true;
+                }
+            }
+        }
+
+        if (shouldReplace)
+        {
             CommandInvoker.Execute(new UpdateNoteCommand(oldNote, newNote));
         }
         else
@@ -777,11 +798,12 @@ public static class ChartBuilder
             l => l.StartsWith($"{Chart.Metadata.SongName.ToLowerInvariant()}:"));
         if (index == -1)
         {
-            lines.Add($"{Chart.Metadata.SongName.ToLowerInvariant()}:{BreakpointTime}");
+            lines.Add($"{Chart.Metadata.SongName.ToLowerInvariant()}:{Math.Floor(BreakpointTime)}");
         }
         else
         {
-            lines[index] = $"{Chart.Metadata.SongName.ToLowerInvariant()}:{BreakpointTime}";
+            lines[index] =
+                $"{Chart.Metadata.SongName.ToLowerInvariant()}:{Math.Floor(BreakpointTime)}";
         }
         File.WriteAllLines(Config.PracticeModConfigPath, lines);
     }

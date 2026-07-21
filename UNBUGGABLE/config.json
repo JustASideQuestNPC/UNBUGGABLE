@@ -33,6 +33,8 @@
         "copMashStart": true,
         "copMashEnd": true,
         "cameraChange": false,
-        "marker": false
+        "marker1": false,
+        "marker2": false,
+        "marker3": false
     }
 }

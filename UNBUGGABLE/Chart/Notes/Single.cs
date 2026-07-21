@@ -163,4 +163,10 @@ public class SingleNote : NoteBase
         
         dc.DrawGeometry(_spikeBrush, new Pen(_outlineBrush, 6), shape);
     }
+    
+    public override string ToString()
+    {
+        return $"{(Type == NoteType.SINGLE ? "Single" : "Spike")}: Lane={Lane}, " +
+               $"Time={Time}ms";
+    }
 }

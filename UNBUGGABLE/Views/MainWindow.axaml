@@ -47,20 +47,20 @@
                         Height="50">
                 <Button Classes="SquareIconButton" ToolTip.Tip="Chart Metadata"
                         Command="{Binding EditChartMetadataCommand}"
-                        IsEnabled="{Binding SongLoaded}">
+                        IsEnabled="{Binding SongLoaded}" Focusable="False">
                     <materialIcons:MaterialIcon Kind="TableEdit" />
                 </Button>
                     
                 <Panel Classes="Spacer" />
                 
                 <Button Classes="SquareIconButton" ToolTip.Tip="Open File"
-                        Command="{Binding LoadFileCommand}">
+                        Command="{Binding LoadFileCommand}" Focusable="False">
                     <materialIcons:MaterialIcon Kind="FolderOpen" />
                 </Button>
                 
                 <Button Classes="SquareIconButton" ToolTip.Tip="{Binding SaveButtonToolTip}"
-                        Command="{Binding DefaultSaveCommand}"
-                        IsEnabled="{Binding EditorUiEnabled}">
+                        Command="{Binding DefaultSaveCommand}" IsEnabled="{Binding EditorUiEnabled}"
+                        Focusable="False">
                     <materialIcons:MaterialIcon Kind="ContentSave" />
                     <Button.ContextMenu>
                         <ContextMenu>
@@ -83,7 +83,7 @@
                 <Slider Name="MusicVolumeSlider" Minimum="0" Maximum="100" TickFrequency="1"
                         IsSnapToTickEnabled="True" Width="150" Orientation="Horizontal"
                         VerticalAlignment="Stretch" Value="{Binding SongVolume}"
-                        IsEnabled="{Binding SongLoaded}">
+                        IsEnabled="{Binding SongLoaded}" Focusable="False">
                     <ToolTip.Tip>Music Volume</ToolTip.Tip>
                 </Slider>
                 <Panel Classes="Spacer" Width="5" />
@@ -96,7 +96,7 @@
                 <Panel Classes="Spacer" Width="5" />
                 <Slider Name="SfxVolumeSlider" Minimum="0" Maximum="100" TickFrequency="1"
                         IsSnapToTickEnabled="True" Width="150" Orientation="Horizontal"
-                        VerticalAlignment="Stretch" Value="{Binding SfxVolume}"
+                        VerticalAlignment="Stretch" Value="{Binding SfxVolume}" Focusable="False"
                         IsEnabled="{Binding SongLoaded}">
                     <ToolTip.Tip>SFX Volume</ToolTip.Tip>
                 </Slider>
@@ -110,7 +110,7 @@
                 <Panel Classes="Spacer" Width="5" />
                 <Slider Name="PlaySpeedSlider" Minimum="1" Maximum="200" TickFrequency="1"
                         IsSnapToTickEnabled="True" Width="400" Orientation="Horizontal"
-                        VerticalAlignment="Stretch" Value="{Binding PlaySpeed}"
+                        VerticalAlignment="Stretch" Value="{Binding PlaySpeed}" Focusable="False"
                         IsEnabled="{Binding EditorUiEnabled}">
                     <ToolTip.Tip>Playback Speed</ToolTip.Tip>
                 </Slider>

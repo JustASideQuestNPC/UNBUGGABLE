@@ -81,4 +81,6 @@ public class MashNote : NoteBase
         
         return null;
     }
+    
+    public override string ToString() => $"Mash: Time={Time}-{EndTime}ms";
 }

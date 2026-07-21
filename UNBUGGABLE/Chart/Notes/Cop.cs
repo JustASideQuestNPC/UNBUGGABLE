@@ -118,7 +118,7 @@ public class CopNote : NoteBase
             dc.DrawGeometry(_fillBrush, new Pen(_outlineBrush, 4), shape);
             if (selected)
             {
-                dc.DrawGeometry(_outlineBrush, new Pen(_outlineBrush, 4), shape);
+                dc.DrawGeometry(_fillBrush, new Pen(_outlineBrush, 4), shape);
             }
         }
         else
@@ -217,7 +217,7 @@ public class CopNote : NoteBase
                 _ => throw new ArgumentOutOfRangeException()
             },
             "192",
-            (Time + Chart.Metadata.ChartOffset).ToString(),
+            Math.Floor(Time + Chart.Metadata.ChartOffset).ToString(),
         ];
         
         if (Instant)
@@ -242,7 +242,7 @@ public class CopNote : NoteBase
         }
         chunks.Add(flagNumber.ToString());
 
-        chunks.Add((Instant ? "3:" : $"{EndTime + Chart.Metadata.ChartOffset}:3:") +
+        chunks.Add((Instant ? "3:" : $"{Math.Floor(EndTime + Chart.Metadata.ChartOffset)}:3:") +
                    (Type == NoteType.COP_MASH ? "0:0:0:" : "1:0:0:"));
 
         return string.Join(",", chunks);
@@ -309,4 +309,14 @@ public class CopNote : NoteBase
         return (Lane == NoteLane.TOP ? -x : x);
     }
 
+    public override string ToString()
+    {
+        return Type switch
+        {
+            NoteType.COP_SINGLE => $"Cop single: Cop={CopId}, Lane={Lane}, Time={Time}ms",
+            NoteType.COP_HOLD => $"Cop hold: Cop={CopId}, Lane={Lane}, Time={Time}-{EndTime}ms",
+            NoteType.COP_MASH => $"Cop mash: Cop={CopId}, Lane={Lane}, Time={Time}-{EndTime}ms",
+            _ => throw new ArgumentOutOfRangeException()
+        };
+    }
 }

@@ -96,12 +96,14 @@ public class GamePreview : Control
 
             if (note is CopNote copNote)
             {
+
+                var finishTime = (note.Type == NoteType.COP_SINGLE ? note.Time : note.EndTime);
                 switch (copNote.CopId)
                 {
                     case 1:
                         if (copNote.IsFinisher)
                         {
-                            if (note.Time <= Chart.CurrentTime)
+                            if (finishTime <= Chart.CurrentTime)
                             {
                                 Cop1State = CopState.DEAD;
                             }
@@ -114,7 +116,7 @@ public class GamePreview : Control
                     case 2:
                         if (copNote.IsFinisher)
                         {
-                            if (note.Time <= Chart.CurrentTime)
+                            if (finishTime <= Chart.CurrentTime)
                             {
                                 Cop2State = CopState.DEAD;
                             }
@@ -127,7 +129,7 @@ public class GamePreview : Control
                     case 3:
                         if (copNote.IsFinisher)
                         {
-                            if (note.Time <= Chart.CurrentTime)
+                            if (finishTime <= Chart.CurrentTime)
                             {
                                 Cop3State = CopState.DEAD;
                             }
@@ -140,7 +142,7 @@ public class GamePreview : Control
                     case 4:
                         if (copNote.IsFinisher)
                         {
-                            if (note.Time <= Chart.CurrentTime)
+                            if (finishTime <= Chart.CurrentTime)
                             {
                                 Cop4State = CopState.DEAD;
                             }
@@ -274,9 +276,9 @@ public class GamePreview : Control
                     currentHeight = PreviewHeight - 60;
                 }
                 
-                var cameraClip = dc.PushClip(new Rect(clipX, clipY, clipWidth, currentHeight));
+                // var cameraClip = dc.PushClip(new Rect(clipX, clipY, clipWidth, currentHeight));
                 note.RenderPreview(dc);
-                cameraClip.Dispose();
+                // cameraClip.Dispose();
             }
         }
 

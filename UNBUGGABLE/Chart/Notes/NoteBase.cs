@@ -52,12 +52,14 @@ public abstract partial class NoteBase
     private static partial Regex HitObjectRegex();
     
     public double Time { get; set; }
-    
+
     /// <summary>
     /// If true, the note has no duration and is a single, spike, freestyle, or camera note. If
     /// false, the note is a hold, double, or mash note.
     /// </summary>
-    public bool Instant { get; set; }
+    public bool Instant => Type != NoteType.HOLD && Type != NoteType.DOUBLE &&
+                           Type != NoteType.MASH && Type != NoteType.COP_HOLD &&
+                           Type != NoteType.COP_MASH;
 
     /// <summary>
     /// What time the note ends at after being hit. Only used by holds, doubles, and mash notes.
@@ -239,7 +241,6 @@ public abstract partial class NoteBase
         note.Lane = lane;
         note.Time = noteTime;
         note.Flags = flags;
-        note.Instant = instant;
         note.EndTime = endTime;
         
         errorMessage = "";
@@ -310,7 +311,7 @@ public abstract partial class NoteBase
             chunks.Add(isFirstNote ? "132" : "128");
         }
         chunks.Add(GetFlagString());
-        chunks.Add(Instant ? "0:0:0:0:" : $"{EndTime + Chart.Metadata.ChartOffset}:0:0:0:0:");
+        chunks.Add(Instant ? "0:0:0:0:" : $"{Math.Floor(EndTime + Chart.Metadata.ChartOffset)}:0:0:0:0:");
 
         return string.Join(",", chunks);
     }

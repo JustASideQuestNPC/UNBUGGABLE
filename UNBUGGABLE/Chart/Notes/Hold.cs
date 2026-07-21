@@ -131,4 +131,10 @@ public class HoldNote : NoteBase
         }
         dc.DrawEllipse(_doubleBrush, new Pen(_outlineBrush, 6), new Point(startX, noteY), 30, 30);
     }
+
+    public override string ToString()
+    {
+        return $"{(Type == NoteType.HOLD ? "Hold" : "Double")}: Lane={Lane}, " +
+               $"Time={Time}-{EndTime}ms";
+    }
 }
