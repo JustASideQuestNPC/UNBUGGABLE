@@ -12,7 +12,8 @@ and whistles, and even fixes the bugs! Windows only.
 - [Settings](#settings)
 
 # Installation
-To install UNBUGGABLE, download and run the installer from the latest release. Have fun!
+To install UNBUGGABLE, download and run the installer from the
+[latest release](https://github.com/JustASideQuestNPC/UNBUGGABLE/releases/latest). Have fun!
 
 # Quickstart
 If you've used the official editor, you already know how to use UNBUGGABLE. If you don't, go read
@@ -32,7 +33,7 @@ Additionally, UNBUGGABLE uses milliseconds for offset, not seconds.
 ## .beat.txt Files
 By default, UNBUGGABLE saves charts as a .beat.txt chart file. These files will still load in-game
 and in the official editor, but have extra UNBUGGABLE-specific data. You can save as a standard .txt
-file and/or save to a new path by **right-clicking** the save button.
+file and/or save to a new path by right-clicking the save button.
 
 ## Breakpoints
 If you have [Stefyfresh's Practice Mod](https://github.com/Stefyfresh/UNBEATABLE-practice-mode)
