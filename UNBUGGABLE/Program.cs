@@ -1,6 +1,8 @@
 ﻿using Avalonia;
 using System;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using UNBEATABLEChartEditor;
 using UNBEATABLEChartEditor.Audio;
 
@@ -14,6 +16,15 @@ sealed class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        // apparently, running the app by double-clicking a file will make the working directory the
+        // same place as that file, not the location of the exe
+        if (!Environment.CurrentDirectory.EndsWith("UNBUGGABLE"))
+        {
+            Environment.CurrentDirectory =
+                Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ??
+                Environment.CurrentDirectory;
+        }
+        
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
     }

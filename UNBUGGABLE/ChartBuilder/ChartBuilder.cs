@@ -425,10 +425,11 @@ public static class ChartBuilder
     public static async void TryAutoLoadChartFile()
     {
         // command line arguments are used for file association
-        var path = Environment.CommandLine[(Environment.CommandLine.IndexOf(' ') + 1)..];
-        if (path.Length > 0)
+        Console.WriteLine(Environment.CommandLine);
+        var i = Environment.CommandLine.IndexOf(' ');
+        if (i != -1)
         {
-            await TryLoadChartFile(path);
+            await TryLoadChartFile(Environment.CommandLine[(i + 1)..]);
         }
         else if (UserData.LastOpenedChartFile != "")
         {
