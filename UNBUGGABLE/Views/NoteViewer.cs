@@ -197,18 +197,18 @@ public class NoteViewer : Control
     {
         var left = Math.Min(ChartBuilder.MouseDragStart.Value.X, ChartBuilder.MousePosition.X);
         var right = Math.Max(ChartBuilder.MouseDragStart.Value.X, ChartBuilder.MousePosition.X);
-        
+
         List<NoteLane> lanes = [];
         if (_topLaneX > left && _topLaneX < right)
         {
             lanes.Add(NoteLane.TOP);
         }
-        
+
         if (_centerLaneX > left && _centerLaneX < right)
         {
             lanes.Add(NoteLane.CENTER);
         }
-        
+
         if (_bottomLaneX > left && _bottomLaneX < right)
         {
             lanes.Add(NoteLane.BOTTOM);
@@ -218,8 +218,13 @@ public class NoteViewer : Control
         {
             lanes.Add(NoteLane.CAMERA);
         }
-        
-        return lanes;
+
+        if (left < 150)
+        {
+            lanes.Add(NoteLane.MARKER);
+        }
+
+    return lanes;
     }
 
     public static int GetNoteX(NoteLane lane)

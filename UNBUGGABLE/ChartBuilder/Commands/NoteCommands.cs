@@ -17,13 +17,14 @@ public class AddNotesCommand(List<NoteBase> notes, bool isPaste = false) : IComm
 
         if (isPaste && Config.AutoSelectPastedNotes)
         {
-            ChartBuilder.SelectedNotes = notes;
+            ChartBuilder.SelectedNotes = [..notes];
         }
     }
     
     public void Undo()
     {
         ChartBuilder.ClearSelection();
+        Console.WriteLine(notes.Count);
         foreach (var note in notes)
         {
             Chart.RemoveNote(note);

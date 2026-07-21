@@ -101,7 +101,10 @@ public class GamePreview : Control
                     case 1:
                         if (copNote.IsFinisher)
                         {
-                            Cop1State = CopState.DEAD;
+                            if (note.Time <= Chart.CurrentTime)
+                            {
+                                Cop1State = CopState.DEAD;
+                            }
                         }
                         else
                         {
@@ -111,7 +114,10 @@ public class GamePreview : Control
                     case 2:
                         if (copNote.IsFinisher)
                         {
-                            Cop2State = CopState.DEAD;
+                            if (note.Time <= Chart.CurrentTime)
+                            {
+                                Cop2State = CopState.DEAD;
+                            }
                         }
                         else
                         {
@@ -121,7 +127,10 @@ public class GamePreview : Control
                     case 3:
                         if (copNote.IsFinisher)
                         {
-                            Cop3State = CopState.DEAD;
+                            if (note.Time <= Chart.CurrentTime)
+                            {
+                                Cop3State = CopState.DEAD;
+                            }
                         }
                         else
                         {
@@ -131,7 +140,10 @@ public class GamePreview : Control
                     case 4:
                         if (copNote.IsFinisher)
                         {
-                            Cop4State = CopState.DEAD;
+                            if (note.Time <= Chart.CurrentTime)
+                            {
+                                Cop4State = CopState.DEAD;
+                            }
                         }
                         else
                         {
@@ -191,8 +203,8 @@ public class GamePreview : Control
         LeftCopText = $"Left: {string.Join(", ", leftCopStates)}";
         RightCopText = $"Right: {string.Join(", ", rightCopStates)}";
         
-        if (Cop1State == CopState.LEFT || Cop2State == CopState.LEFT || Cop3State == CopState.LEFT ||
-            Cop4State == CopState.LEFT)
+        if (Cop1State == CopState.LEFT || Cop2State == CopState.LEFT ||
+            Cop3State == CopState.LEFT || Cop4State == CopState.LEFT)
         {
             var rect = new RoundedRect(
                 new Rect(-NoteTargetX - 120, TopLaneY + 20, 60, -TopLaneY + BottomLaneY - 40), 15);
@@ -202,8 +214,8 @@ public class GamePreview : Control
             dc.DrawArc(null, new Pen(_accentBrush, 5), new Point(-NoteTargetX - 90, TopLaneY + 55),
                        20, 30, 20, 160);
         }
-        if (Cop1State == CopState.RIGHT || Cop2State == CopState.RIGHT || Cop3State == CopState.RIGHT ||
-            Cop4State == CopState.RIGHT)
+        if (Cop1State == CopState.RIGHT || Cop2State == CopState.RIGHT ||
+            Cop3State == CopState.RIGHT || Cop4State == CopState.RIGHT)
         {
             var rect = new RoundedRect(
                 new Rect(NoteTargetX + 60, TopLaneY + 20, 60, -TopLaneY + BottomLaneY - 40), 15);

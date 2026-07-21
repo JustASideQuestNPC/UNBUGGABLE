@@ -217,7 +217,7 @@ public class CopNote : NoteBase
                 _ => throw new ArgumentOutOfRangeException()
             },
             "192",
-            Time.ToString(),
+            (Time + Chart.Metadata.ChartOffset).ToString(),
         ];
         
         if (Instant)
@@ -242,7 +242,7 @@ public class CopNote : NoteBase
         }
         chunks.Add(flagNumber.ToString());
 
-        chunks.Add((Instant ? "3:" : $"{EndTime}:3:") +
+        chunks.Add((Instant ? "3:" : $"{EndTime + Chart.Metadata.ChartOffset}:3:") +
                    (Type == NoteType.COP_MASH ? "0:0:0:" : "1:0:0:"));
 
         return string.Join(",", chunks);

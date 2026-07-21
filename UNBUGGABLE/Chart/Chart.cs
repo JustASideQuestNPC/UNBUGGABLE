@@ -788,11 +788,6 @@ public static partial class Chart
             var i = _notes.FindLastIndex(x => x.Time <= Math.Round(note.Time));
             _notes.Insert(i + offset, note);
         }
-
-        foreach (var n in GetNotesAtTime(CurrentTime))
-        {
-            Console.WriteLine($"{n.Item1.Lane}, {n.Item1.Time}, {n.Item2}");
-        }
         
         App.MainWindowViewModel.UpdatePriorityListEntries(GetNotesAtTime(CurrentTime));
     }
@@ -1158,7 +1153,7 @@ public static partial class Chart
                     if (double.TryParse(split[0], out var time))
                     {
                         Console.WriteLine($"Adding marker at {time} with type {split[1]}");
-                        // TryAddMarker(time, int.Parse(split[1]));
+                        TryAddMarker(time, int.Parse(split[1]));
                     }
                     else
                     {

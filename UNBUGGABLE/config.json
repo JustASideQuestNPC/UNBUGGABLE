@@ -15,7 +15,7 @@
     "maxZoom": 7.5,
     "zoomIncrement": 0.25,
     "laneOrder": ["top", "center", "bottom", "camera"],
-    "hitSoundOffset": -60,
+    "hitSoundOffset": 0,
     "hardChartOffset": 60,
     "hitSounds": {
         "single": true,
@@ -24,7 +24,7 @@
         "holdStart": true,
         "holdEnd": true,
         "doubleStart": true,
-        "doubleEnd": false,
+        "doubleEnd": true,
         "mashStart": true,
         "mashEnd": true,
         "copSingle": true,

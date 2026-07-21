@@ -50,7 +50,7 @@ public static class ChartBuilder
         {
             return;
         }
-        
+
         switch (k)
         {
             // modifier keys
@@ -66,7 +66,7 @@ public static class ChartBuilder
             case Key.RightShift:
                 _rightShiftPressed = true;
                 break;
-            
+
             case Key.D2:
                 if (CtrlPressed)
                 {
@@ -80,8 +80,9 @@ public static class ChartBuilder
                     CopId = 2;
                     App.MainWindowViewModel.CurrentNoteTypeText = NoteTypeNames[CopId];
                 }
+
                 break;
-            
+
             // 3 and 4 are also used to change note cop IDs (which is a non-hold keybind)
             case Key.D3:
                 if (CtrlPressed)
@@ -101,6 +102,7 @@ public static class ChartBuilder
                     Console.WriteLine($"start top lane placement: {Chart.CurrentTime}");
                     TopLaneStartTime = Chart.CurrentTime;
                 }
+
                 break;
             case Key.D4:
                 if (CtrlPressed)
@@ -120,16 +122,18 @@ public static class ChartBuilder
                     Console.WriteLine($"start bottom lane placement: {Chart.CurrentTime}");
                     BottomLaneStartTime = Chart.CurrentTime;
                 }
+
                 break;
-            
+
             case Key.D6:
                 if (CenterLaneStartTime.SoftEquals(-1000))
                 {
                     Console.WriteLine($"start center lane placement: {Chart.CurrentTime}");
                     CenterLaneStartTime = Chart.CurrentTime;
                 }
+
                 break;
-            
+
             // non-hold keybinds
             // case Key.D0:
             case Key.OemTilde: // not an official editor keybind
@@ -143,8 +147,10 @@ public static class ChartBuilder
                     else
                     {
                         CopId = 0;
+                        App.MainWindowViewModel.CurrentNoteTypeText = NoteTypeNames[CopId];
                     }
                 }
+
                 break;
             case Key.D1:
                 if (CtrlPressed)
@@ -158,6 +164,7 @@ public static class ChartBuilder
                         CopId = 1;
                     }
                 }
+
                 break;
             case Key.D5:
                 DoCameraSwapOperation();
@@ -167,6 +174,7 @@ public static class ChartBuilder
                 {
                     CommandInvoker.Execute(new MirrorNotesCommand(SelectedNotes));
                 }
+
                 break;
             case Key.Delete:
                 if (SelectedNotes.Count > 0)
@@ -174,6 +182,7 @@ public static class ChartBuilder
                     CommandInvoker.Execute(new DeleteNotesCommand(SelectedNotes));
                     SelectedNotes.Clear();
                 }
+
                 break;
             case Key.Escape:
                 ClearSelection();
@@ -193,10 +202,23 @@ public static class ChartBuilder
                 {
                     SetBreakpoint();
                 }
+
                 break;
             case Key.F9:
                 await DoBpmChangeOperation();
                 break;
+            // case Key.Up:
+            //     if (SelectedNotes.Count > 0 && ShiftPressed)
+            //     {
+            //         Console.WriteLine("move selected notes up");
+            //     }
+            //     break;
+            // case Key.Down:
+            //     if (SelectedNotes.Count > 0 && ShiftPressed)
+            //     {
+            //         Console.WriteLine("move selected notes down");
+            //     }
+            //     break;
             case Key.Left:
                 Chart.DecreaseBeatSnap();
                 break;
@@ -425,7 +447,7 @@ public static class ChartBuilder
     
     public static void Cut()
     {
-        _clipboard = new List<NoteBase>(SelectedNotes);
+        _clipboard = new List<NoteBase>([..SelectedNotes]);
         CommandInvoker.Execute(new DeleteNotesCommand([..SelectedNotes]));
     }
     

@@ -21,15 +21,6 @@
         <Setter Property="Background" Value="{DynamicResource WindowBackgroundSecondary}" />
         <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
     </Style>
-    <Style Selector="Button.SquareIconButton ToolTip">
-        <Setter Property="Foreground" Value="{DynamicResource TextDark}" />
-        <Setter Property="Background" Value="{DynamicResource WindowBackgroundPrimary}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
-        <Setter Property="BorderThickness" Value="2" />
-        <Setter Property="FontFamily" Value="{DynamicResource RobotoMono}" />
-        <Setter Property="FontSize" Value="10" />
-        <Setter Property="ShowDelay" Value="150" />
-    </Style>
     <Style Selector="materialIcons|MaterialIcon">
         <Setter Property="Foreground" Value="{DynamicResource Accent}" />
         <Setter Property="VerticalAlignment" Value="Stretch" />
@@ -40,6 +31,16 @@
     </Style>
     <Style Selector="Button.SquareIconButton:disabled materialIcons|MaterialIcon">
         <Setter Property="Opacity" Value="0.5" />
+    </Style>
+    
+    <Style Selector="ToolTip">
+        <Setter Property="Foreground" Value="{DynamicResource TextDark}" />
+        <Setter Property="Background" Value="{DynamicResource WindowBackgroundPrimary}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="FontFamily" Value="{DynamicResource RobotoMono}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="ShowDelay" Value="150" />
     </Style>
     
     <Style Selector="ContextMenu">

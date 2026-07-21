@@ -6,25 +6,33 @@ UNBUGGABLE is a fan-made custom chart editor for the rhythm game
 and whistles, and even fixes the bugs! Windows only.
 
 # Contents
+- [Installation](#installation)
 - [Quickstart](#quickstart)
 - [Keybinds](#keybinds)
 - [Settings](#settings)
 
+# Installation
+To install UNBUGGABLE, download and run the installer from the latest release. Have fun!
+
 # Quickstart
-
-## .beat.txt Files
-
-## Quick Info
-
-## The Game Preview
-The UNBUGGABLE preview is effectively the same as the one in the official editor, just with worse
-double animations (sorry). Unlike the official editor, the UNBUGGABLE preview gives mash notes a
-"tail" to indicate where they end, and it shows where doubles will land.
+If you've used the official editor, you already know how to use UNBUGGABLE. If you don't, go read
+the [official instructions](https://app.notion.com/p/dcellgames/USING-THE-EDITOR-3485dc0d0e12804b8ad7fc31213a134f)
+and then come back here to see the UNBUGGABLE-specific things.
 
 ### IMPORTANT!!!
-Because I haven't been able to figure out exactly how camera swap speed is calculated in-game, the
-preview in UNBUGGABLE only shows where the camera is *supposed* to be. Unlike the official editor,
-it does not account for how long it takes the camera to actually move.
+Currently, UNBUGGABLE has 2 semi-major limitations:
+1. Variable bitrate .mp3 files do not work correctly and will very easily desync from everything
+   else. If you're running into troubles with desync, use a .wav or make sure you convert to a
+   constant bitrate.
+2. The in-game preview in UNBUGGABLE only shows where the camera is *supposed* to be. Unlike the
+   official editor, it does not account for how long it takes the camera to actually move.
+
+Additionally, UNBUGGABLE uses milliseconds for offset, not seconds.
+
+## .beat.txt Files
+By default, UNBUGGABLE saves charts as a .beat.txt chart file. These files will still load in-game
+and in the official editor, but have extra UNBUGGABLE-specific data. You can save as a standard .txt
+file and/or save to a new path by **right-clicking** the save button.
 
 ## Breakpoints
 If you have [Stefyfresh's Practice Mod](https://github.com/Stefyfresh/UNBEATABLE-practice-mode)
@@ -49,17 +57,20 @@ There are also a few UNBUGGABLE-specific keybinds:
 - `q`: Place a marker. Hold `Shift`, or `Ctrl`, to change the color of the marker.
 - `b`: Place or move the breakpoint. Use `Ctrl+b` to delete it.
 - `ctrl+1/2/3/4` without any notes selected will set the editor to place notes for that cop.
-- `ctrl+0` or `ctrl+\``: If notes are selected, converts cop notes to normal notes. Otherwise, sets
-  the editor to place normal notes.
+- `ctrl+0` or <code>ctrl+`</code>: If notes are selected, converts cop notes to normal notes.
+  Otherwise, sets the editor to place normal notes.
 - Drag while holding right click to delete notes instead of selecting them.
 
 # Settings
-All settings for UNBUGGABLE can be changed by editing `config.json`. Changes are not applied until
-you restart the editor.
+All settings for UNBUGGABLE can be changed by editing `config.json`. Currently, changes are not
+applied until you restart the editor.
 
 ## colorTheme
 Which color theme to use for the editor. This must be the name of one of the themes in `themes.json`
 (case sensitive).
+
+## useBeatFiles
+Whether UNBUGGABLE should default to saving charts as .beat.txt files, or as standard .txt files.
 
 ## enhancedPreview
 If true, the in-game preview shows an indicator of where doubles will land, and gives mash notes a
@@ -80,7 +91,7 @@ If true, loading a chart file will convert all notes that are in lane 2 into UNB
 
 ## saveMarkersAsLane2Notes
 If true, all markers are saved in a chart file as a lane 2 note. Markers are always saved in the
-UNBUGGABLE section of the chart file, regardless of this setting.
+UNBUGGABLE section of a .beat.txt file, regardless of this setting.
 
 ## alwaysEnableCustomDifficultyName
 If true, you can set a custom name for every difficulty slot, not just Star.
@@ -92,6 +103,10 @@ mirroring sections).
 ## allowTopLaneCopMashes
 Whether to allow placing cop mashes on the top lane. In-game, cop mashes are always on the bottom
 lane, regardless of what lane they were actually placed in.
+
+## showFreestyleSubNotesWhilePlacing
+If true, freestyle notes appear smaller in the note viewer if they will be subnotes of another
+freestyle note in-game.
 
 ## beatSnaps
 A list of every value that the chart editor can snap to. For some reason, the official editor
@@ -113,6 +128,9 @@ What order (from left to right) the note viewer displays lanes. The default sett
 center lane in between the top and bottom to match the in-game order. To use the official editor's
 order where the center lane is on the right, change this setting to 
 `["top", "bottom", "camera", "center"]`.
+
+## hitSoundOffset
+Constant offset to make hit sounds play slightly earlier or later than the actual note.
 
 ## hardChartOffset
 Constant offset applied to all charts, to match up with the one hard-coded into the official editor.

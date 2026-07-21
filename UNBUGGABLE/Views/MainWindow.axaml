@@ -83,7 +83,9 @@
                 <Slider Name="MusicVolumeSlider" Minimum="0" Maximum="100" TickFrequency="1"
                         IsSnapToTickEnabled="True" Width="150" Orientation="Horizontal"
                         VerticalAlignment="Stretch" Value="{Binding SongVolume}"
-                        IsEnabled="{Binding SongLoaded}" />
+                        IsEnabled="{Binding SongLoaded}">
+                    <ToolTip.Tip>Music Volume</ToolTip.Tip>
+                </Slider>
                 <Panel Classes="Spacer" Width="5" />
                 <TextBlock FontSize="15" Foreground="{DynamicResource Accent}"
                            Text="{Binding #MusicVolumeSlider.Value, StringFormat=\{0:000\}%}" />
@@ -95,7 +97,9 @@
                 <Slider Name="SfxVolumeSlider" Minimum="0" Maximum="100" TickFrequency="1"
                         IsSnapToTickEnabled="True" Width="150" Orientation="Horizontal"
                         VerticalAlignment="Stretch" Value="{Binding SfxVolume}"
-                        IsEnabled="{Binding SongLoaded}" />
+                        IsEnabled="{Binding SongLoaded}">
+                    <ToolTip.Tip>SFX Volume</ToolTip.Tip>
+                </Slider>
                 <Panel Classes="Spacer" Width="5" />
                 <TextBlock FontSize="15" Foreground="{DynamicResource Accent}"
                            Text="{Binding #SfxVolumeSlider.Value, StringFormat=\{0:000\}%}" />
@@ -107,7 +111,9 @@
                 <Slider Name="PlaySpeedSlider" Minimum="1" Maximum="200" TickFrequency="1"
                         IsSnapToTickEnabled="True" Width="400" Orientation="Horizontal"
                         VerticalAlignment="Stretch" Value="{Binding PlaySpeed}"
-                        IsEnabled="{Binding EditorUiEnabled}" />
+                        IsEnabled="{Binding EditorUiEnabled}">
+                    <ToolTip.Tip>Playback Speed</ToolTip.Tip>
+                </Slider>
                 <Panel Classes="Spacer" Width="5" />
                 <TextBlock FontSize="15" Foreground="{DynamicResource Accent}"
                            Text="{Binding #PlaySpeedSlider.Value, StringFormat={}{0:n0}%}" />
