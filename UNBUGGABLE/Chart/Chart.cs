@@ -266,11 +266,18 @@ public static partial class Chart
             _hitSound = new CachedSound(
                 Path.Combine(Environment.CurrentDirectory, "Assets/hitSound.wav"));
         }
-        catch (FileNotFoundException)
+        catch (Exception e)
         {
-            _hitSound = null;
-            Console.WriteLine(
-                "Hit sound (Assets/hitSound.wav) not found. Hit sounds are disabled.");
+            if (e is FileNotFoundException or DirectoryNotFoundException)
+            {
+                _hitSound = null;
+                Console.WriteLine(
+                    "Hit sound (Assets/hitSound.wav) not found. Hit sounds are disabled.");
+            }
+            else
+            {
+                throw;
+            }
         }
         
         _stopwatch = new Stopwatch();
@@ -430,7 +437,7 @@ public static partial class Chart
                 {
                     if (_hitSound != null)
                     {
-                        // Console.WriteLine(offset);
+                        Console.WriteLine($"play hit sound, {note.Time}, {CurrentTime}");
                         SfxEngine.Play(_hitSound, offset);
                     }
                     break;
@@ -449,6 +456,15 @@ public static partial class Chart
         _lastStopwatchTime = _stopwatch.ElapsedMilliseconds;
         
     }
+
+    public static void PlayHitSound()
+    {
+        if (_hitSound != null)
+        {
+            SfxEngine.Play(_hitSound, 0);
+        }
+    }
+    
     /// <summary>
     /// Attempts to load a .wav or .mp3 file and create a new chart with empty metadata.
     /// </summary>
@@ -1411,8 +1427,9 @@ public static partial class Chart
         List<string> bookmarksPlus = [];
         foreach (var label in _labels)
         {
-            bookmarks.Add(label.Time.ToString(CultureInfo.InvariantCulture));
-            bookmarksPlus.Add($"{label.Time}`{label.Text}");
+            var time = Math.Floor(label.Time);
+            bookmarks.Add(time.ToString(CultureInfo.InvariantCulture));
+            bookmarksPlus.Add($"{time}`{label.Text}");
         }
         await writer.WriteLineAsync($"Bookmarks: {string.Join(",", bookmarks)}");
         await writer.WriteLineAsync($"BookmarksPlus: {string.Join(",", bookmarksPlus)}");

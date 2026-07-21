@@ -165,7 +165,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
         var tickTimer = new DispatcherTimer
         {
-            Interval = TimeSpan.FromSeconds(1 / 240.0)
+            Interval = TimeSpan.FromSeconds(1 / (double)Config.HitSoundTickRate)
         };
         tickTimer.Tick += (sender, args) => Chart.PerTickUpdate();
         tickTimer.Start();

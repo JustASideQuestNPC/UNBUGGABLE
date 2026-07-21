@@ -16,7 +16,8 @@
     "zoomIncrement": 0.25,
     "laneOrder": ["top", "center", "bottom", "camera"],
     "hitSoundOffset": 0,
-    "hardChartOffset": 60,
+    "hardChartOffset": -60,
+    "hitSoundTickRate": 120,
     "hitSounds": {
         "single": true,
         "spike": true,

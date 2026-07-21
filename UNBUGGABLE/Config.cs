@@ -159,7 +159,13 @@ public static class Config
     /// <summary>
     /// Offset applied to hit sounds. Positive values play hit sounds later.
     /// </summary>
-    public static int HitSoundOffset { get; private set; } = -30;
+    public static int HitSoundOffset { get; private set; } = 0;
+
+    /// <summary>
+    /// How many times per second to check whether a hit sound should play. Lower values can improve
+    /// performance but may cause hit sounds to desync.
+    /// </summary>
+    public static int HitSoundTickRate { get; private set; } = 120;
     
     /// <summary>
     /// All possible beat snap values. Beat snap can be changed with the left and right arrow keys.
@@ -443,6 +449,17 @@ public static class Config
                         var setting = settingsJson["hitSoundOffset"]!.GetValue<int>();
                         HitSoundOffset = setting;
                         Console.WriteLine($"hit sound offset: {setting}");
+                    }
+                    
+                    if (settingsJson["hitSoundTickRate"]?.AsValue().GetValueKind()
+                        is JsonValueKind.Number)
+                    {
+                        var setting = settingsJson["hitSoundTickRate"]!.GetValue<int>();
+                        if (setting > 1)
+                        {
+                            HitSoundTickRate = setting;
+                            Console.WriteLine($"hit sound offset: {setting}");
+                        }
                     }
                     
                     if (settingsJson["minZoom"]?.AsValue().GetValueKind()

@@ -1,4 +1,5 @@
-﻿using Avalonia;
+﻿using System;
+using Avalonia;
 using Avalonia.Media;
 using UNBUGGABLE.Resources;
 using UNBUGGABLE.Views;
@@ -72,7 +73,8 @@ public class MarkerDummyNote : NoteBase
     {
         if (Config.SaveMarkersInLane2 || isStandardFile)
         {
-            return $"128,192,{Time},{(isFirstNote ? 1 : 5)},{GetFlagString()},0:0:0:0:";
+            return $"128,192,{Math.Floor(Time + Chart.Metadata.ChartOffset)}," +
+                   $"{(isFirstNote ? 1 : 5)},{GetFlagString()},0:0:0:0:";
         }
 
         return "";

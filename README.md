@@ -64,8 +64,8 @@ There are also a few UNBUGGABLE-specific keybinds:
 # Settings
 All settings for UNBUGGABLE can be changed by editing `config.json`. After editing the config file,
 either restart the editor or hit the "Reload Config" button in the top left corner to reload most
-settings. **Note:** Currently, the color theme will not change until you completely restart the
-editor.
+settings. **Note:** Currently, the color theme and hit sound tick rate will not change until you
+completely restart the editor.
 
 ## colorTheme
 Which color theme to use for the editor. This must be the name of one of the themes in `themes.json`
@@ -138,3 +138,7 @@ Constant offset to make hit sounds play slightly earlier or later than the actua
 Constant offset applied to all charts, to match up with the one hard-coded into the official editor.
 This value is only in the config file because I don't like hard-coding things. ***Do not change***
 ***this number unless you know what you're doing.***
+
+## hitSoundTickRate
+While the song is playing, how many times to check for whether any notes should play a hit sound.
+Lower values can improve performance, but may cause hit sounds to desync.

@@ -365,6 +365,8 @@ public static class ChartBuilder
             MouseDragStart = new Point(MousePosition.X, MousePosition.Y);
             MouseDragStartTime = NoteViewer.ScreenCoordsToTime(MouseDragStart.Value.Y);
         }
+        
+        // Chart.PlayHitSound();
     }
 
     public static void OnMouseRelease()
