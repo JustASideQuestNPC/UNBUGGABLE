@@ -502,8 +502,13 @@ public static partial class Chart
     public static async Task<bool> TryLoadChartFile(string path)
     {
         SongLoaded = false;
-        
         Console.WriteLine($"Loading chart file: {path}");
+        if (!File.Exists(path))
+        {
+            Console.WriteLine("File not found.");
+            return false;
+        }
+        
         var dirName = Path.GetFullPath(path);
         var folderPath = dirName[..dirName.LastIndexOf('\\')];
         var chartData = (await File.ReadAllTextAsync(path)).Split("\n");
@@ -951,10 +956,59 @@ public static partial class Chart
         RebuildSnapLineSets();
     }
 
-    private static void PlayHitSound()
+    /// <summary>
+    /// Recalculates where every snap line is for every bpm setting. This must be called any time
+    /// that a BPM region changes.
+    /// </summary>
+    public static void RebuildSnapLineSets()
     {
-        _hitSoundMediaPlayer.Play();
-        _hitSoundMediaPlayer.Position = 0;
+        var sortedSnapValues = Config.BeatSnaps.OrderByDescending(x => x).ToList();
+        foreach (var snapValue in sortedSnapValues)
+        {
+            List<double> snapLineSet = [0];
+            double time = 0;
+            var bpmRegion = _bpmRegions[0];
+            while (time <= Length)
+            {
+                var nextTime = time + (bpmRegion.MsPerBeat / snapValue);
+                // handle bpm changes between snap lines
+                if (nextTime >= bpmRegion.EndTime)
+                {
+                    if (bpmRegion.Next == null)
+                    {
+                        break;
+                    }
+                        
+                    var snapFractionBeforeRegion =
+                        (bpmRegion.EndTime - time) / (bpmRegion.MsPerBeat / snapValue);
+                    var snapFractionAfterRegion = 1 - snapFractionBeforeRegion;
+                    nextTime = (bpmRegion.EndTime +
+                                     bpmRegion.Next.MsPerBeat / snapValue *
+                                     snapFractionAfterRegion);
+                    bpmRegion = bpmRegion.Next;
+                }
+                time = nextTime;
+                snapLineSet.Add(time);
+            }
+            
+            Console.WriteLine(
+                $"Snap line set for snap value {snapValue} has {snapLineSet.Count} lines");
+            SnapLineSets[snapValue] = snapLineSet;
+        }
+        
+        _currentSnapLineSet = SnapLineSets[BeatSnap];
+        SetTimeToNearestSnap();
+    }
+
+    private static void PlaySong()
+    {
+        Playing = true;
+        if (CurrentTime + AdjustedOffset >= 0)
+        {
+            _mediaPlayer.Play();
+            _mediaPlayer.Time = (long)(CurrentTime + AdjustedOffset);
+            //Console.WriteLine($"PlaySong: {CurrentTime}, {_mediaPlayer.Time}");
+        }
     }
 
     /// <summary>
@@ -1017,61 +1071,6 @@ public static partial class Chart
                 _currentSnapLineSetIndex = i;
                 return;
             }
-        }
-    }
-
-    /// <summary>
-    /// Recalculates where every snap line is for every bpm setting. This must be called any time
-    /// that a BPM region changes.
-    /// </summary>
-    private static void RebuildSnapLineSets()
-    {
-        var sortedSnapValues = Config.BeatSnaps.OrderByDescending(x => x).ToList();
-        foreach (var snapValue in sortedSnapValues)
-        {
-            List<double> snapLineSet = [0];
-            double time = 0;
-            var bpmRegion = _bpmRegions[0];
-            while (time <= Length)
-            {
-                var nextTime = time + (bpmRegion.MsPerBeat / snapValue);
-                // handle bpm changes between snap lines
-                if (nextTime >= bpmRegion.EndTime)
-                {
-                    if (bpmRegion.Next == null)
-                    {
-                        break;
-                    }
-                        
-                    var snapFractionBeforeRegion =
-                        (bpmRegion.EndTime - time) / (bpmRegion.MsPerBeat / snapValue);
-                    var snapFractionAfterRegion = 1 - snapFractionBeforeRegion;
-                    nextTime = (bpmRegion.EndTime +
-                                     bpmRegion.Next.MsPerBeat / snapValue *
-                                     snapFractionAfterRegion);
-                    bpmRegion = bpmRegion.Next;
-                }
-                time = nextTime;
-                snapLineSet.Add(time);
-            }
-            
-            Console.WriteLine(
-                $"Snap line set for snap value {snapValue} has {snapLineSet.Count} lines");
-            SnapLineSets[snapValue] = snapLineSet;
-        }
-        
-        _currentSnapLineSet = SnapLineSets[BeatSnap];
-        SetTimeToNearestSnap();
-    }
-
-    private static void PlaySong()
-    {
-        Playing = true;
-        if (CurrentTime + AdjustedOffset >= 0)
-        {
-            _mediaPlayer.Play();
-            _mediaPlayer.Time = (long)(CurrentTime + AdjustedOffset);
-            //Console.WriteLine($"PlaySong: {CurrentTime}, {_mediaPlayer.Time}");
         }
     }
     

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Input;
+using UNBEATABLEChartEditor;
 using UNBEATABLEChartEditor.Dialogs;
 using UNBUGGABLE.Commands;
 using UNBUGGABLE.Resources;
@@ -420,7 +421,21 @@ public static class ChartBuilder
 
         return result;
     }
-    
+
+    public static async void TryAutoLoadChartFile()
+    {
+        // command line arguments are used for file association
+        var path = Environment.CommandLine[(Environment.CommandLine.IndexOf(' ') + 1)..];
+        if (path.Length > 0)
+        {
+            await TryLoadChartFile(path);
+        }
+        else if (UserData.LastOpenedChartFile != "")
+        {
+            await TryLoadChartFile(UserData.LastOpenedChartFile);
+        }
+    }
+
     public static async Task SaveToBeatPath(string path)
     {
         await Chart.SaveToBeatPath(path);

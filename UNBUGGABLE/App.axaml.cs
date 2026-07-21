@@ -35,7 +35,7 @@ public partial class App : Application
     /// <summary>
     /// Applies a color theme.
     /// </summary>
-    private void ApplyColorTheme(Dictionary<string, Color> colorTheme)
+    public void ApplyColorTheme(Dictionary<string, Color> colorTheme)
     {
         foreach (var (brushName, brushColor) in colorTheme)
         {
@@ -77,10 +77,7 @@ public partial class App : Application
 
         base.OnFrameworkInitializationCompleted();
 
-        if (UserData.LastOpenedChartFile != "")
-        {
-            ChartBuilder.TryLoadChartFile(UserData.LastOpenedChartFile);
-        }
+        ChartBuilder.TryAutoLoadChartFile();
     }
 
     private void DisableAvaloniaDataAnnotationValidation()

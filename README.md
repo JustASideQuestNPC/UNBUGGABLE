@@ -21,9 +21,9 @@ and then come back here to see the UNBUGGABLE-specific things.
 
 ### IMPORTANT!!!
 Currently, UNBUGGABLE has 2 semi-major limitations:
-1. Variable bitrate .mp3 files do not work correctly and will very easily desync from everything
-   else. If you're running into troubles with desync, use a .wav or make sure you convert to a
-   constant bitrate.
+1. Variable bitrate .mp3 files do not work correctly and will desync from everything else. If you're
+   running into troubles with desync, use a .wav or make sure you convert to a constant bitrate.
+   **Note:** If you rip an mp3 off of YouTube, it probably has a variable bitrate.
 2. The in-game preview in UNBUGGABLE only shows where the camera is *supposed* to be. Unlike the
    official editor, it does not account for how long it takes the camera to actually move.
 
@@ -62,8 +62,10 @@ There are also a few UNBUGGABLE-specific keybinds:
 - Drag while holding right click to delete notes instead of selecting them.
 
 # Settings
-All settings for UNBUGGABLE can be changed by editing `config.json`. Currently, changes are not
-applied until you restart the editor.
+All settings for UNBUGGABLE can be changed by editing `config.json`. After editing the config file,
+either restart the editor or hit the "Reload Config" button in the top left corner to reload most
+settings. **Note:** Currently, the color theme will not change until you completely restart the
+editor.
 
 ## colorTheme
 Which color theme to use for the editor. This must be the name of one of the themes in `themes.json`

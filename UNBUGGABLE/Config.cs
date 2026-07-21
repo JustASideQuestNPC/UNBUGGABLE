@@ -314,6 +314,12 @@ public static class Config
     /// </summary>
     public static void LoadFiles(IResourceDictionary resources)
     {
+        LoadThemes(resources);
+        LoadConfig();
+    }
+
+    public static void LoadThemes(IResourceDictionary resources)
+    {
         var themeFilePath = Path.Combine(Environment.CurrentDirectory, ColorThemeListFileName);
         if (File.Exists(themeFilePath))
         {
@@ -362,8 +368,11 @@ public static class Config
         {
             Console.WriteLine("Color theme file not found.");
         }
-        
-        var configPath = Path.Combine(Environment.CurrentDirectory, ConfigFileName);
+    }
+
+    public static void LoadConfig()
+    {
+         var configPath = Path.Combine(Environment.CurrentDirectory, ConfigFileName);
         if (File.Exists(configPath))
         {
             try

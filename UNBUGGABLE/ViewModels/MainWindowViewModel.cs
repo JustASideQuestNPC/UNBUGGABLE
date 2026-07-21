@@ -421,6 +421,14 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private void ReloadConfig()
+    {
+        Config.LoadConfig();
+        NoteViewer.UpdateNoteColumnPositions();
+        Chart.RebuildSnapLineSets();
+    }
+
+    [RelayCommand]
     private static void Undo()
     {
         if (!Chart.SongLoaded)

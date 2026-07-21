@@ -124,7 +124,12 @@ public class NoteViewer : Control
         _cameraLaneText = new FormattedText("5", CultureInfo.CurrentCulture,
                                             FlowDirection.LeftToRight, _numberTypeface, 40,
                                             Brushes.White);
+        
+        UpdateNoteColumnPositions();
+    }
 
+    public static void UpdateNoteColumnPositions()
+    {
         List<int> columnXPositions = [208, 306, 404, 502];
         for (var i = 0; i < Config.LaneOrder.Count; ++i)
         {
@@ -146,7 +151,7 @@ public class NoteViewer : Control
             }
         }
     }
-    
+
     /// <summary>
     /// Given a time in milliseconds, returns the y coordinate of that time (based on the current
     /// zoom setting and scroll position).

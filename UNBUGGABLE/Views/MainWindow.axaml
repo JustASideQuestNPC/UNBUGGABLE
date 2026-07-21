@@ -45,10 +45,10 @@
             <StackPanel DockPanel.Dock="Top" Name="TopButtonBar" Orientation="Horizontal"
                         Margin="0 0" Background="{DynamicResource WindowBackgroundPrimary}"
                         Height="50">
-                <Button Classes="SquareIconButton" ToolTip.Tip="Chart Metadata"
-                        Command="{Binding EditChartMetadataCommand}"
-                        IsEnabled="{Binding SongLoaded}" Focusable="False">
-                    <materialIcons:MaterialIcon Kind="TableEdit" />
+                
+                <Button Classes="SquareIconButton" ToolTip.Tip="Reload Config File"
+                        Command="{Binding ReloadConfigCommand}" Focusable="False">
+                    <materialIcons:MaterialIcon Kind="Reload" />
                 </Button>
                     
                 <Panel Classes="Spacer" />
@@ -76,6 +76,14 @@
                     </Button.ContextMenu>
                 </Button>
                 
+                <Panel Classes="Spacer" />
+                
+                <Button Classes="SquareIconButton" ToolTip.Tip="Chart Metadata"
+                        Command="{Binding EditChartMetadataCommand}"
+                        IsEnabled="{Binding SongLoaded}" Focusable="False">
+                    <materialIcons:MaterialIcon Kind="TableEdit" />
+                </Button>
+                    
                 <Panel Classes="Spacer" />
                 
                 <materialIcons:MaterialIcon IconSize="22" Kind="Music" />
