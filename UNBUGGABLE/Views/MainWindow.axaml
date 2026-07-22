@@ -138,12 +138,12 @@
                         <StackPanel Grid.Column="0" Grid.RowSpan="2"
                                     Orientation="Vertical" Spacing="5">
                             <StackPanel Orientation="Vertical" Spacing="0">
-                                <TextBlock Classes="SmallText">song time</TextBlock>
+                                <TextBlock Classes="SmallText">time (with offset)</TextBlock>
                                 <TextBlock Classes="BigText" Text="{Binding SongTimeText}" />
                             </StackPanel>
                             
                             <StackPanel Orientation="Vertical" Spacing="0">
-                                <TextBlock Classes="SmallText">chart time</TextBlock>
+                                <TextBlock Classes="SmallText">time (without offset)</TextBlock>
                                 <TextBlock Classes="BigText" Text="{Binding ChartTimeText}" />
                             </StackPanel>
                             
@@ -185,6 +185,11 @@
                         
                         <StackPanel Grid.Column="1" Grid.RowSpan="2"
                                     Orientation="Vertical" Spacing="5">
+                            <StackPanel Orientation="Vertical" Spacing="0">
+                                <TextBlock Classes="SmallText">length</TextBlock>
+                                <TextBlock Classes="BigText" Text="{Binding ChartLengthText}" />
+                            </StackPanel>
+                            
                             <StackPanel Orientation="Vertical" Spacing="0">
                                 <TextBlock Classes="SmallText">placing</TextBlock>
                                 <TextBlock Classes="BigText" Text="{Binding CurrentNoteTypeText}" />

@@ -55,20 +55,49 @@ public class DeleteNotesCommand(List<NoteBase> notes) : ICommand
     }
 }
 
-public class UpdateNoteCommand(NoteBase oldNote, NoteBase newNote) : ICommand
+public class UpdateNotesCommand(List<NoteBase> oldNotes, List<NoteBase> newNotes,
+    bool transferSelected = false) : ICommand
 {
     public void Execute()
     {
-        ChartBuilder.ClearSelection();
-        Chart.RemoveNote(oldNote);
-        Chart.AddNote(newNote);
+        if (transferSelected)
+        {
+            ChartBuilder.SelectedNotes = [..newNotes];
+        }
+        else
+        {
+            ChartBuilder.ClearSelection();
+        }
+        
+        foreach (var note in oldNotes)
+        {
+            Chart.RemoveNote(note);
+        }
+        foreach (var note in newNotes)
+        {
+            Chart.AddNote(note);
+        }
     }
     
     public void Undo()
     {
-        ChartBuilder.ClearSelection();
-        Chart.RemoveNote(newNote);
-        Chart.AddNote(oldNote);
+        if (transferSelected)
+        {
+            ChartBuilder.SelectedNotes = [..oldNotes];
+        }
+        else
+        {
+            ChartBuilder.ClearSelection();
+        }
+        
+        foreach (var note in newNotes)
+        {
+            Chart.RemoveNote(note);
+        }
+        foreach (var note in oldNotes)
+        {
+            Chart.AddNote(note);
+        }
     }
 }
 

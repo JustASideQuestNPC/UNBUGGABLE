@@ -373,6 +373,13 @@ public static partial class Chart
         }
     }
 
+    public static double GetPreviousSnapTime() => _currentSnapLineSetIndex > 0 ?
+        _currentSnapLineSet[_currentSnapLineSetIndex - 1] : _currentSnapLineSet[0];
+    
+    public static double GetNextSnapTime() =>
+        _currentSnapLineSetIndex < _currentSnapLineSet.Count - 1 ?
+        _currentSnapLineSet[_currentSnapLineSetIndex + 1] : _currentSnapLineSet[^1];
+
     public static void MoveToNextLabel()
     {
         if (CurrentTime >= Length)
@@ -620,7 +627,7 @@ public static partial class Chart
                 }
 
                 Trace.WriteLine(
-                    $"Restoring last editor state: {time}ms, snap {beatSnap}, {zoom}x zoom");
+                    $"Restoring last editor state: {time} ms, snap {beatSnap}, {zoom}x zoom");
                 for (var i = 0; i < Config.BeatSnaps.Count; ++i)
                 {
                     if (beatSnap == Config.BeatSnaps[i])

@@ -61,6 +61,7 @@ public class PlacementPriorityListEntry : ViewModelBase
 
 public partial class MainWindowViewModel : ViewModelBase
 {
+    [ObservableProperty] private string? _chartLengthText = "";
     [ObservableProperty] private string? _songTimeText = "";
     [ObservableProperty] private string? _chartTimeText = "";
     [ObservableProperty] private string? _breakpointTimeText = "n/a";
@@ -132,15 +133,11 @@ public partial class MainWindowViewModel : ViewModelBase
             {
                 var chartTimeText = TimeSpan.FromMilliseconds(Chart.CurrentTime)
                                             .ToString(@"mm\:ss\.fff");
-                var songTimeWithOffset =
-                    Chart.CurrentTime < 0 ? $"-{chartTimeText}" : chartTimeText;
-                var chartLengthText = TimeSpan.FromMilliseconds(Chart.Length)
-                                              .ToString(@"mm\:ss\.fff");
-            
-                SongTimeText = $"{songTimeWithOffset} / {chartLengthText}";
+                SongTimeText = Chart.CurrentTime < 0 ? $"-{chartTimeText}" : chartTimeText;
                 ChartTimeText = TimeSpan.FromMilliseconds(
                                             Chart.CurrentTime + Chart.Metadata.ChartOffset)
                                         .ToString(@"mm\:ss\.fff");
+                ChartLengthText = TimeSpan.FromMilliseconds(Chart.Length).ToString(@"mm\:ss\.fff");
                 Cop1State = GamePreview.Cop1State switch
                 {
                     CopState.LEFT => "Left",

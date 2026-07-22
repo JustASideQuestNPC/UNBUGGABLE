@@ -50,7 +50,8 @@ UNBUGGABLE supports every keybind found in the official editor's "shortcuts chea
 these three:
 - Right-clicking a BPM change to delete it (notes can still be deleted with right click).
 - `Ctrl+A+2/3/4/5` to select every note in a lane.
-- Arrow keys to move a selection.
+- `Shift+Left/Right Arrows` to move a selection left and right (selections can still be moved up
+  and down with the arrow keys).
 Additionally, `PgUp` and `PgDn` now move to the previous and next label.
 
 There are also a few UNBUGGABLE-specific keybinds:

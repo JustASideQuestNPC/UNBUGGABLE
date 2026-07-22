@@ -93,7 +93,7 @@ public static class ChartBuilder
                     }
                     else
                     {
-                        CopId = 2;
+                        CopId = (CopId == 2 ? 0 : 2);
                         App.MainWindowViewModel.CurrentNoteTypeText = NoteTypeNames[CopId];
                     }
                 }
@@ -109,7 +109,7 @@ public static class ChartBuilder
                     }
                     else
                     {
-                        CopId = 3;
+                        CopId = (CopId == 3 ? 0 : 3);
                         App.MainWindowViewModel.CurrentNoteTypeText = NoteTypeNames[CopId];
                     }
                 }
@@ -129,7 +129,7 @@ public static class ChartBuilder
                     }
                     else
                     {
-                        CopId = 4;
+                        CopId = (CopId == 4 ? 0 : 4);
                         App.MainWindowViewModel.CurrentNoteTypeText = NoteTypeNames[CopId];
                     }
                 }
@@ -177,7 +177,7 @@ public static class ChartBuilder
                     }
                     else
                     {
-                        CopId = 1;
+                        CopId = (CopId == 1 ? 0 : 1);
                         App.MainWindowViewModel.CurrentNoteTypeText = NoteTypeNames[CopId];
                     }
                 }
@@ -234,7 +234,7 @@ public static class ChartBuilder
             case Key.Up:
                 if (SelectedNotes.Count > 0 && ShiftPressed)
                 {
-                    Trace.WriteLine("move selected notes up");
+                    DoNoteMoveOperation(Chart.GetPreviousSnapTime() - Chart.CurrentTime);
                 }
                 else if (!Chart.Playing)
                 {
@@ -244,7 +244,7 @@ public static class ChartBuilder
             case Key.Down:
                 if (SelectedNotes.Count > 0 && ShiftPressed)
                 {
-                    Trace.WriteLine("move selected notes down");
+                    DoNoteMoveOperation(Chart.GetNextSnapTime() - Chart.CurrentTime);
                 }
                 else if (!Chart.Playing)
                 {
@@ -295,9 +295,9 @@ public static class ChartBuilder
             case Key.Space:
                 Chart.PlayOrPauseSong();
                 break;
-            default:
-                Trace.WriteLine($"Unhandled key: {k}");
-                break;
+            // default:
+            //     Trace.WriteLine($"Unhandled key: {k}");
+            //     break;
         }
     }
 
@@ -764,7 +764,7 @@ public static class ChartBuilder
 
         if (shouldReplace)
         {
-            CommandInvoker.Execute(new UpdateNoteCommand(oldNote, newNote));
+            CommandInvoker.Execute(new UpdateNotesCommand([oldNote], [newNote]));
         }
         else
         {
@@ -832,6 +832,22 @@ public static class ChartBuilder
         }
         
         CommandInvoker.Execute(new SetFlagsCommand(flag, newValue, notes));
+    }
+
+    private static void DoNoteMoveOperation(double delta)
+    {
+        if (delta == 0)
+        {
+            return;
+        }
+
+        List<NoteBase> newNotes = [];
+        foreach (var note in SelectedNotes)
+        {
+            newNotes.Add(note.Clone(note.Time + delta));
+        }
+        
+        CommandInvoker.Execute(new UpdateNotesCommand([..SelectedNotes], newNotes, true));
     }
     
     private static void SetBreakpoint()
