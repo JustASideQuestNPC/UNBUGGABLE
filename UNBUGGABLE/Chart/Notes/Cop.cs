@@ -118,7 +118,7 @@ public class CopNote : NoteBase
             dc.DrawGeometry(_fillBrush, new Pen(_outlineBrush, 4), shape);
             if (selected)
             {
-                dc.DrawGeometry(_fillBrush, new Pen(_outlineBrush, 4), shape);
+                dc.DrawGeometry(_fillBrush, new Pen(_selectedBrush, 4), shape);
             }
         }
         else
