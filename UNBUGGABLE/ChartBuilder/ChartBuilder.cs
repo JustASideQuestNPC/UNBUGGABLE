@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -44,7 +45,22 @@ public static class ChartBuilder
     
     private static readonly List<string> NoteTypeNames = [
         "notes", "cop 1", "cop 2", "cop 3", "cop 4"];
-    
+
+    public static void ResetKeyStates()
+    {
+        MousePosition = new Point(-1000, -1000);
+        MouseDragStart = null;
+        MouseDragStartTime = -1000;
+        RightMouseDrag = false;
+        TopLaneStartTime = -1000;
+        BottomLaneStartTime = -1000;
+        CenterLaneStartTime = -1000;
+        _leftCtrlPressed = false;
+        _rightCtrlPressed = false;
+        _leftShiftPressed = false;
+        _rightShiftPressed = false;
+    }
+
     public static async Task OnKeyDown(Key k)
     {
         if (!Chart.SongLoaded || App.DialogIsOpen)
@@ -73,7 +89,7 @@ public static class ChartBuilder
                 {
                     if (SelectedNotes.Count > 0)
                     {
-                        CommandInvoker.Execute(new SetNotesCopIdCommand(SelectedNotes, 2));
+                        CommandInvoker.Execute(new SetNotesCopIdCommand([..SelectedNotes], 2));
                     }
                     else
                     {
@@ -89,7 +105,7 @@ public static class ChartBuilder
                 {
                     if (SelectedNotes.Count > 0)
                     {
-                        CommandInvoker.Execute(new SetNotesCopIdCommand(SelectedNotes, 3));
+                        CommandInvoker.Execute(new SetNotesCopIdCommand([..SelectedNotes], 3));
                     }
                     else
                     {
@@ -99,7 +115,7 @@ public static class ChartBuilder
                 }
                 else if (TopLaneStartTime.SoftEquals(-1000))
                 {
-                    Console.WriteLine($"start top lane placement: {Chart.CurrentTime}");
+                    Trace.WriteLine($"start top lane placement: {Chart.CurrentTime}");
                     TopLaneStartTime = Chart.CurrentTime;
                 }
 
@@ -109,7 +125,7 @@ public static class ChartBuilder
                 {
                     if (SelectedNotes.Count > 0)
                     {
-                        CommandInvoker.Execute(new SetNotesCopIdCommand(SelectedNotes, 4));
+                        CommandInvoker.Execute(new SetNotesCopIdCommand([..SelectedNotes], 4));
                     }
                     else
                     {
@@ -119,7 +135,7 @@ public static class ChartBuilder
                 }
                 else if (BottomLaneStartTime.SoftEquals(-1000))
                 {
-                    Console.WriteLine($"start bottom lane placement: {Chart.CurrentTime}");
+                    Trace.WriteLine($"start bottom lane placement: {Chart.CurrentTime}");
                     BottomLaneStartTime = Chart.CurrentTime;
                 }
 
@@ -128,7 +144,7 @@ public static class ChartBuilder
             case Key.D6:
                 if (CenterLaneStartTime.SoftEquals(-1000))
                 {
-                    Console.WriteLine($"start center lane placement: {Chart.CurrentTime}");
+                    Trace.WriteLine($"start center lane placement: {Chart.CurrentTime}");
                     CenterLaneStartTime = Chart.CurrentTime;
                 }
 
@@ -142,7 +158,7 @@ public static class ChartBuilder
                 {
                     if (SelectedNotes.Count > 0)
                     {
-                        CommandInvoker.Execute(new SetNotesCopIdCommand(SelectedNotes, 0));
+                        CommandInvoker.Execute(new SetNotesCopIdCommand([..SelectedNotes], 0));
                     }
                     else
                     {
@@ -157,7 +173,7 @@ public static class ChartBuilder
                 {
                     if (SelectedNotes.Count > 0)
                     {
-                        CommandInvoker.Execute(new SetNotesCopIdCommand(SelectedNotes, 1));
+                        CommandInvoker.Execute(new SetNotesCopIdCommand([..SelectedNotes], 1));
                     }
                     else
                     {
@@ -173,20 +189,27 @@ public static class ChartBuilder
             case Key.M:
                 if (CtrlPressed && SelectedNotes.Count > 0)
                 {
-                    CommandInvoker.Execute(new MirrorNotesCommand(SelectedNotes));
+                    CommandInvoker.Execute(new MirrorNotesCommand([..SelectedNotes]));
                 }
 
                 break;
+            case Key.Back:
             case Key.Delete:
                 if (SelectedNotes.Count > 0)
                 {
-                    CommandInvoker.Execute(new DeleteNotesCommand(SelectedNotes));
+                    CommandInvoker.Execute(new DeleteNotesCommand([..SelectedNotes]));
                     SelectedNotes.Clear();
                 }
-
                 break;
             case Key.Escape:
-                ClearSelection();
+                if (SelectedNotes.Count > 0)
+                {
+                    ClearSelection();
+                }
+                else
+                {
+                    App.MainWindowViewModel.EditChartMetadataCommand.Execute(null);
+                }
                 break;
             case Key.L:
                 await DoLabelOperation();
@@ -208,18 +231,26 @@ public static class ChartBuilder
             case Key.F9:
                 await DoBpmChangeOperation();
                 break;
-            // case Key.Up:
-            //     if (SelectedNotes.Count > 0 && ShiftPressed)
-            //     {
-            //         Console.WriteLine("move selected notes up");
-            //     }
-            //     break;
-            // case Key.Down:
-            //     if (SelectedNotes.Count > 0 && ShiftPressed)
-            //     {
-            //         Console.WriteLine("move selected notes down");
-            //     }
-            //     break;
+            case Key.Up:
+                if (SelectedNotes.Count > 0 && ShiftPressed)
+                {
+                    Trace.WriteLine("move selected notes up");
+                }
+                else if (!Chart.Playing)
+                {
+                    Chart.MoveToPreviousSnap();
+                }
+                break;
+            case Key.Down:
+                if (SelectedNotes.Count > 0 && ShiftPressed)
+                {
+                    Trace.WriteLine("move selected notes down");
+                }
+                else if (!Chart.Playing)
+                {
+                    Chart.MoveToNextSnap();
+                }
+                break;
             case Key.Left:
                 Chart.DecreaseBeatSnap();
                 break;
@@ -264,6 +295,9 @@ public static class ChartBuilder
             case Key.Space:
                 Chart.PlayOrPauseSong();
                 break;
+            default:
+                Trace.WriteLine($"Unhandled key: {k}");
+                break;
         }
     }
 
@@ -291,7 +325,7 @@ public static class ChartBuilder
             case Key.D3:
                 if (TopLaneStartTime.SoftNotEquals(-1000))
                 {
-                    Console.WriteLine("end top lane placement");
+                    Trace.WriteLine("end top lane placement");
                     var start = Math.Min(TopLaneStartTime, Chart.CurrentTime);
                     var end = Math.Max(TopLaneStartTime, Chart.CurrentTime);
                     CheckForNoteOperation(NoteLane.TOP, start, end);
@@ -301,7 +335,7 @@ public static class ChartBuilder
             case Key.D4:
                 if (BottomLaneStartTime.SoftNotEquals(-1000))
                 {
-                    Console.WriteLine("end bottom lane placement");
+                    Trace.WriteLine("end bottom lane placement");
                     var start = Math.Min(BottomLaneStartTime, Chart.CurrentTime);
                     var end = Math.Max(BottomLaneStartTime, Chart.CurrentTime);
                     CheckForNoteOperation(NoteLane.BOTTOM, start, end);
@@ -311,7 +345,7 @@ public static class ChartBuilder
             case Key.D6:
                 if (CenterLaneStartTime.SoftNotEquals(-1000))
                 {
-                    Console.WriteLine("end center lane placement");
+                    Trace.WriteLine("end center lane placement");
                     var start = Math.Min(CenterLaneStartTime, Chart.CurrentTime);
                     var end = Math.Max(CenterLaneStartTime, Chart.CurrentTime);
                     CheckForNoteOperation(NoteLane.CENTER, start, end);
@@ -394,7 +428,7 @@ public static class ChartBuilder
         else
         {
             SelectedNotes = notes;
-            Console.WriteLine($"Selected {SelectedNotes.Count} notes");
+            Trace.WriteLine($"Selected {SelectedNotes.Count} notes");
         }
         
         RightMouseDrag = false;
@@ -427,7 +461,7 @@ public static class ChartBuilder
     public static async void TryAutoLoadChartFile()
     {
         // command line arguments are used for file association
-        Console.WriteLine(Environment.CommandLine);
+        Trace.WriteLine(Environment.CommandLine);
         var i = Environment.CommandLine.IndexOf(' ');
         if (i != -1)
         {
@@ -513,8 +547,31 @@ public static class ChartBuilder
             BreakpointTime = time;
             App.MainWindowViewModel.BreakpointTimeText = TimeSpan.FromMilliseconds(BreakpointTime)
                                                                  .ToString(@"mm\:ss\.fff");
-            Console.WriteLine($"Found existing breakpoint at {BreakpointTime}");
+            Trace.WriteLine($"Found existing breakpoint at {BreakpointTime}");
         }
+        else
+        {
+            DeleteBreakpoint(false);
+        }
+    }
+    
+    public static void DeleteBreakpoint(bool showEventIndicator = true)
+    {
+        BreakpointTime = -1;
+        if (showEventIndicator)
+        {
+            App.MainWindowViewModel.ShowEventIndicator("Breakpoint deleted.");
+        }
+        App.MainWindowViewModel.BreakpointTimeText = "n/a";
+        
+        var lines = File.ReadAllLines(Config.PracticeModConfigPath).ToList();
+        var index = lines.FindIndex(
+            l => l.StartsWith($"{Chart.Metadata.SongName.ToLowerInvariant()}:"));
+        if (index != -1)
+        {
+            lines.RemoveAt(index);
+        }
+        File.WriteAllLines(Config.PracticeModConfigPath, lines);
     }
 
     private static async Task DoLabelOperation()
@@ -559,7 +616,7 @@ public static class ChartBuilder
             // the first bpm region can't be removed for obvious reasons
             if (existingRegion != null && existingRegion != Chart.BpmRegions[0])
             {
-                Console.WriteLine("Remove bpm region");
+                Trace.WriteLine("Remove bpm region");
                 CommandInvoker.Execute(new RemoveBpmRegionCommand(existingRegion));
             }
         }
@@ -573,19 +630,19 @@ public static class ChartBuilder
                 {
                     if (existingRegion.Previous != null)
                     {
-                        Console.WriteLine($"{bpm.Value}, {existingRegion.Previous.Bpm}");
+                        Trace.WriteLine($"{bpm.Value}, {existingRegion.Previous.Bpm}");
                     }
                     
                     // setting a region's bpm to the same as the previous region merges them
                     if (existingRegion.Previous != null &&
                         bpm.Value.SoftEquals(existingRegion.Previous.Bpm))
                     {
-                        Console.WriteLine("Merge bpm regions");
+                        Trace.WriteLine("Merge bpm regions");
                         CommandInvoker.Execute(new RemoveBpmRegionCommand(existingRegion));
                     }
                     else
                     {
-                        Console.WriteLine("Edit bpm region");
+                        Trace.WriteLine("Edit bpm region");
                         CommandInvoker.Execute(new EditBpmRegionCommand(existingRegion, bpm.Value));
                     }
                 }
@@ -595,7 +652,7 @@ public static class ChartBuilder
                 var bpm = await new NumberEntryDialog("add bpm change").ShowAsync();
                 if (bpm.HasValue)
                 {
-                    Console.WriteLine("Add bpm region");
+                    Trace.WriteLine("Add bpm region");
                     CommandInvoker.Execute(new AddBpmRegionCommand(time, bpm.Value));
                 }
             }
@@ -605,13 +662,13 @@ public static class ChartBuilder
     private static void CheckForNoteOperation(NoteLane lane, double start, double end)
     {
         var oldNote = Chart.GetNote(start, lane);
-        Console.WriteLine(oldNote);
+        Trace.WriteLine(oldNote);
         // hold notes can also extend from the start of the note
         if (oldNote == null && end.SoftNotEquals(start))
         {
             oldNote = Chart.GetNote(end, lane) ?? Chart.GetNoteFromEnd(start, lane);
         }
-        Console.WriteLine(oldNote);
+        Trace.WriteLine(oldNote);
         
         if (oldNote != null)
         {
@@ -719,7 +776,7 @@ public static class ChartBuilder
     {
         if (Chart.GetNote(Chart.CurrentTime, NoteLane.MARKER) is { } marker)
         {
-            Console.WriteLine("Delete marker");
+            Trace.WriteLine("Delete marker");
             CommandInvoker.Execute(new DeleteNotesCommand([marker]));
         }
         else
@@ -822,22 +879,6 @@ public static class ChartBuilder
         {
             lines[index] =
                 $"{Chart.Metadata.SongName.ToLowerInvariant()}:{Math.Floor(BreakpointTime)}";
-        }
-        File.WriteAllLines(Config.PracticeModConfigPath, lines);
-    }
-    
-    private static void DeleteBreakpoint()
-    {
-        BreakpointTime = -1;
-        App.MainWindowViewModel.ShowEventIndicator("Breakpoint deleted.");
-        App.MainWindowViewModel.BreakpointTimeText = "n/a";
-        
-        var lines = File.ReadAllLines(Config.PracticeModConfigPath).ToList();
-        var index = lines.FindIndex(
-            l => l.StartsWith($"{Chart.Metadata.SongName.ToLowerInvariant()}:"));
-        if (index != -1)
-        {
-            lines.RemoveAt(index);
         }
         File.WriteAllLines(Config.PracticeModConfigPath, lines);
     }

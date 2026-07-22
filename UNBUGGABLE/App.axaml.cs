@@ -25,7 +25,16 @@ public partial class App : Application
     public static MainWindowViewModel MainWindowViewModel =>
         MainWindow.DataContext as MainWindowViewModel;
 
-    public static bool DialogIsOpen = false;
+    private static bool _dialogIsOpen = false;
+    public static bool DialogIsOpen
+    {
+        get => _dialogIsOpen;
+        set
+        {
+            _dialogIsOpen = value;
+            ChartBuilder.ResetKeyStates();
+        }
+    }
     
     public override void Initialize()
     {

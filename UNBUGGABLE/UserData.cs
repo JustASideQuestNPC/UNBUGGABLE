@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -49,7 +50,7 @@ public static class UserData
             }
             catch (JsonException e)
             {
-                Console.WriteLine($"Could not parse user data: {e.Message}");
+                Trace.WriteLine($"Could not parse user data: {e.Message}");
             }
         }
     }

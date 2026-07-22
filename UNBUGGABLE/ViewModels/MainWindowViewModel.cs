@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using UNBEATABLEChartEditor;
 using UNBEATABLEChartEditor.Dialogs;
 using UNBUGGABLE.Resources;
 using UNBUGGABLE.Views;
@@ -123,43 +125,47 @@ public partial class MainWindowViewModel : ViewModelBase
             // most of the ui only needs to change when the song time changes, but LibVLC only
             // update MediaPlayer.Position every tenth of a second or so, so it's easier to just
             // force an update every frame
+            // Trace.WriteLine("frame");
             App.MainWindow.NoteViewer.InvalidateVisual();
             App.MainWindow.GamePreview.InvalidateVisual();
-            var chartTimeText = TimeSpan.FromMilliseconds(Chart.CurrentTime)
-                                        .ToString(@"mm\:ss\.fff");
-            var songTimeWithOffset =
-                Chart.CurrentTime < 0 ? $"-{chartTimeText}" : chartTimeText;
-            var chartLengthText = TimeSpan.FromMilliseconds(Chart.Length)
-                                          .ToString(@"mm\:ss\.fff");
+            if (Chart.SongLoaded)
+            {
+                var chartTimeText = TimeSpan.FromMilliseconds(Chart.CurrentTime)
+                                            .ToString(@"mm\:ss\.fff");
+                var songTimeWithOffset =
+                    Chart.CurrentTime < 0 ? $"-{chartTimeText}" : chartTimeText;
+                var chartLengthText = TimeSpan.FromMilliseconds(Chart.Length)
+                                              .ToString(@"mm\:ss\.fff");
             
-            SongTimeText = $"{songTimeWithOffset} / {chartLengthText}";
-            ChartTimeText = TimeSpan.FromMilliseconds(
-                                        Chart.CurrentTime + Chart.Metadata.ChartOffset)
-                                    .ToString(@"mm\:ss\.fff");
-            Cop1State = GamePreview.Cop1State switch
-            {
-                CopState.LEFT => "Left",
-                CopState.RIGHT => "Right",
-                _ => "Dead"
-            };
-            Cop2State = GamePreview.Cop2State switch
-            {
-                CopState.LEFT => "Left",
-                CopState.RIGHT => "Right",
-                _ => "Dead"
-            };
-            Cop3State = GamePreview.Cop3State switch
-            {
-                CopState.LEFT => "Left",
-                CopState.RIGHT => "Right",
-                _ => "Dead"
-            };
-            Cop4State = GamePreview.Cop4State switch
-            {
-                CopState.LEFT => "Left",
-                CopState.RIGHT => "Right",
-                _ => "Dead"
-            };
+                SongTimeText = $"{songTimeWithOffset} / {chartLengthText}";
+                ChartTimeText = TimeSpan.FromMilliseconds(
+                                            Chart.CurrentTime + Chart.Metadata.ChartOffset)
+                                        .ToString(@"mm\:ss\.fff");
+                Cop1State = GamePreview.Cop1State switch
+                {
+                    CopState.LEFT => "Left",
+                    CopState.RIGHT => "Right",
+                    _ => "Dead"
+                };
+                Cop2State = GamePreview.Cop2State switch
+                {
+                    CopState.LEFT => "Left",
+                    CopState.RIGHT => "Right",
+                    _ => "Dead"
+                };
+                Cop3State = GamePreview.Cop3State switch
+                {
+                    CopState.LEFT => "Left",
+                    CopState.RIGHT => "Right",
+                    _ => "Dead"
+                };
+                Cop4State = GamePreview.Cop4State switch
+                {
+                    CopState.LEFT => "Left",
+                    CopState.RIGHT => "Right",
+                    _ => "Dead"
+                };
+            }
         };
         frameTimer.Start();
 
@@ -224,7 +230,7 @@ public partial class MainWindowViewModel : ViewModelBase
             orderedLaneNames.Add(entry.Note!.Lane.ToString());
         }
         
-        Console.WriteLine($"Lane order: {string.Join(",", orderedLaneNames)}");
+        Trace.WriteLine($"Lane order: {string.Join(",", orderedLaneNames)}");
     }
     
     [RelayCommand]
@@ -232,7 +238,7 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         if (App.TopLevel == null)
         {
-            Console.WriteLine("No top level window!");
+            Trace.WriteLine("No top level window!");
             return;
         }
         
@@ -258,7 +264,7 @@ public partial class MainWindowViewModel : ViewModelBase
         if (files.Count > 0)
         {
             var path = files[0].Path;
-            Console.WriteLine($"Loading from {path}");
+            Trace.WriteLine($"Loading from {path}");
             
             bool loaded;
             if (path.AbsoluteUri.EndsWith(".mp3") || path.AbsoluteUri.EndsWith(".wav"))
@@ -311,7 +317,7 @@ public partial class MainWindowViewModel : ViewModelBase
             var fullPath = Path.Combine(Path.Combine(Config.CustomSongsDirectory,
                                                      Chart.ChartFolderName),
                                         $"{Chart.ChartFileName}.beat.txt");
-            Console.WriteLine($"Saving to {fullPath}");
+            Trace.WriteLine($"Saving to {fullPath}");
             await ChartBuilder.SaveToBeatPath(fullPath);
             ShowEventIndicator($"Saved to {fullPath}");
         }
@@ -327,7 +333,7 @@ public partial class MainWindowViewModel : ViewModelBase
         
         if (App.TopLevel == null)
         {
-            Console.WriteLine("No top level window!");
+            Trace.WriteLine("No top level window!");
             return;
         }
         
@@ -344,7 +350,7 @@ public partial class MainWindowViewModel : ViewModelBase
         if (file != null)
         {
             var fullPath = file.Path.LocalPath;
-            Console.WriteLine($"Saving to {fullPath}");
+            Trace.WriteLine($"Saving to {fullPath}");
              await ChartBuilder.SaveToBeatPath(fullPath);
              ShowEventIndicator($"Saved to {fullPath}");
         }
@@ -366,7 +372,7 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             var fullPath = Path.Combine(Config.CustomSongsDirectory,
                                         $"{Chart.ChartFileName}.txt");
-            Console.WriteLine($"Saving to {fullPath}");
+            Trace.WriteLine($"Saving to {fullPath}");
             await ChartBuilder.SaveToStandardPath(fullPath);
             ShowEventIndicator($"Saved to {fullPath}");
         }
@@ -382,7 +388,7 @@ public partial class MainWindowViewModel : ViewModelBase
         
         if (App.TopLevel == null)
         {
-            Console.WriteLine("No top level window!");
+            Trace.WriteLine("No top level window!");
             return;
         }
         
@@ -399,19 +405,19 @@ public partial class MainWindowViewModel : ViewModelBase
         if (file != null)
         {
             var fullPath = file.Path.LocalPath;
-            Console.WriteLine($"Saving to {fullPath}");
+            Trace.WriteLine($"Saving to {fullPath}");
             await ChartBuilder.SaveToStandardPath(fullPath);
             ShowEventIndicator($"Saved to {fullPath}");
         }
     }
-    
+
     [RelayCommand]
     private async Task EditChartMetadata()
     {
         var result = await new ChartMetadataDialog(Chart.Metadata).ShowAsync();
         if (result.HasValue)
         {
-            Console.WriteLine("Chart metadata updated.");
+            Trace.WriteLine("Chart metadata updated.");
             Chart.Metadata = result.Value;
             SongNameText = Chart.Metadata.SongName;
             ArtistNameText = Chart.Metadata.ArtistName;

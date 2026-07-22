@@ -10,7 +10,9 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Transactions;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Threading;
@@ -93,7 +95,7 @@ public static partial class Chart
             if (canSave)
             {
                 ChartFileName = GetChartFileName();
-                Console.WriteLine(ChartFileName);
+                Trace.WriteLine(ChartFileName);
             }
 
             if (_bpmRegions.Count != 0 && _bpmRegions[0].StartTime
@@ -172,7 +174,7 @@ public static partial class Chart
             if (SongLoaded)
             {
                 _mediaPlayer.Volume = value;
-                //Console.WriteLine($"song volume changed to {value}");
+                //Trace.WriteLine($"song volume changed to {value}");
             }
         }
     }
@@ -185,7 +187,7 @@ public static partial class Chart
         {
             _sfxVolume = value;
             SfxEngine.Volume = value / 100.0f;
-            //Console.WriteLine($"sfx volume changed to {value}");
+            //Trace.WriteLine($"sfx volume changed to {value}");
         }
     }
     
@@ -198,7 +200,7 @@ public static partial class Chart
             {
                 _mediaPlayer.SetRate(value / 100.0f);
             }
-            // Console.WriteLine($"Play speed changed to {value}");
+            // Trace.WriteLine($"Play speed changed to {value}");
         }
     }
 
@@ -260,6 +262,7 @@ public static partial class Chart
         _libVlc = new LibVLC();
         _mediaPlayer = new MediaPlayer(_libVlc);
         _hitSoundMediaPlayer = new MediaPlayer(_libVlc);
+        _mediaPlayer.EndReached += MediaPlayer_EndReached;
         
         try
         {
@@ -271,7 +274,7 @@ public static partial class Chart
             if (e is FileNotFoundException or DirectoryNotFoundException)
             {
                 _hitSound = null;
-                Console.WriteLine(
+                Trace.WriteLine(
                     "Hit sound (Assets/hitSound.wav) not found. Hit sounds are disabled.");
             }
             else
@@ -297,7 +300,7 @@ public static partial class Chart
         catch (FileNotFoundException)
         {
             _hitSoundMediaPlayer.Media = null;
-            Console.WriteLine(
+            Trace.WriteLine(
                 "Hit sound (Assets/hitSound.wav) not found. Hit sounds are disabled.");
         }
     }
@@ -328,6 +331,7 @@ public static partial class Chart
         BeatSnap = Config.BeatSnaps[_beatSnapIndex];
         App.MainWindow.BeatSnapText.Text = BeatSnap.ToString();
         _currentSnapLineSet = SnapLineSets[BeatSnap];
+        Trace.WriteLine(BeatSnap);
         SetTimeToNearestSnap();
     }
     
@@ -420,13 +424,12 @@ public static partial class Chart
     {
         if (SongLoaded && Playing)
         {
-            // Console.WriteLine(_stopwatch.ElapsedMilliseconds - _lastStopwatchTime);
             var prevTime = CurrentTime;
             CurrentTime += (_stopwatch.ElapsedMilliseconds - _lastStopwatchTime) * PlaySpeed / 100;
             if (CurrentTime + AdjustedOffset >= 0 && !_mediaPlayer.IsPlaying)
             {
+                _mediaPlayer.SeekTo(new TimeSpan(0));
                 _mediaPlayer.Play();
-                _mediaPlayer.Time = 0;
                 CurrentTime = AdjustedOffset;
             }
             
@@ -437,7 +440,7 @@ public static partial class Chart
                 {
                     if (_hitSound != null)
                     {
-                        Console.WriteLine($"play hit sound, {note.Time}, {CurrentTime}");
+                        Trace.WriteLine($"play hit sound, {note.Time}, {CurrentTime}");
                         SfxEngine.Play(_hitSound, offset);
                     }
                     break;
@@ -478,6 +481,8 @@ public static partial class Chart
             return false;
         }
         
+        Trace.WriteLine("Creating chart from audio file...");
+        
         App.MainWindow.PlaySpeedSlider.Value = PlaySpeed;
         
         Metadata.SongName = "";
@@ -488,12 +493,16 @@ public static partial class Chart
         Metadata.DifficultyName = "Beginner";
         Metadata.FlavorText = "";
         Metadata.CharterName = "";
+        Metadata.ChartOffset = 0;
         _notes = [];
         ChartBuilder.ClearSelection();
+        ChartBuilder.DeleteBreakpoint(false);
         _labels = [];
             
         _bpmRegions = [new BpmRegion(0, 60)];
         RebuildSnapLineSets();
+        SetBeatSnapIndex(0);
+        SetTimeToNearestSnap();
 
         NoteViewer.SetZoom(1.0);
         CurrentTime = 0;
@@ -505,8 +514,7 @@ public static partial class Chart
         App.MainWindowViewModel.CanSave = false;
 
         SongLoaded = true;
-        UserData.LastOpenedChartFile = "";
-        
+        UserData.LastOpenedChartFile = ""; 
         return true;
     }
 
@@ -518,10 +526,10 @@ public static partial class Chart
     public static async Task<bool> TryLoadChartFile(string path)
     {
         SongLoaded = false;
-        Console.WriteLine($"Loading chart file: {path}");
+        Trace.WriteLine($"Loading chart file: {path}");
         if (!File.Exists(path))
         {
-            Console.WriteLine("File not found.");
+            Trace.WriteLine("File not found.");
             return false;
         }
         
@@ -543,19 +551,19 @@ public static partial class Chart
             switch (line)
             {
                 case "[General]":
-                    Console.WriteLine("Parsing general data...");
+                    Trace.WriteLine("Parsing general data...");
                     temp = TryParseGeneralChartData(chartData, i, folderPath, out audioPath);
                     break;
                 case "[Editor]":
-                    Console.WriteLine("Parsing official editor data...");
+                    Trace.WriteLine("Parsing official editor data...");
                     temp = TryParseOfficialEditorData(chartData, i);
                     break;
                 case "[UNBUGGABLE]":
-                    Console.WriteLine("Parsing UNBUGGABLE data...");
+                    Trace.WriteLine("Parsing UNBUGGABLE data...");
                     temp = TryParseUnbuggableData(chartData, i, out lastEditorState);
                     break;
                 case "[Metadata]":
-                    Console.WriteLine("Parsing metadata...");
+                    Trace.WriteLine("Parsing metadata...");
                     temp = TryParseMetadata(chartData, i);
                     // see??? do you see how easy it would be to make the official editor save star
                     // charts correctly??? why would you not do this???
@@ -572,11 +580,11 @@ public static partial class Chart
                     break;
                 // there are also [Difficulty] and [Events] sections here but they do nothing
                 case "[TimingPoints]":
-                    Console.WriteLine("Parsing timing points...");
+                    Trace.WriteLine("Parsing timing points...");
                     temp = TryParseTimingPoints(chartData, i);
                     break;
                 case "[HitObjects]":
-                    Console.WriteLine("Parsing hit objects (notes)...");
+                    Trace.WriteLine("Parsing hit objects (notes)...");
                     temp = TryParseHitObjects(chartData, i);
                     break;
             }
@@ -611,7 +619,7 @@ public static partial class Chart
                     CurrentTime = time;
                 }
 
-                Console.WriteLine(
+                Trace.WriteLine(
                     $"Restoring last editor state: {time}ms, snap {beatSnap}, {zoom}x zoom");
                 for (var i = 0; i < Config.BeatSnaps.Count; ++i)
                 {
@@ -1007,7 +1015,7 @@ public static partial class Chart
                 snapLineSet.Add(time);
             }
             
-            Console.WriteLine(
+            Trace.WriteLine(
                 $"Snap line set for snap value {snapValue} has {snapLineSet.Count} lines");
             SnapLineSets[snapValue] = snapLineSet;
         }
@@ -1018,13 +1026,49 @@ public static partial class Chart
 
     private static void PlaySong()
     {
+        if (CurrentTime + AdjustedOffset >= Length)
+        {
+            return;
+        }
+        
+        Trace.WriteLine(_mediaPlayer.Media.State);
         Playing = true;
         if (CurrentTime + AdjustedOffset >= 0)
         {
-            _mediaPlayer.Play();
-            _mediaPlayer.Time = (long)(CurrentTime + AdjustedOffset);
-            //Console.WriteLine($"PlaySong: {CurrentTime}, {_mediaPlayer.Time}");
+            if (_mediaPlayer.Media.State == VLCState.Ended)
+            {
+                _mediaPlayer.Play(_mediaPlayer.Media);
+            }
+            else
+            {
+                _mediaPlayer.Play();
+            }
+            _mediaPlayer.SeekTo(TimeSpan.FromMilliseconds(CurrentTime + AdjustedOffset));
         }
+    }
+    
+    private static void PauseSong()
+    {
+        Playing = false;
+        _mediaPlayer.Pause();
+        SetTimeToNearestSnap();
+        Trace.WriteLine(_mediaPlayer.Time);
+        //Trace.WriteLine($"PauseSong: {CurrentTime}, {_mediaPlayer.Time}");
+    }
+
+    private static void MediaPlayer_EndReached(object? sender, EventArgs e)
+    {
+        Dispatcher.UIThread.Invoke(() =>
+        {
+            PauseSong();
+            // throw this in a separate thread because otherwise it'll block itself and freeze
+            // ThreadPool.QueueUserWorkItem(_ =>
+            // {
+            //     PauseSong();
+            //     // _mediaPlayer.SeekTo(new TimeSpan(0));
+            //     // _mediaPlayer.Play();
+            // });
+        });
     }
 
     /// <summary>
@@ -1052,13 +1096,13 @@ public static partial class Chart
         {
             if (!File.Exists(path))
             {
-                Console.WriteLine($"Could not load audio file: File not found or invalid format.");
+                Trace.WriteLine($"Could not load audio file: File not found or invalid format.");
                 return false;
             }
             
             var media = new Media(_libVlc, path);
             _mediaPlayer.Media = media;
-            _mediaPlayer.Time = -(long)AdjustedOffset;
+            _mediaPlayer.SeekTo(TimeSpan.FromMilliseconds(-AdjustedOffset));
             // DisposeSongPlayer();
             // _songPlayer = new ChartSongPlayer(path);
             AudioFileName = Path.GetFileName(path);
@@ -1067,7 +1111,7 @@ public static partial class Chart
         }
         catch (Exception e)
         {
-            Console.WriteLine($"Could not load audio file: {e.Message}");
+            Trace.WriteLine($"Could not load audio file: {e.Message}");
             return false;
         }
         
@@ -1076,7 +1120,7 @@ public static partial class Chart
     
     private static void SetTimeToNearestSnap()
     {
-        // Console.WriteLine($"{_currentSnapLineSetIndex} {_currentSnapLineSet.Count}");
+        // Trace.WriteLine($"{_currentSnapLineSetIndex} {_currentSnapLineSet.Count}");
         for (var i = 0; i < _currentSnapLineSet.Count - 1; ++i)
         {
             var currentSnap = _currentSnapLineSet[i];
@@ -1089,14 +1133,6 @@ public static partial class Chart
             }
         }
     }
-    
-    private static void PauseSong()
-    {
-        Playing = false;
-        _mediaPlayer.Pause();
-        SetTimeToNearestSnap();
-        //Console.WriteLine($"PauseSong: {CurrentTime}, {_mediaPlayer.Time}");
-    }
 
     private static int TryParseGeneralChartData(string[] lines, int index, string folderPath,
         out string? audioPath)
@@ -1105,7 +1141,7 @@ public static partial class Chart
         {
             AudioFileName = lines[index + 1]["AudioFilename: ".Length..].Trim();
             audioPath = Path.GetFullPath($"{folderPath}/{AudioFileName}");
-            Console.WriteLine($"Audio file path: {audioPath}");
+            Trace.WriteLine($"Audio file path: {audioPath}");
             return 1;
         }
 
@@ -1119,7 +1155,7 @@ public static partial class Chart
         // every label without the text
         if (lines[index + 2].StartsWith("BookmarksPlus:"))
         {
-            Console.WriteLine("Parsing labels...");
+            Trace.WriteLine("Parsing labels...");
             var labelData = lines[index + 2]["BookmarksPlus: ".Length..].Trim().Split(',');
             foreach (var label in labelData)
             {
@@ -1130,7 +1166,7 @@ public static partial class Chart
                 }
                 if (double.TryParse(split[0], out var time))
                 {
-                    Console.WriteLine($"Adding label at {time} with text \"{split[1]}\"");
+                    Trace.WriteLine($"Adding label at {time} with text \"{split[1]}\"");
                     _labels.Add(new Label(time, split[1]));
                 }
                 else
@@ -1181,7 +1217,7 @@ public static partial class Chart
                     var split = marker.Split('`');
                     if (double.TryParse(split[0], out var time))
                     {
-                        Console.WriteLine($"Adding marker at {time} with type {split[1]}");
+                        Trace.WriteLine($"Adding marker at {time} with type {split[1]}");
                         TryAddMarker(time, int.Parse(split[1]));
                     }
                     else
@@ -1212,19 +1248,19 @@ public static partial class Chart
             if (line.StartsWith("TitleUnicode:"))
             {
                 Metadata.SongName = line["TitleUnicode:".Length..].Trim();
-                Console.WriteLine($"Song name: {Metadata.SongName}");
+                Trace.WriteLine($"Song name: {Metadata.SongName}");
                 hasTitle = true;
             }
             else if (line.StartsWith("ArtistUnicode:"))
             {
                 Metadata.ArtistName = line["ArtistUnicode:".Length..].Trim();
-                Console.WriteLine($"Artist name: {Metadata.ArtistName}");
+                Trace.WriteLine($"Artist name: {Metadata.ArtistName}");
                 hasArtist = true;
             }
             else if (line.StartsWith("Creator:"))
             {
                 Metadata.CharterName = line["Creator:".Length..].Trim();
-                Console.WriteLine($"Charter name: {Metadata.CharterName}");
+                Trace.WriteLine($"Charter name: {Metadata.CharterName}");
                 hasCharterName = true;
             }
             else if (line.StartsWith("Version:"))
@@ -1232,7 +1268,7 @@ public static partial class Chart
                 // the version is only used for the in-game difficulty name; difficulty slot is
                 // determined by the filename
                 Metadata.DifficultyName = line["Version:".Length..].Trim();
-                Console.WriteLine($"Difficulty name: {Metadata.DifficultyName}");
+                Trace.WriteLine($"Difficulty name: {Metadata.DifficultyName}");
                 hasDifficulty = true;
             }
             else if (line.StartsWith("Tags:"))
@@ -1243,21 +1279,21 @@ public static partial class Chart
                     if (match.Success)
                     {
                         Metadata.DifficultyLevel = int.Parse(match.Groups[1].Value);
-                        Console.WriteLine($"Difficulty level: {Metadata.DifficultyLevel}");
+                        Trace.WriteLine($"Difficulty level: {Metadata.DifficultyLevel}");
                         hasLevelTag = true;
                         
                         Metadata.FlavorText = Regex.Unescape(match.Groups[2].Value);
-                        Console.WriteLine($"Flavor text: {Metadata.FlavorText}");
+                        Trace.WriteLine($"Flavor text: {Metadata.FlavorText}");
                         hasFlavorTextTag = true;
                         
                         Metadata.CoverArtistName = Regex.Unescape(match.Groups[3].Value);
-                        Console.WriteLine($"Cover artist: {Metadata.CoverArtistName}");
+                        Trace.WriteLine($"Cover artist: {Metadata.CoverArtistName}");
                         hasCoverArtTag = true;
                     }
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Could not parse tags: {e.Message}");
+                    Trace.WriteLine($"Could not parse tags: {e.Message}");
                 }
             }
             // i have no idea what the difference between Title/Artist and
@@ -1309,7 +1345,7 @@ public static partial class Chart
                 errorMessage.Append("Cover artist (in the Tags object), ");
             }
 
-            Console.WriteLine(errorMessage.ToString());
+            Trace.WriteLine(errorMessage.ToString());
             return -1;
         }
         
@@ -1344,7 +1380,7 @@ public static partial class Chart
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Could not parse timing point: {e.Message}");
+                    Trace.WriteLine($"Could not parse timing point: {e.Message}");
                     return -1;
                 }
                 
@@ -1374,11 +1410,11 @@ public static partial class Chart
 
         if (_bpmRegions.Count == 0)
         {
-            Console.WriteLine($"Could not parse timing points: Chart has no timing points.");
+            Trace.WriteLine($"Could not parse timing points: Chart has no timing points.");
             return -1;
         }
         
-        Console.WriteLine($"Chart has {_bpmRegions.Count} BPM regions.");
+        Trace.WriteLine($"Chart has {_bpmRegions.Count} BPM regions.");
         return i;
     }
 
@@ -1400,12 +1436,12 @@ public static partial class Chart
             }
             else if (errorMessage != "marker")
             {
-                Console.WriteLine($"Could not parse note: {errorMessage}");
+                Trace.WriteLine($"Could not parse note: {errorMessage}");
                 return -1;
             }
         }
         
-        Console.WriteLine($"Chart has {_notes.Count} notes.");
+        Trace.WriteLine($"Chart has {_notes.Count} notes.");
         return i;
     }
     

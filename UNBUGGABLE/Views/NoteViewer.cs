@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using UNBEATABLEChartEditor;
 using UNBUGGABLE.Resources;
 
 namespace UNBUGGABLE.Views;
@@ -262,6 +264,7 @@ public class NoteViewer : Control
                          new Rect(_cameraLaneX - 16, 0, 32, ViewerHeight));
         
         // full beat lines
+        // Trace.WriteLine(Chart.SongLoaded);
         if (Chart.SongLoaded)
         {
             var scaledPixelsPerMs = PixelsPerSecond * CurrentZoom / 1000;
@@ -269,6 +272,7 @@ public class NoteViewer : Control
             var visibleRangeEnd =
                 (Chart.CurrentTime + (ViewerHeight - 150) / scaledPixelsPerMs);
             
+            // Trace.WriteLine($"Visible range: {visibleRangeStart} - {visibleRangeEnd}");
             foreach (var subBeatTime in Chart.GetSnapTimesInRange(visibleRangeStart,
                                                                          visibleRangeEnd))
             {
@@ -363,7 +367,6 @@ public class NoteViewer : Control
         dc.DrawText(text, new Point(135 - text.Width, y - 2 - text.Height / 2));
         dc.DrawLine(new Pen(_bpmChangeBrush, 5), new Point(150, y), new Point(ViewerWidth, y));
     }
-
     
     private void RenderLabel(DrawingContext dc, Chart.Label label)
     {

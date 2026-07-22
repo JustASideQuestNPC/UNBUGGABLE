@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Security.Authentication.ExtendedProtection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Avalonia.Controls;
 using Avalonia.Media;
+using UNBEATABLEChartEditor;
 
 namespace UNBUGGABLE.Resources;
 
@@ -307,7 +309,7 @@ public static class Config
         }
         catch (JsonException e)
         {
-            Console.WriteLine($"Could not parse JSON: {e.Message}");
+            Trace.WriteLine($"Could not parse JSON: {e.Message}");
             return false;
         }
 
@@ -340,7 +342,7 @@ public static class Config
                     {
                         if (themeValue is null)
                         {
-                            Console.WriteLine($"Theme {themeName} is null, skipping it.");
+                            Trace.WriteLine($"Theme {themeName} is null, skipping it.");
                             continue;
                         }
 
@@ -355,24 +357,24 @@ public static class Config
                                 theme[$"{brushName}"] = brushColor;
                             }
                             ColorThemes.Add(themeName, theme);
-                            Console.WriteLine($"Loaded theme {themeName}");
+                            Trace.WriteLine($"Loaded theme {themeName}");
                         }
                     }
                 }
                 else
                 {
-                    Console.WriteLine("Could not parse color themes: file is empty.");
+                    Trace.WriteLine("Could not parse color themes: file is empty.");
                 }
             }
             catch (JsonException e)
             {
-                Console.WriteLine($"Could not parse color themes: {e.Message}");
+                Trace.WriteLine($"Could not parse color themes: {e.Message}");
             }
-            Console.WriteLine("Loaded color themes.");
+            Trace.WriteLine("Loaded color themes.");
         }
         else
         {
-            Console.WriteLine("Color theme file not found.");
+            Trace.WriteLine("Color theme file not found.");
         }
     }
 
@@ -387,7 +389,7 @@ public static class Config
                     File.ReadAllText(configPath));
                 if (configJsonNode != null)
                 {
-                    Console.WriteLine($"Config file found at {configPath}");
+                    Trace.WriteLine($"Config file found at {configPath}");
                     var settingsJson = configJsonNode.AsObject();
                     // I have to check value kinds manually because for some ungodly reason,
                     // there is no `JsonValueKind.Bool`. There is `JsonValueKind.True` and
@@ -399,7 +401,7 @@ public static class Config
                         if (ColorThemes.TryGetValue(setting, out var theme))
                         {
                             CurrentTheme = theme;
-                            Console.WriteLine($"color theme: {setting}");
+                            Trace.WriteLine($"color theme: {setting}");
                         }
                     }
                     
@@ -408,7 +410,7 @@ public static class Config
                     {
                         var setting = settingsJson["enhancedPreview"]!.GetValue<bool>();
                         EnhancedPreview = setting;
-                        Console.WriteLine($"enhanced preview: {setting}");
+                        Trace.WriteLine($"enhanced preview: {setting}");
                     }
                     
                     if (settingsJson["useBeatFiles"]?.AsValue().GetValueKind()
@@ -416,7 +418,7 @@ public static class Config
                     {
                         var setting = settingsJson["useBeatFiles"]!.GetValue<bool>();
                         DefaultSaveToBeatFiles = setting;
-                        Console.WriteLine($"default save to .beat.txt files: {setting}");
+                        Trace.WriteLine($"default save to .beat.txt files: {setting}");
                     }
                     
                     if (settingsJson["alwaysShowAllNoteFlags"]?.AsValue().GetValueKind()
@@ -424,7 +426,7 @@ public static class Config
                     {
                         var setting = settingsJson["alwaysShowAllNoteFlags"]!.GetValue<bool>();
                         AlwaysShowAllFlags = setting;
-                        Console.WriteLine($"show note flags: {setting}");
+                        Trace.WriteLine($"show note flags: {setting}");
                     }
                     
                     if (settingsJson["enableBreakpoints"]?.AsValue().GetValueKind()
@@ -432,7 +434,7 @@ public static class Config
                     {
                         var setting = settingsJson["enableBreakpoints"]!.GetValue<bool>();
                         EnableBreakpoints = setting;
-                        Console.WriteLine($"enable breakpoints: {setting}");
+                        Trace.WriteLine($"enable breakpoints: {setting}");
                     }
                     
                     if (settingsJson["hardChartOffset"]?.AsValue().GetValueKind()
@@ -440,7 +442,7 @@ public static class Config
                     {
                         var setting = settingsJson["hardChartOffset"]!.GetValue<int>();
                         HardChartOffset = setting;
-                        Console.WriteLine($"hard chart offset: {setting}");
+                        Trace.WriteLine($"hard chart offset: {setting}");
                     }
                     
                     if (settingsJson["hitSoundOffset"]?.AsValue().GetValueKind()
@@ -448,7 +450,7 @@ public static class Config
                     {
                         var setting = settingsJson["hitSoundOffset"]!.GetValue<int>();
                         HitSoundOffset = setting;
-                        Console.WriteLine($"hit sound offset: {setting}");
+                        Trace.WriteLine($"hit sound offset: {setting}");
                     }
                     
                     if (settingsJson["hitSoundTickRate"]?.AsValue().GetValueKind()
@@ -458,7 +460,7 @@ public static class Config
                         if (setting > 1)
                         {
                             HitSoundTickRate = setting;
-                            Console.WriteLine($"hit sound offset: {setting}");
+                            Trace.WriteLine($"hit sound offset: {setting}");
                         }
                     }
                     
@@ -467,7 +469,7 @@ public static class Config
                     {
                         var setting = settingsJson["minZoom"]!.GetValue<double>();
                         MinZoom = setting;
-                        Console.WriteLine($"min zoom: {setting}");
+                        Trace.WriteLine($"min zoom: {setting}");
                     }
                     
                     if (settingsJson["maxZoom"]?.AsValue().GetValueKind()
@@ -475,7 +477,7 @@ public static class Config
                     {
                         var setting = settingsJson["maxZoom"]!.GetValue<double>();
                         MaxZoom = setting;
-                        Console.WriteLine($"max zoom: {setting}");
+                        Trace.WriteLine($"max zoom: {setting}");
                     }
                     
                     if (settingsJson["zoomIncrement"]?.AsValue().GetValueKind()
@@ -483,7 +485,7 @@ public static class Config
                     {
                         var setting = settingsJson["zoomIncrement"]!.GetValue<double>();
                         ZoomIncrement = setting;
-                        Console.WriteLine($"zoom increment: {setting}");
+                        Trace.WriteLine($"zoom increment: {setting}");
                     }
                     
                     if (settingsJson["beatSnaps"]?.AsArray() is { Count: > 0 } snaps)
@@ -502,7 +504,7 @@ public static class Config
                         }
                         if (isValid)
                         {
-                            Console.WriteLine($"beat snaps: {string.Join(", ", buffer)}");
+                            Trace.WriteLine($"beat snaps: {string.Join(", ", buffer)}");
                             BeatSnaps = buffer;
                         }
                     }
@@ -512,7 +514,7 @@ public static class Config
                     {
                         var setting = settingsJson["useLane2AsMarkers"]!.GetValue<bool>();
                         Lane2Markers = setting;
-                        Console.WriteLine($"use lane 2 as markers: {setting}");
+                        Trace.WriteLine($"use lane 2 as markers: {setting}");
                     }
                     
                     if (settingsJson["saveMarkersAsLane2Notes"]?.AsValue().GetValueKind()
@@ -520,7 +522,7 @@ public static class Config
                     {
                         var setting = settingsJson["saveMarkersAsLane2Notes"]!.GetValue<bool>();
                         SaveMarkersInLane2 = setting;
-                        Console.WriteLine($"save markers in lane 2: {setting}");
+                        Trace.WriteLine($"save markers in lane 2: {setting}");
                     }
                     
                     if (settingsJson["alwaysEnableCustomDifficultyName"]?.AsValue()
@@ -530,7 +532,7 @@ public static class Config
                         var setting =
                             settingsJson["alwaysEnableCustomDifficultyName"]!.GetValue<bool>();
                         AlwaysEnableCustomDifficultyName = setting;
-                        Console.WriteLine($"always enable custom difficulty name: {setting}");
+                        Trace.WriteLine($"always enable custom difficulty name: {setting}");
                     }
                     
                     if (settingsJson["allowTopLaneCopMashes"]?.AsValue().GetValueKind()
@@ -538,7 +540,7 @@ public static class Config
                     {
                         var setting = settingsJson["allowTopLaneCopMashes"]!.GetValue<bool>();
                         AllowTopLaneCopMashes = setting;
-                        Console.WriteLine($"allow top lane cop mashes: {setting}");
+                        Trace.WriteLine($"allow top lane cop mashes: {setting}");
                     }
                     
                     if (settingsJson["autoSelectPastedNotes"]?.AsValue().GetValueKind()
@@ -546,7 +548,7 @@ public static class Config
                     {
                         var setting = settingsJson["autoSelectPastedNotes"]!.GetValue<bool>();
                         AutoSelectPastedNotes = setting;
-                        Console.WriteLine($"auto select pasted notes: {setting}");
+                        Trace.WriteLine($"auto select pasted notes: {setting}");
                     }
 
                     if (settingsJson["showFreestyleSubNotesWhilePlacing"]?.AsValue().GetValueKind()
@@ -555,7 +557,7 @@ public static class Config
                         var setting = settingsJson["showFreestyleSubNotesWhilePlacing"]!
                             .GetValue<bool>();
                         ShowSubFreestylesInNoteViewer = setting;
-                        Console.WriteLine($"show freestyle subnotes while placing: {setting}");
+                        Trace.WriteLine($"show freestyle subnotes while placing: {setting}");
                     }
                     
                     if (settingsJson["laneOrder"]?.AsArray() is { Count: 4 } laneOrder)
@@ -600,7 +602,7 @@ public static class Config
                         if (isValid)
                         {
                             LaneOrder = order.ConvertAll(x => (NoteLane)x);
-                            Console.WriteLine($"Lane order: {string.Join(", ", LaneOrder)}");
+                            Trace.WriteLine($"Lane order: {string.Join(", ", LaneOrder)}");
                         }
                     }
                     
@@ -611,18 +613,18 @@ public static class Config
                 }
                 else
                 {
-                    Console.WriteLine("Could not parse config file: file is empty.");
+                    Trace.WriteLine("Could not parse config file: file is empty.");
                 }
             }
             catch (JsonException e)
             {
-                Console.WriteLine($"Could not parse color theme file: {e.Message}");
+                Trace.WriteLine($"Could not parse color theme file: {e.Message}");
             }
-            Console.WriteLine("Loaded settings.");
+            Trace.WriteLine("Loaded settings.");
         }
         else
         {
-            Console.WriteLine("Config file not found.");
+            Trace.WriteLine("Config file not found.");
         }
         
         // look for your custom songs directory
@@ -639,12 +641,12 @@ public static class Config
             PracticeModConfigPath = Path.Combine(gameDataDirectory, "practice-mode-settings.txt");
             if (File.Exists(PracticeModConfigPath))
             {
-                Console.WriteLine("Found Practice Mod, enabling breakpoints.");
+                Trace.WriteLine("Found Practice Mod, enabling breakpoints.");
                 PracticeModInstalled = true;
             }
             else
             {
-                Console.WriteLine("Install Practice Mod to enable breakpoints.");
+                Trace.WriteLine("Install Practice Mod to enable breakpoints.");
                 PracticeModInstalled = false;
             }
         }

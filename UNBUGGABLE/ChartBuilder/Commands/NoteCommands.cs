@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using UNBEATABLEChartEditor;
 using UNBUGGABLE.Resources;
 
 namespace UNBUGGABLE.Commands;
@@ -24,7 +26,7 @@ public class AddNotesCommand(List<NoteBase> notes, bool isPaste = false) : IComm
     public void Undo()
     {
         ChartBuilder.ClearSelection();
-        Console.WriteLine(notes.Count);
+        Trace.WriteLine(notes.Count);
         foreach (var note in notes)
         {
             Chart.RemoveNote(note);
@@ -179,7 +181,7 @@ public class SetNotesCopIdCommand : ICommand
     /// </summary>
     private static NoteBase GetNoteWithCopId(NoteBase note, int copId)
     {
-        Console.WriteLine($"{note.Type}");
+        Trace.WriteLine($"{note.Type}");
         
         NoteBase newNote;
         if (copId == 0)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -73,7 +74,7 @@ public partial class ChartMetadataDialog : BaseDialog<Chart.MetadataContainer>
             "Star"       => DifficultySlot.STAR,
             _ => _difficultySlot
         };
-        Console.WriteLine($"Difficulty slot changed to {newSelection}");
+        Trace.WriteLine($"Difficulty slot changed to {newSelection}");
         if (DifficultyNameBox != null)
         {
             if (_difficultySlot == DifficultySlot.STAR || Config.AlwaysEnableCustomDifficultyName)

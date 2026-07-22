@@ -93,7 +93,7 @@ public abstract partial class NoteBase
     /// <returns>The note if it could be constructed, otherwise null.</returns>
     public static NoteBase? FromHitObjectString(string hitObjectString, out string errorMessage)
     {
-        // Console.WriteLine($"\nHit object string: {hitObjectString}");
+        // Logger.WriteLine($"\nHit object string: {hitObjectString}");
         if (!HitObjectRegex().IsMatch(hitObjectString))
         {
             errorMessage =
@@ -148,7 +148,7 @@ public abstract partial class NoteBase
         if (instantNumber is 1 or 5 or 128 or 132)
         {
             instant = (instantNumber is 1 or 5);
-            // Console.WriteLine($"Instant note: {instant}");
+            // Logger.WriteLine($"Instant note: {instant}");
         }
         else
         {
