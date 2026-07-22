@@ -40,20 +40,26 @@ sealed class Program
         Trace.AutoFlush = true;
         
         Trace.WriteLine($"logging to {filePath}");
-        
-        // Logger.Init();
-        
-        // apparently, running the app by double-clicking a file will make the working directory the
-        // same place as that file, not the location of the exe
-        if (!Environment.CurrentDirectory.EndsWith("UNBUGGABLE"))
+
+        try
         {
-            Environment.CurrentDirectory =
-                Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ??
-                Environment.CurrentDirectory;
+            // apparently, running the app by double-clicking a file will make the working directory the
+            // same place as that file, not the location of the exe
+            if (!Environment.CurrentDirectory.EndsWith("UNBUGGABLE"))
+            {
+                Environment.CurrentDirectory =
+                    Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ??
+                    Environment.CurrentDirectory;
+            }
+
+            AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+
+            BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         }
-        
-        BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
-        AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+        catch (Exception e)
+        {
+            Trace.WriteLine($"FATAL ERROR!!!\n{e.Message}");
+        }
     }
 
     // Avalonia configuration, don't remove; also used by visual designer.

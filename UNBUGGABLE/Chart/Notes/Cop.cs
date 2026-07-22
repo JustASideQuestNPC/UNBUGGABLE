@@ -164,27 +164,27 @@ public class CopNote : NoteBase
         switch (Type)
         {
             case NoteType.COP_SINGLE:
-                if (Time > rangeStart && Time <= rangeEnd && Config.HitSounds.CopSingle)
+                if (Time > rangeStart && Time <= rangeEnd && Config.Settings.HitSounds.CopSingle)
                 {
                     return (long)(Time - rangeStart);
                 }
                 break;
             case NoteType.COP_HOLD:
-                if (Time > rangeStart && Time <= rangeEnd && Config.HitSounds.CopHoldStart)
+                if (Time > rangeStart && Time <= rangeEnd && Config.Settings.HitSounds.CopHoldStart)
                 {
                     return (long)(Time - rangeStart);
                 }
-                if (EndTime > rangeStart && EndTime <= rangeEnd && Config.HitSounds.CopHoldEnd)
+                if (EndTime > rangeStart && EndTime <= rangeEnd && Config.Settings.HitSounds.CopHoldEnd)
                 {
                     return (long)(EndTime - rangeStart);
                 }
                 break;
             case NoteType.COP_MASH:
-                if (Time > rangeStart && Time <= rangeEnd && Config.HitSounds.CopMashStart)
+                if (Time > rangeStart && Time <= rangeEnd && Config.Settings.HitSounds.CopMashStart)
                 {
                     return (long)(Time - rangeStart);
                 }
-                if (EndTime > rangeStart && EndTime <= rangeEnd && Config.HitSounds.CopMashEnd)
+                if (EndTime > rangeStart && EndTime <= rangeEnd && Config.Settings.HitSounds.CopMashEnd)
                 {
                     return (long)(EndTime - rangeStart);
                 }

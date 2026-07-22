@@ -65,8 +65,8 @@ public class SingleNote : NoteBase
     {
         var shouldPlay = Type switch
         {
-            NoteType.SINGLE => Time > rangeStart && Time <= rangeEnd && Config.HitSounds.Single,
-            NoteType.SPIKE => Time > rangeStart && Time <= rangeEnd && Config.HitSounds.Spike,
+            NoteType.SINGLE => Time > rangeStart && Time <= rangeEnd && Config.Settings.HitSounds.Single,
+            NoteType.SPIKE => Time > rangeStart && Time <= rangeEnd && Config.Settings.HitSounds.Spike,
             _ => false
         };
 

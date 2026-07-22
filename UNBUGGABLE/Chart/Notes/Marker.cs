@@ -59,9 +59,9 @@ public class MarkerDummyNote : NoteBase
         }
         
         var offset = (long)(Time - rangeStart);
-        if ((ColorId == 0 && Config.HitSounds.Marker1) ||
-            (ColorId == 1 && Config.HitSounds.Marker2) ||
-            (ColorId == 2 && Config.HitSounds.Marker3))
+        if ((ColorId == 0 && Config.Settings.HitSounds.Marker1) ||
+            (ColorId == 1 && Config.Settings.HitSounds.Marker2) ||
+            (ColorId == 2 && Config.Settings.HitSounds.Marker3))
         {
             return offset;
         }
@@ -71,7 +71,7 @@ public class MarkerDummyNote : NoteBase
     
     public override string ToHitObjectString(bool isFirstNote, bool isStandardFile)
     {
-        if (Config.SaveMarkersInLane2 || isStandardFile)
+        if (Config.Settings.SaveMarkersInLane2 || isStandardFile)
         {
             return $"128,192,{Math.Floor(Time + Chart.Metadata.ChartOffset)}," +
                    $"{(isFirstNote ? 1 : 5)},{GetFlagString()},0:0:0:0:";

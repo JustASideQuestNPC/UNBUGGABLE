@@ -33,5 +33,6 @@
         <PackageReference Include="NAudio" Version="2.3.0" />
         <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.23.1" />
         <PackageReference Include="Xaml.Behaviors.Interactions.Draggable" Version="11.3.6.6" />
+        <PackageReference Include="YamlDotNet" Version="18.1.0" />
     </ItemGroup>
 </Project>

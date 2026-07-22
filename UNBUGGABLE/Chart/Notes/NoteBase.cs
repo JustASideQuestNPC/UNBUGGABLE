@@ -118,7 +118,7 @@ public abstract partial class NoteBase
         NoteFlags flags;
         double endTime = 0;
         
-        if ((laneNumber is 213 or 298 or 384 or 469) || (laneNumber == 128 && Config.Lane2Markers))
+        if ((laneNumber is 213 or 298 or 384 or 469) || (laneNumber == 128 && Config.Settings.Lane2Markers))
         {
             if (laneNumber == 128)
             {
@@ -318,7 +318,7 @@ public abstract partial class NoteBase
 
     protected void RenderFlags(DrawingContext dc, int x, double y, NoteFlags? flags = null)
     {
-        if (flags == null || Config.AlwaysShowAllFlags)
+        if (flags == null || Config.Settings.AlwaysShowAllFlags)
         {
             flags = Flags;
         }

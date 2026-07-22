@@ -126,7 +126,7 @@ public static partial class Chart
     
     public static double Length => _mediaPlayer.Media.Duration - AdjustedOffset;
 
-    public static double AdjustedOffset => Metadata.ChartOffset + Config.HardChartOffset;
+    public static double AdjustedOffset => Metadata.ChartOffset + Config.Settings.HardChartOffset;
 
     private static double _currentTime = 0;
     public static double CurrentTime
@@ -322,13 +322,13 @@ public static partial class Chart
 
     public static void SetBeatSnapIndex(int index)
     {
-        if (index < 0 || index >= Config.BeatSnaps.Count)
+        if (index < 0 || index >= Config.Settings.BeatSnaps.Count)
         {
             throw new ArgumentOutOfRangeException($"Beat snap index {index} out of range.");
         }
         
         _beatSnapIndex = index;
-        BeatSnap = Config.BeatSnaps[_beatSnapIndex];
+        BeatSnap = Config.Settings.BeatSnaps[_beatSnapIndex];
         App.MainWindow.BeatSnapText.Text = BeatSnap.ToString();
         _currentSnapLineSet = SnapLineSets[BeatSnap];
         Trace.WriteLine(BeatSnap);
@@ -338,7 +338,7 @@ public static partial class Chart
     public static void IncreaseBeatSnap()
     {
         ++_beatSnapIndex;
-        if (_beatSnapIndex >= Config.BeatSnaps.Count)
+        if (_beatSnapIndex >= Config.Settings.BeatSnaps.Count)
         {
             _beatSnapIndex = 0;
         }
@@ -350,7 +350,7 @@ public static partial class Chart
         --_beatSnapIndex;
         if (_beatSnapIndex < 0)
         {
-            _beatSnapIndex = Config.BeatSnaps.Count - 1;
+            _beatSnapIndex = Config.Settings.BeatSnaps.Count - 1;
         }
         SetBeatSnapIndex(_beatSnapIndex);
     }
@@ -442,8 +442,8 @@ public static partial class Chart
             
             foreach (var note in Notes)
             {
-                if (note.ShouldPlayHitSound(prevTime - Config.HitSoundOffset,
-                                            CurrentTime - Config.HitSoundOffset) is { } offset)
+                if (note.ShouldPlayHitSound(prevTime - Config.Settings.HitSoundOffset,
+                                            CurrentTime - Config.Settings.HitSoundOffset) is { } offset)
                 {
                     if (_hitSound != null)
                     {
@@ -492,19 +492,21 @@ public static partial class Chart
         
         App.MainWindow.PlaySpeedSlider.Value = PlaySpeed;
         
-        Metadata.SongName = "";
-        Metadata.ArtistName = "";
-        Metadata.CoverArtistName  = "";
-        Metadata.DifficultySlot = DifficultySlot.BEGINNER;
-        Metadata.DifficultyLevel = 0;
-        Metadata.DifficultyName = "Beginner";
-        Metadata.FlavorText = "";
-        Metadata.CharterName = "";
-        Metadata.ChartOffset = 0;
+        // Metadata.SongName = "";
+        // Metadata.ArtistName = "";
+        // Metadata.CoverArtistName  = "";
+        // Metadata.DifficultySlot = DifficultySlot.BEGINNER;
+        // Metadata.DifficultyLevel = 0;
+        // Metadata.DifficultyName = "Beginner";
+        // Metadata.FlavorText = "";
+        // Metadata.CharterName = "";
+        // Metadata.ChartOffset = 0;
+        
+        Metadata = new MetadataContainer();
         _notes = [];
+        _labels = [];
         ChartBuilder.ClearSelection();
         ChartBuilder.DeleteBreakpoint(false);
-        _labels = [];
             
         _bpmRegions = [new BpmRegion(0, 60)];
         RebuildSnapLineSets();
@@ -628,16 +630,16 @@ public static partial class Chart
 
                 Trace.WriteLine(
                     $"Restoring last editor state: {time} ms, snap {beatSnap}, {zoom}x zoom");
-                for (var i = 0; i < Config.BeatSnaps.Count; ++i)
+                for (var i = 0; i < Config.Settings.BeatSnaps.Count; ++i)
                 {
-                    if (beatSnap == Config.BeatSnaps[i])
+                    if (beatSnap == Config.Settings.BeatSnaps[i])
                     {
                         SetBeatSnapIndex(i);
                         break;
                     }
                 }
 
-                if (zoom >= Config.MinZoom && zoom <= Config.MaxZoom)
+                if (zoom >= Config.Settings.MinZoom && zoom <= Config.Settings.MaxZoom)
                 {
                     NoteViewer.SetZoom(zoom);
                 }
@@ -993,7 +995,7 @@ public static partial class Chart
     /// </summary>
     public static void RebuildSnapLineSets()
     {
-        var sortedSnapValues = Config.BeatSnaps.OrderByDescending(x => x).ToList();
+        var sortedSnapValues = Config.Settings.BeatSnaps.OrderByDescending(x => x).ToList();
         foreach (var snapValue in sortedSnapValues)
         {
             List<double> snapLineSet = [0];

@@ -1,0 +1,98 @@
+﻿# Which color theme to use for the editor. This must be the name of one of the themes in
+# `themes.json` (case sensitive).
+colorTheme: "default"
+
+# Whether UNBUGGABLE should default to saving charts as .beat.txt files, or as standard .txt files.
+useBeatFiles: true
+
+# If true, the in-game preview shows an indicator of where doubles will land, and gives mash notes a
+# "tail" like hold notes have. Set this to false to make the preview more closely match what you
+# actually see in-game.
+enhancedPreview: true
+
+# If true, the note viewer will always show the letters for all note flags on all notes. Normally,
+# flags that determine the note type are not shown (for example, spikes and doubles always have the
+# Whistle flag, so that flag is not shown for them).
+alwaysShowAllNoteFlags: false
+
+# Enables breakpoints to start the game midway through the chart.
+enableBreakpoints: true
+
+# #If true, loading a chart file will convert all notes that are in lane 2 into UNBUGGABLE markers
+# (unless a marker there already exists).
+useLane2AsMarkers: true
+
+# If true, loading a chart file will convert all notes that are in lane 2 into UNBUGGABLE markers
+# (unless a marker there already exists).
+saveMarkersAsLane2Notes: false
+
+# If true, all markers are saved in a chart file as a lane 2 note. Markers are always saved in the
+# UNBUGGABLE section of a .beat.txt file, regardless of this setting.
+alwaysEnableCustomDifficultyName: false
+
+# If true, pasting notes will automatically select those notes (this is useful for pasting and then
+# mirroring sections).
+autoSelectPastedNotes: true
+
+# Whether to allow placing cop mashes on the top lane. In-game, cop mashes are always on the bottom
+# lane, regardless of what lane they were actually placed in.
+allowTopLaneCopMashes: false
+
+# If true, freestyle notes appear smaller in the note viewer if they will be subnotes of another
+# freestyle note in-game.
+showFreestyleSubNotesWhilePlacing: true
+
+# A list of every value that the chart editor can snap to. For some reason, the official editor
+# multiplies all snap values by 4. The default snap values for UNBUGGABLE match the ones in the
+# official editor.
+beatSnaps: [1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 20, 5, 9, 11, 13]
+
+# Minimum possible zoom. Smaller values zoom out, larger values zoom in.
+minZoom: 0.5
+
+# Maximum possible zoom. Smaller values zoom out, larger values zoom in.
+maxZoom: 7.5
+
+# How much to increase or decrease zoom by when scrolling the mouse. Negative values invert scroll
+# direction.
+zoomIncrement: 0.25
+
+# What order (from left to right) the note viewer displays lanes. The default setting places the
+# center lane in between the top and bottom to match the in-game order. To use the official editor's
+# order where the center lane is on the right, change this setting to 
+# ["top", "bottom", "camera", "center"].
+laneOrder: ["top", "center", "bottom", "camera"]
+
+# Constant offset to make hit sounds play slightly earlier or later than the actual note.
+hitSoundOffset: 0
+
+# Constant offset applied to all charts, to match up with the one hard-coded into the official
+# editor. This is only in the config file because I don't like hard-coding things. DO NOT CHANGE
+# THIS NUMBER UNLESS YOU KNOW WHAT YOU'RE DOING.
+hardChartOffset: -60
+
+# While the song is playing, how many times to check for whether any notes should play a hit sound.
+# Lower values can improve performance, but may cause hit sounds to desync.
+hitSoundTickRate: 150
+
+# Enables or disables hit sounds for every note type. The official editor enables hit sounds for
+# everything except markers and camera changes.
+hitSounds:
+  single: true
+  spike: true
+  freestyle: true
+  holdStart: true
+  holdEnd: true
+  doubleStart: true
+  doubleEnd: true
+  mashStart: true
+  mashEnd: true
+  copSingle: true
+  copHoldStart: true
+  copHoldEnd: true
+  copMashStart: true
+  copMashEnd: true
+  cameraChange: false
+  marker1: false
+  marker2: false
+  marker3: false

@@ -168,7 +168,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
         var tickTimer = new DispatcherTimer
         {
-            Interval = TimeSpan.FromSeconds(1 / (double)Config.HitSoundTickRate)
+            Interval = TimeSpan.FromSeconds(1 / Config.Settings.HitSoundTickRate)
         };
         tickTimer.Tick += (sender, args) => Chart.PerTickUpdate();
         tickTimer.Start();
@@ -287,7 +287,7 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task DefaultSave()
     {
-        if (Config.DefaultSaveToBeatFiles)
+        if (Config.Settings.DefaultSaveToBeatFiles)
         {
             await SaveBeatFile();
         }

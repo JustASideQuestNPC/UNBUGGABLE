@@ -133,21 +133,21 @@ public class NoteViewer : Control
     public static void UpdateNoteColumnPositions()
     {
         List<int> columnXPositions = [208, 306, 404, 502];
-        for (var i = 0; i < Config.LaneOrder.Count; ++i)
+        for (var i = 0; i < Config.Settings.LaneOrder.Count; ++i)
         {
             var x = columnXPositions[i];
-            switch (Config.LaneOrder[i])
+            switch (Config.Settings.LaneOrder[i])
             {
-                case NoteLane.TOP:
+                case "top":
                     _topLaneX = x;
                     break;
-                case NoteLane.BOTTOM:
+                case "bottom":
                     _bottomLaneX = x;
                     break;
-                case NoteLane.CENTER:
+                case "center":
                     _centerLaneX = x;
                     break;
-                case NoteLane.CAMERA:
+                case "camera":
                     _cameraLaneX = x;
                     break;
             }
@@ -184,18 +184,18 @@ public class NoteViewer : Control
     
     public static void IncreaseZoom()
     {
-        if (CurrentZoom < Config.MaxZoom)
+        if (CurrentZoom < Config.Settings.MaxZoom)
         {
-            CurrentZoom += Config.ZoomIncrement;
+            CurrentZoom += Config.Settings.ZoomIncrement;
             App.MainWindowViewModel.CurrentZoomText = CurrentZoom.ToString("0.000");
         }
     }
 
     public static void DecreaseZoom()
     {
-        if (CurrentZoom > Config.MinZoom)
+        if (CurrentZoom > Config.Settings.MinZoom)
         {
-            CurrentZoom -= Config.ZoomIncrement;
+            CurrentZoom -= Config.Settings.ZoomIncrement;
             App.MainWindowViewModel.CurrentZoomText = CurrentZoom.ToString("0.000");
         }
     }

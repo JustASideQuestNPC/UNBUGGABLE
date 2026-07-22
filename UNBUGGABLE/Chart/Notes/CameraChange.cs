@@ -56,7 +56,7 @@ public class CameraChange : NoteBase
 
     public override long? ShouldPlayHitSound(double rangeStart, double rangeEnd)
     {
-        if (Time > rangeStart && Time <= rangeEnd && Config.HitSounds.CameraChange)
+        if (Time > rangeStart && Time <= rangeEnd && Config.Settings.HitSounds.CameraChange)
         {
             return (long)(Time - rangeStart);
         }

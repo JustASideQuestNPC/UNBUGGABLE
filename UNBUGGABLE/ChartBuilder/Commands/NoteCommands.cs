@@ -17,7 +17,7 @@ public class AddNotesCommand(List<NoteBase> notes, bool isPaste = false) : IComm
             Chart.AddNote(note);
         }
 
-        if (isPaste && Config.AutoSelectPastedNotes)
+        if (isPaste && Config.Settings.AutoSelectPastedNotes)
         {
             ChartBuilder.SelectedNotes = [..notes];
         }

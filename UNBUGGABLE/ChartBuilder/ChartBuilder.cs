@@ -325,7 +325,7 @@ public static class ChartBuilder
             case Key.D3:
                 if (TopLaneStartTime.SoftNotEquals(-1000))
                 {
-                    Trace.WriteLine("end top lane placement");
+                    Trace.WriteLine($"end top lane placement: {Chart.CurrentTime}");
                     var start = Math.Min(TopLaneStartTime, Chart.CurrentTime);
                     var end = Math.Max(TopLaneStartTime, Chart.CurrentTime);
                     CheckForNoteOperation(NoteLane.TOP, start, end);
@@ -335,7 +335,7 @@ public static class ChartBuilder
             case Key.D4:
                 if (BottomLaneStartTime.SoftNotEquals(-1000))
                 {
-                    Trace.WriteLine("end bottom lane placement");
+                    Trace.WriteLine($"end bottom lane placement: {Chart.CurrentTime}");
                     var start = Math.Min(BottomLaneStartTime, Chart.CurrentTime);
                     var end = Math.Max(BottomLaneStartTime, Chart.CurrentTime);
                     CheckForNoteOperation(NoteLane.BOTTOM, start, end);
@@ -345,7 +345,7 @@ public static class ChartBuilder
             case Key.D6:
                 if (CenterLaneStartTime.SoftNotEquals(-1000))
                 {
-                    Trace.WriteLine("end center lane placement");
+                    Trace.WriteLine($"end center lane placement: {Chart.CurrentTime}");
                     var start = Math.Min(CenterLaneStartTime, Chart.CurrentTime);
                     var end = Math.Max(CenterLaneStartTime, Chart.CurrentTime);
                     CheckForNoteOperation(NoteLane.CENTER, start, end);
@@ -534,7 +534,7 @@ public static class ChartBuilder
 
     public static void CheckExistingBreakpoint()
     {
-        if (!Config.EnableBreakpoints || !Config.PracticeModInstalled)
+        if (!Config.Settings.EnableBreakpoints || !Config.PracticeModInstalled)
         {
             return;
         }
@@ -557,7 +557,7 @@ public static class ChartBuilder
     
     public static void DeleteBreakpoint(bool showEventIndicator = true)
     {
-        BreakpointTime = -1;
+        BreakpointTime = -1000;
         if (showEventIndicator)
         {
             App.MainWindowViewModel.ShowEventIndicator("Breakpoint deleted.");
@@ -710,7 +710,7 @@ public static class ChartBuilder
                 else
                 {
                     if (start.SoftNotEquals(end) && ShiftPressed && lane == NoteLane.TOP &&
-                        !Config.AllowTopLaneCopMashes)
+                        !Config.Settings.AllowTopLaneCopMashes)
                     {
                         App.MainWindowViewModel.ShowEventIndicator(
                             "Top lane cop mashes do not appear in-game.");
@@ -852,7 +852,7 @@ public static class ChartBuilder
     
     private static void SetBreakpoint()
     {
-        if (!Config.EnableBreakpoints)
+        if (!Config.Settings.EnableBreakpoints)
         {
             App.MainWindowViewModel.ShowEventIndicator("Breakpoints are disabled.");
             return;

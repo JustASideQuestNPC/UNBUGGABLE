@@ -27,7 +27,7 @@ public class FreestyleNote : NoteBase
 
         var rect = new Rect(x - 40, y - 12, 80, 24);
         if (Chart.GetPreviousNote(this)?.Type == NoteType.FREESTYLE &&
-            Config.ShowSubFreestylesInNoteViewer)
+            Config.Settings.ShowSubFreestylesInNoteViewer)
         {
             rect = new Rect(x - 24, y - 12, 48, 24);
         }
@@ -70,7 +70,7 @@ public class FreestyleNote : NoteBase
 
     public override long? ShouldPlayHitSound(double rangeStart, double rangeEnd)
     {
-        if (Time > rangeStart && Time <= rangeEnd && Config.HitSounds.Freestyle)
+        if (Time > rangeStart && Time <= rangeEnd && Config.Settings.HitSounds.Freestyle)
         {
             return (long)(Time - rangeStart);
         }

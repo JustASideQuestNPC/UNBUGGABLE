@@ -79,21 +79,21 @@ public class HoldNote : NoteBase
         switch (Type)
         {
             case NoteType.HOLD:
-                if (Time > rangeStart && Time <= rangeEnd && Config.HitSounds.HoldStart)
+                if (Time > rangeStart && Time <= rangeEnd && Config.Settings.HitSounds.HoldStart)
                 {
                     return (long)(Time - rangeStart);
                 }
-                if (EndTime > rangeStart && EndTime <= rangeEnd && Config.HitSounds.HoldEnd)
+                if (EndTime > rangeStart && EndTime <= rangeEnd && Config.Settings.HitSounds.HoldEnd)
                 {
                     return (long)(EndTime - rangeStart);
                 }
                 break;
             case NoteType.DOUBLE:
-                if (Time > rangeStart && Time <= rangeEnd && Config.HitSounds.DoubleStart)
+                if (Time > rangeStart && Time <= rangeEnd && Config.Settings.HitSounds.DoubleStart)
                 {
                     return (long)(Time - rangeStart);
                 }
-                if (EndTime > rangeStart && EndTime <= rangeEnd && Config.HitSounds.DoubleEnd)
+                if (EndTime > rangeStart && EndTime <= rangeEnd && Config.Settings.HitSounds.DoubleEnd)
                 {
                     return (long)(EndTime - rangeStart);
                 }
@@ -124,7 +124,7 @@ public class HoldNote : NoteBase
         var noteY = Utils.Map(Math.Clamp(Chart.CurrentTime, Time, EndTime), Time, EndTime,
                               startY, endY);
 
-        if (Config.EnhancedPreview)
+        if (Config.Settings.EnhancedPreview)
         {
             var endX = GamePreview.TimeToScreenCoords(EndTime);
             dc.DrawEllipse(_doubleTailBrush, null, new Point(endX, endY), 20, 20);

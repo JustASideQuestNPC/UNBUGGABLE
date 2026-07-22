@@ -34,7 +34,7 @@ public partial class ChartMetadataDialog : BaseDialog<Chart.MetadataContainer>
         
         DifficultySlotBox.SelectedIndex = (int)_difficultySlot;
         
-        if (_difficultySlot == DifficultySlot.STAR || Config.AlwaysEnableCustomDifficultyName)
+        if (_difficultySlot == DifficultySlot.STAR || Config.Settings.AlwaysEnableCustomDifficultyName)
         {
             DifficultyNameBox.IsEnabled = true;
         }
@@ -77,7 +77,7 @@ public partial class ChartMetadataDialog : BaseDialog<Chart.MetadataContainer>
         Trace.WriteLine($"Difficulty slot changed to {newSelection}");
         if (DifficultyNameBox != null)
         {
-            if (_difficultySlot == DifficultySlot.STAR || Config.AlwaysEnableCustomDifficultyName)
+            if (_difficultySlot == DifficultySlot.STAR || Config.Settings.AlwaysEnableCustomDifficultyName)
             {
                 DifficultyNameBox.IsEnabled = true;
             }

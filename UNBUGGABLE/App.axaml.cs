@@ -56,7 +56,7 @@ public partial class App : Application
             Console.WriteLine($"Applied {brushColor} to {brushName}");
         }
         
-        // There's a bug in avalonia that makes parts of the app theme (impossible to override for
+        // There's a bug in avalonia that makes parts of the app theme impossible to override for
         // combo boxes (and some other controls). Normally I'd have to completely re-template those
         // controls, but I'm not actually using the app theme so it's safe to just hack it
         // Resources["ThemeBackgroundBrush"] = new SolidColorBrush(

@@ -61,7 +61,7 @@ public class MashNote : NoteBase
             new Rect(startX - 30, GamePreview.TopLaneY, 60,
                      -GamePreview.TopLaneY + GamePreview.BottomLaneY), 30);
 
-        if (Config.EnhancedPreview)
+        if (Config.Settings.EnhancedPreview)
         {
             dc.DrawLine(new Pen(_tailBrush, 40), new Point(startX, 0), new Point(endX, 0));
         }
@@ -70,11 +70,11 @@ public class MashNote : NoteBase
 
     public override long? ShouldPlayHitSound(double rangeStart, double rangeEnd)
     {
-        if (Time > rangeStart && Time <= rangeEnd && Config.HitSounds.HoldStart)
+        if (Time > rangeStart && Time <= rangeEnd && Config.Settings.HitSounds.HoldStart)
         {
             return (long)(Time - rangeStart);
         }
-        if (EndTime > rangeStart && EndTime <= rangeEnd && Config.HitSounds.HoldEnd)
+        if (EndTime > rangeStart && EndTime <= rangeEnd && Config.Settings.HitSounds.HoldEnd)
         {
             return (long)(EndTime - rangeStart);
         }
