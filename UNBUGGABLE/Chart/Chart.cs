@@ -578,9 +578,9 @@ public static partial class Chart
                         DifficultySlotRegex().Match(path).Groups[1].Value switch
                     {
                         "Beginner" => DifficultySlot.BEGINNER,
-                        "Normal" => DifficultySlot.NORMAL,
-                        "Hard" => DifficultySlot.HARD,
-                        "Expert" => DifficultySlot.EXPERT,
+                        "Easy" => DifficultySlot.NORMAL,
+                        "Normal" => DifficultySlot.HARD,
+                        "Hard" => DifficultySlot.EXPERT,
                         "UNBEATABLE" => DifficultySlot.UNBEATABLE,
                         _ => DifficultySlot.STAR
                     };
@@ -1084,9 +1084,19 @@ public static partial class Chart
     /// </summary>
     private static string GetChartFileName()
     {
+        // difficulty slots have different internal names for some reason
+        var difficultyName = Metadata.DifficultySlot switch
+        {
+            DifficultySlot.BEGINNER => "Beginner",
+            DifficultySlot.NORMAL => "Easy",
+            DifficultySlot.HARD => "Normal",
+            DifficultySlot.EXPERT => "Hard",
+            DifficultySlot.UNBEATABLE => "UNBEATABLE",
+            _ => "Star"
+        };
+        
         return $"{SanitizeString(Metadata.ArtistName)} - {SanitizeString(Metadata.SongName)} " +
-               $"({SanitizeString(Metadata.CharterName)}) " +
-               $"[{SanitizeString(Metadata.DifficultySlot.ToString())}]";
+               $"({SanitizeString(Metadata.CharterName)}) [{SanitizeString(difficultyName)}]";
     }
 
     private static string SanitizeString(string str)
