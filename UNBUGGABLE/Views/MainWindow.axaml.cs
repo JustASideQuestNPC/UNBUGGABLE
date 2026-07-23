@@ -39,9 +39,9 @@ public partial class MainWindow : Window
         ChartBuilder.MousePosition = e.GetPosition((Border)sender);
     }
 
-    private void OnNoteViewerPointerPress(object? sender, PointerPressedEventArgs e)
+    private async void OnNoteViewerPointerPress(object? sender, PointerPressedEventArgs e)
     {
-        ChartBuilder.OnMousePress(e.Properties.IsRightButtonPressed);
+        await ChartBuilder.OnMousePress(e.Properties.IsRightButtonPressed);
     }
 
     private void OnNoteViewerPointerRelease(object? sender, PointerReleasedEventArgs e)

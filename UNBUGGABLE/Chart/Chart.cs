@@ -92,11 +92,6 @@ public static partial class Chart
             var canSave = (value.SongName != "" && value.ArtistName != "" &&
                            value.CharterName != "");
             App.MainWindowViewModel.CanSave = canSave;
-            if (canSave)
-            {
-                ChartFileName = GetChartFileName();
-                Trace.WriteLine(ChartFileName);
-            }
 
             if (_bpmRegions.Count != 0 && _bpmRegions[0].StartTime
                                                         .SoftNotEquals(value.ChartOffset))
@@ -115,6 +110,11 @@ public static partial class Chart
             }
             
             _metadata = value;
+            if (canSave)
+            {
+                ChartFileName = GetChartFileName();
+                Trace.WriteLine(ChartFileName);
+            }
         }
     }
 
@@ -435,15 +435,21 @@ public static partial class Chart
             CurrentTime += (_stopwatch.ElapsedMilliseconds - _lastStopwatchTime) * PlaySpeed / 100;
             if (CurrentTime + AdjustedOffset >= 0 && !_mediaPlayer.IsPlaying)
             {
-                _mediaPlayer.SeekTo(new TimeSpan(0));
+                _mediaPlayer.SeekTo(TimeSpan.FromMilliseconds(CurrentTime + AdjustedOffset));
                 _mediaPlayer.Play();
-                CurrentTime = AdjustedOffset;
+                // CurrentTime = AdjustedOffset;
+            }
+            else if (CurrentTime > Length)
+            {
+                Playing = false;
+                CurrentTime = Length;
             }
             
             foreach (var note in Notes)
             {
                 if (note.ShouldPlayHitSound(prevTime - Config.Settings.HitSoundOffset,
-                                            CurrentTime - Config.Settings.HitSoundOffset) is { } offset)
+                                            CurrentTime - Config.Settings.HitSoundOffset)
+                    is { } offset)
                 {
                     if (_hitSound != null)
                     {
@@ -951,9 +957,13 @@ public static partial class Chart
                 {
                     _bpmRegions.Insert(i + 1, region);
                     region.Next = _bpmRegions[i + 2];
-                    _bpmRegions[i - 1].Next = region;
-                    region.Previous = _bpmRegions[i - 1];
                     _bpmRegions[i + 2].Previous = region;
+
+                    if (i > 0)
+                    {
+                        _bpmRegions[i - 1].Next = region;
+                        region.Previous = _bpmRegions[i - 1];
+                    }
                     break;
                 }
             }
@@ -1001,10 +1011,9 @@ public static partial class Chart
             List<double> snapLineSet = [0];
             double time = 0;
             var bpmRegion = _bpmRegions[0];
-            while (time <= Length)
+            while (bpmRegion != null)
             {
                 var nextTime = time + (bpmRegion.MsPerBeat / snapValue);
-                // handle bpm changes between snap lines
                 if (nextTime >= bpmRegion.EndTime)
                 {
                     if (bpmRegion.Next == null)
@@ -1040,7 +1049,6 @@ public static partial class Chart
             return;
         }
         
-        Trace.WriteLine(_mediaPlayer.Media.State);
         Playing = true;
         if (CurrentTime + AdjustedOffset >= 0)
         {
@@ -1061,22 +1069,15 @@ public static partial class Chart
         Playing = false;
         _mediaPlayer.Pause();
         SetTimeToNearestSnap();
-        Trace.WriteLine(_mediaPlayer.Time);
-        //Trace.WriteLine($"PauseSong: {CurrentTime}, {_mediaPlayer.Time}");
     }
 
     private static void MediaPlayer_EndReached(object? sender, EventArgs e)
     {
-        Dispatcher.UIThread.Invoke(() =>
+        Dispatcher.UIThread.InvokeAsync(() =>
         {
+            Trace.WriteLine("End reached");
             PauseSong();
-            // throw this in a separate thread because otherwise it'll block itself and freeze
-            // ThreadPool.QueueUserWorkItem(_ =>
-            // {
-            //     PauseSong();
-            //     // _mediaPlayer.SeekTo(new TimeSpan(0));
-            //     // _mediaPlayer.Play();
-            // });
+            Trace.WriteLine(_mediaPlayer.Time);
         });
     }
 
@@ -1146,11 +1147,22 @@ public static partial class Chart
             var nextSnap = _currentSnapLineSet[i + 1];
             if (CurrentTime >= currentSnap && CurrentTime <= nextSnap)
             {
-                CurrentTime = currentSnap;
-                _currentSnapLineSetIndex = i;
+                if (Math.Abs(CurrentTime - currentSnap) < Math.Abs(CurrentTime - nextSnap))
+                {
+                    CurrentTime = currentSnap;
+                    _currentSnapLineSetIndex = i;
+                }
+                else
+                {
+                    CurrentTime = nextSnap;
+                    _currentSnapLineSetIndex = i + 1;
+                }
                 return;
             }
         }
+        
+        CurrentTime = _currentSnapLineSet[^1];
+        _currentSnapLineSetIndex = _currentSnapLineSet.Count - 1;
     }
 
     private static int TryParseGeneralChartData(string[] lines, int index, string folderPath,
@@ -1407,12 +1419,12 @@ public static partial class Chart
                 if (_bpmRegions.Count == 0)
                 {
                     Metadata.ChartOffset = regionStart;
-                    _bpmRegions.Add(new BpmRegion(regionStart, (int)Math.Round(60000 / msPerBeat)));
+                    _bpmRegions.Add(new BpmRegion(regionStart, 60000 / msPerBeat));
                 }
                 else
                 {
                     _bpmRegions.Add(new BpmRegion(regionStart - Metadata.ChartOffset,
-                                                  (int)Math.Round(60000 / msPerBeat)));
+                                                  60000 / msPerBeat));
                 }
                 
                 if (_bpmRegions.Count > 1)

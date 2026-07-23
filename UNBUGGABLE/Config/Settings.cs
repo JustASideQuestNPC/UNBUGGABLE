@@ -85,6 +85,7 @@ public class Settings
     public required double HitSoundOffset;
     public required double HardChartOffset;
     public required double HitSoundTickRate;
+    public required double CurrentTimePosition;
     public required HitSounds HitSounds;
 
     public void PrintSettings()

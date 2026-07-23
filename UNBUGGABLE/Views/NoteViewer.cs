@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
@@ -161,7 +162,8 @@ public class NoteViewer : Control
     public static double TimeToScreenCoords(double time)
     {
         var scaledPixelsPerMs = PixelsPerSecond * CurrentZoom / 1000;
-        var visibleRangeStart = (Chart.CurrentTime - 150 / scaledPixelsPerMs);
+        var visibleRangeStart = Chart.CurrentTime - Config.Settings.CurrentTimePosition /
+                                scaledPixelsPerMs;
         return (time - visibleRangeStart) * scaledPixelsPerMs;
     }
     
@@ -172,7 +174,8 @@ public class NoteViewer : Control
     public static double ScreenCoordsToTime(double y)
     {
         var scaledPixelsPerMs = PixelsPerSecond * CurrentZoom / 1000;
-        var visibleRangeStart = (Chart.CurrentTime - 150 / scaledPixelsPerMs);
+        var visibleRangeStart = Chart.CurrentTime - Config.Settings.CurrentTimePosition /
+                                scaledPixelsPerMs;
         return visibleRangeStart + y / scaledPixelsPerMs;
     }
     
@@ -268,9 +271,11 @@ public class NoteViewer : Control
         if (Chart.SongLoaded)
         {
             var scaledPixelsPerMs = PixelsPerSecond * CurrentZoom / 1000;
-            var visibleRangeStart = (Chart.CurrentTime - 150 / scaledPixelsPerMs);
+            var visibleRangeStart = Chart.CurrentTime - Config.Settings.CurrentTimePosition /
+                                    scaledPixelsPerMs;
             var visibleRangeEnd =
-                (Chart.CurrentTime + (ViewerHeight - 150) / scaledPixelsPerMs);
+                Chart.CurrentTime + (ViewerHeight - Config.Settings.CurrentTimePosition) /
+                scaledPixelsPerMs;
             
             // Trace.WriteLine($"Visible range: {visibleRangeStart} - {visibleRangeEnd}");
             foreach (var subBeatTime in Chart.GetSnapTimesInRange(visibleRangeStart,
@@ -293,8 +298,9 @@ public class NoteViewer : Control
         }
         
         // current time
-        dc.DrawLine(new Pen(_currentTimeLineBrush, 8), new Point(150, 150),
-                    new Point(ViewerWidth, 150));
+        dc.DrawLine(new Pen(_currentTimeLineBrush, 8),
+                    new Point(150, Config.Settings.CurrentTimePosition),
+                    new Point(ViewerWidth, Config.Settings.CurrentTimePosition));
         
         foreach (var bpmRegion in Chart.BpmRegions)
         {
@@ -308,16 +314,20 @@ public class NoteViewer : Control
         
         // lane labels
         dc.DrawOutlinedText(_topLaneText, new Point(_topLaneX - _topLaneText.Width / 2,
-                                                    148 - _topLaneText.Height / 2),
+                                                    Config.Settings.CurrentTimePosition - 2 -
+                                                    _topLaneText.Height / 2),
                             _laneNumberFillBrush, _textOutlinePen);
         dc.DrawOutlinedText(_centerLaneText, new Point(_centerLaneX - _centerLaneText.Width / 2,
-                                                       148 - _centerLaneText.Height / 2),
+                                                       Config.Settings.CurrentTimePosition - 2 -
+                                                       _centerLaneText.Height / 2),
                             _laneNumberFillBrush, _textOutlinePen);
         dc.DrawOutlinedText(_bottomLaneText, new Point(_bottomLaneX - _bottomLaneText.Width / 2,
-                                                       148 - _bottomLaneText.Height / 2),
+                                                       Config.Settings.CurrentTimePosition - 2 -
+                                                       _bottomLaneText.Height / 2),
                             _laneNumberFillBrush, _textOutlinePen);
         dc.DrawOutlinedText(_cameraLaneText, new Point(_cameraLaneX - _cameraLaneText.Width / 2,
-                                                       148 - _cameraLaneText.Height / 2),
+                                                       Config.Settings.CurrentTimePosition - 2 -
+                                                       _cameraLaneText.Height / 2),
                             _laneNumberFillBrush, _textOutlinePen);
 
         if (ChartBuilder.BreakpointTime.SoftNotEquals(-1000))
@@ -349,6 +359,72 @@ public class NoteViewer : Control
         dc.DrawLine(new Pen(_accentBrush, 5), new Point(150, 0), new Point(150, ViewerHeight));
         
         clip.Dispose();
+    }
+
+    public static async Task<bool> CheckForEditByMouse(bool rightClick)
+    {
+        if (ChartBuilder.MousePosition.X > 150)
+        {
+            return false;
+        }
+        
+        BpmRegion? hoveredRegion = null;
+        foreach (var bpmRegion in Chart.BpmRegions)
+        {
+            var rangeStart = TimeToScreenCoords(bpmRegion.StartTime) - 75;
+            var rangeEnd = TimeToScreenCoords(bpmRegion.StartTime) + 75;
+            if (ChartBuilder.MousePosition.Y > rangeStart &&
+                ChartBuilder.MousePosition.Y < rangeEnd)
+            {
+                hoveredRegion = bpmRegion;
+                break;
+            }
+        }
+
+        if (hoveredRegion != null)
+        {
+            if (rightClick)
+            {
+                if (hoveredRegion != Chart.BpmRegions[0])
+                {
+                    ChartBuilder.DeleteBpmRegion(hoveredRegion);
+                    return true;
+                }
+            }
+            else
+            {
+                await ChartBuilder.EditBpmRegion(hoveredRegion);
+                return true;
+            }
+        }
+        
+        Chart.Label? hoveredLabel = null;
+        foreach (var label in Chart.Labels)
+        {
+            var rangeStart = TimeToScreenCoords(label.Time) - 75;
+            var rangeEnd = TimeToScreenCoords(label.Time) + 75;
+            if (ChartBuilder.MousePosition.Y > rangeStart &&
+                ChartBuilder.MousePosition.Y < rangeEnd)
+            {
+                hoveredLabel = label;
+                break;
+            }
+        }
+
+        if (hoveredLabel != null)
+        {
+            if (rightClick)
+            {
+                ChartBuilder.DeleteLabel(hoveredLabel);
+            }
+            else
+            {
+                await ChartBuilder.EditLabel(hoveredLabel);
+            }
+            return true;
+        }
+
+        return false;
     }
 
     private void RenderBpmChange(DrawingContext dc, BpmRegion bpmRegion)

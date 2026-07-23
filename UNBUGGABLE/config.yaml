@@ -75,6 +75,10 @@ hardChartOffset: -60
 # Lower values can improve performance, but may cause hit sounds to desync.
 hitSoundTickRate: 150
 
+# How far (in pixels) from the top of the screen the line for the current time is. Higher values
+# show more notes before the current time and less notes after it.
+currentTimePosition: 175
+
 # Enables or disables hit sounds for every note type. The official editor enables hit sounds for
 # everything except markers and camera changes.
 hitSounds:

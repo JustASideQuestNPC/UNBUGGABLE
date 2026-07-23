@@ -2,7 +2,7 @@
 
 public class AddBpmRegionCommand(double time, double bpm) : ICommand
 {
-    private readonly BpmRegion _bpmRegion = new(time + Chart.Metadata.ChartOffset, bpm);
+    private readonly BpmRegion _bpmRegion = new(time, bpm);
     
     public void Execute()
     {

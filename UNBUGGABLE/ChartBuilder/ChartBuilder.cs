@@ -386,15 +386,21 @@ public static class ChartBuilder
         }
     }
 
-    public static void OnMousePress(bool rightButton)
+    public static async Task OnMousePress(bool rightButton)
     {
         if (!Chart.SongLoaded || App.DialogIsOpen)
         {
             return;
         }
 
+        if (await NoteViewer.CheckForEditByMouse(rightButton))
+        {
+            return;
+        }
+
         if (MouseDragStart == null)
         {
+            Trace.WriteLine($"Mouse press: {rightButton}");
             RightMouseDrag = rightButton;
             MouseDragStart = new Point(MousePosition.X, MousePosition.Y);
             MouseDragStartTime = NoteViewer.ScreenCoordsToTime(MouseDragStart.Value.Y);
@@ -406,6 +412,12 @@ public static class ChartBuilder
     public static void OnMouseRelease()
     {
         if (!Chart.SongLoaded || App.DialogIsOpen)
+        {
+            return;
+        }
+
+        // this will be null if the mouse was pressed to edit or delete a label or bpm change
+        if (MouseDragStart == null)
         {
             return;
         }
@@ -554,6 +566,53 @@ public static class ChartBuilder
             DeleteBreakpoint(false);
         }
     }
+
+    public static async Task EditBpmRegion(BpmRegion region)
+    {
+        var bpm = await new NumberEntryDialog("edit bpm change",
+                                              Math.Round(region.Bpm, 2)).ShowAsync();
+        if (bpm.HasValue && bpm.Value.SoftNotEquals(region.Bpm))
+        {
+            if (region.Previous != null)
+            {
+                Trace.WriteLine(
+                    $"Edit bpm region: {bpm.Value} -> {region.Previous.Bpm}");
+            }
+                    
+            // setting a region's bpm to the same as the previous region merges them
+            if (region.Previous != null &&
+                bpm.Value.SoftEquals(region.Previous.Bpm))
+            {
+                Trace.WriteLine("Merge bpm regions");
+                CommandInvoker.Execute(new RemoveBpmRegionCommand(region));
+            }
+            else
+            {
+                Trace.WriteLine("Edit bpm region");
+                CommandInvoker.Execute(new EditBpmRegionCommand(region, bpm.Value));
+            }
+        }
+    }
+
+    public static void DeleteBpmRegion(BpmRegion region)
+    {
+        Trace.WriteLine($"Remove bpm region at {region.StartTime} ms");
+        CommandInvoker.Execute(new RemoveBpmRegionCommand(region));
+    }
+
+    public static async Task EditLabel(Chart.Label label)
+    {
+        var text = await new TextEntryDialog("edit label", label.Text).ShowAsync();
+        if (text.HasValue && text.Value != label.Text)
+        {
+            CommandInvoker.Execute(new EditLabelCommand(label, text.Value));
+        }
+    }
+
+    public static void DeleteLabel(Chart.Label label)
+    {
+        CommandInvoker.Execute(new RemoveLabelCommand(label));
+    }
     
     public static void DeleteBreakpoint(bool showEventIndicator = true)
     {
@@ -582,18 +641,14 @@ public static class ChartBuilder
         {
             if (existingLabel != null)
             {
-                CommandInvoker.Execute(new RemoveLabelCommand(existingLabel));
+                DeleteLabel(existingLabel);
             }
         }
         else
         {
             if (existingLabel != null)
             {
-                var text = await new TextEntryDialog("edit label", existingLabel.Text).ShowAsync();
-                if (text.HasValue && text.Value != existingLabel.Text)
-                {
-                    CommandInvoker.Execute(new EditLabelCommand(existingLabel, text.Value));
-                }
+                await EditLabel(existingLabel);
             }
             else
             {
@@ -616,7 +671,7 @@ public static class ChartBuilder
             // the first bpm region can't be removed for obvious reasons
             if (existingRegion != null && existingRegion != Chart.BpmRegions[0])
             {
-                Trace.WriteLine("Remove bpm region");
+                Trace.WriteLine($"Remove bpm region at {time} ms");
                 CommandInvoker.Execute(new RemoveBpmRegionCommand(existingRegion));
             }
         }
@@ -624,35 +679,14 @@ public static class ChartBuilder
         {
             if (existingRegion != null)
             {
-                var bpm = await new NumberEntryDialog("edit bpm change",
-                                                      existingRegion.Bpm).ShowAsync();
-                if (bpm.HasValue && bpm.Value.SoftNotEquals(existingRegion.Bpm))
-                {
-                    if (existingRegion.Previous != null)
-                    {
-                        Trace.WriteLine($"{bpm.Value}, {existingRegion.Previous.Bpm}");
-                    }
-                    
-                    // setting a region's bpm to the same as the previous region merges them
-                    if (existingRegion.Previous != null &&
-                        bpm.Value.SoftEquals(existingRegion.Previous.Bpm))
-                    {
-                        Trace.WriteLine("Merge bpm regions");
-                        CommandInvoker.Execute(new RemoveBpmRegionCommand(existingRegion));
-                    }
-                    else
-                    {
-                        Trace.WriteLine("Edit bpm region");
-                        CommandInvoker.Execute(new EditBpmRegionCommand(existingRegion, bpm.Value));
-                    }
-                }
+                await EditBpmRegion(existingRegion);
             }
             else
             {
                 var bpm = await new NumberEntryDialog("add bpm change").ShowAsync();
                 if (bpm.HasValue)
                 {
-                    Trace.WriteLine("Add bpm region");
+                    Trace.WriteLine($"Add bpm region at {time} ms");
                     CommandInvoker.Execute(new AddBpmRegionCommand(time, bpm.Value));
                 }
             }

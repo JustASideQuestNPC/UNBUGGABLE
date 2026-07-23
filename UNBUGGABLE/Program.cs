@@ -58,7 +58,7 @@ sealed class Program
         }
         catch (Exception e)
         {
-            Trace.WriteLine($"FATAL ERROR!!!\n{e.Message}");
+            Trace.WriteLine($"FATAL ERROR!!!\n{e}");
         }
     }
 

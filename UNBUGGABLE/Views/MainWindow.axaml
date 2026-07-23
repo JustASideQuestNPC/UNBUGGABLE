@@ -109,8 +109,6 @@
                     <ToolTip.Tip>SFX Volume</ToolTip.Tip>
                 </Slider>
                 <Panel Classes="Spacer" Width="5" />
-                <TextBlock FontSize="15" Foreground="{DynamicResource Accent}"
-                           Text="{Binding #SfxVolumeSlider.Value, StringFormat=\{0:000\}%}" />
                 
                 <Panel Classes="Spacer" />
                 
@@ -125,6 +123,11 @@
                 <Panel Classes="Spacer" Width="5" />
                 <TextBlock FontSize="15" Foreground="{DynamicResource Accent}"
                            Text="{Binding #PlaySpeedSlider.Value, StringFormat={}{0:n0}%}" />
+                <Panel Classes="Spacer" Width="5" />
+                <Button Classes="SquareIconButton" ToolTip.Tip="Reset to 100% Speed"
+                        Command="{Binding ResetPlaySpeedCommand}" Focusable="False">
+                    <materialIcons:MaterialIcon Kind="Undo" />
+                </Button>
                 
                 <Panel Classes="Spacer" />
                 <!-- <ContentControl Content="{Binding SaveIndicator}" /> -->

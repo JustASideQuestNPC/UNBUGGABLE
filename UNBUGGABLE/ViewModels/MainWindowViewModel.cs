@@ -131,12 +131,15 @@ public partial class MainWindowViewModel : ViewModelBase
             App.MainWindow.GamePreview.InvalidateVisual();
             if (Chart.SongLoaded)
             {
-                var chartTimeText = TimeSpan.FromMilliseconds(Chart.CurrentTime)
+                var songTimeText = TimeSpan.FromMilliseconds(Chart.CurrentTime)
                                             .ToString(@"mm\:ss\.fff");
-                SongTimeText = Chart.CurrentTime < 0 ? $"-{chartTimeText}" : chartTimeText;
-                ChartTimeText = TimeSpan.FromMilliseconds(
-                                            Chart.CurrentTime + Chart.Metadata.ChartOffset)
-                                        .ToString(@"mm\:ss\.fff");
+                SongTimeText = Chart.CurrentTime < 0 ? $"-{songTimeText}" : songTimeText;
+                
+                var chartTimeText = TimeSpan.FromMilliseconds(
+                                                Chart.CurrentTime + Chart.Metadata.ChartOffset)
+                                            .ToString(@"mm\:ss\.fff");
+                ChartTimeText = Chart.CurrentTime + Chart.Metadata.ChartOffset < 0 ?
+                    $"-{chartTimeText}" : chartTimeText;
                 ChartLengthText = TimeSpan.FromMilliseconds(Chart.Length).ToString(@"mm\:ss\.fff");
                 Cop1State = GamePreview.Cop1State switch
                 {
@@ -429,6 +432,12 @@ public partial class MainWindowViewModel : ViewModelBase
         Config.LoadConfig();
         NoteViewer.UpdateNoteColumnPositions();
         Chart.RebuildSnapLineSets();
+    }
+
+    [RelayCommand]
+    private void ResetPlaySpeed()
+    {
+        PlaySpeed = 100;
     }
 
     [RelayCommand]
