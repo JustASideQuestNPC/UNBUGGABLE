@@ -93,10 +93,10 @@ SectionEnd
 Section "Main App" MainAppComponent
     SectionIn RO ; makes this component required
     File "/oname=$OUTDIR\icon.ico" "UNBUGGABLE\InstallerAssets\icon.ico"
-    File "/oname=$OUTDIR\config.json" "UNBUGGABLE\config.json"
+    File "/oname=$OUTDIR\config.yaml" "UNBUGGABLE\config.yaml"
     Call BruteForceInstallApp
     FileWrite $UninstLog "$OUTDIR\icon.ico$\r$\n"
-    FileWrite $UninstLog "$OUTDIR\config.json$\r$\n"
+    FileWrite $UninstLog "$OUTDIR\config.yaml$\r$\n"
     ${WriteUninstaller} "UNBUGGABLE_Uninstaller.exe"
 
     ; Add to the "Add or Remove Programs" list on windows
