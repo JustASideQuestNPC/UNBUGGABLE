@@ -17,6 +17,7 @@ public class MashNote : NoteBase
     
     public MashNote(NoteFlags? startingFlags = null) : base(startingFlags)
     {
+        Flags.F = true;
         _tailBrush = new SolidColorBrush(_fillBrush.Color)
         {
             Opacity = 0.6
@@ -44,7 +45,7 @@ public class MashNote : NoteBase
                              new Rect(x - 40, startY - 12, 80, 24));
         }
         
-        RenderFlags(dc, x, startY);
+        RenderFlags(dc, x, startY, new NoteFlags(Flags.C, false, Flags.W));
     }
 
     public override void RenderPreview(DrawingContext dc)
