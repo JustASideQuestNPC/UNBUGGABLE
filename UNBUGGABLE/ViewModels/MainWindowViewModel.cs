@@ -438,6 +438,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private void ResetPlaySpeed()
     {
         PlaySpeed = 100;
+        App.MainWindow.PlaySpeedSlider.Value = 100;
     }
 
     [RelayCommand]
