@@ -76,6 +76,7 @@ public static class Config
         HardChartOffset = -60,
         HitSoundTickRate = 150,
         CurrentTimePosition = 175,
+        DebugMode = false,
         HitSounds = new()
         {
             Single = true,

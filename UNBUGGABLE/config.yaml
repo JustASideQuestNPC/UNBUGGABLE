@@ -64,7 +64,7 @@ zoomIncrement: 0.25
 laneOrder: ["top", "center", "bottom", "camera"]
 
 # Constant offset to make hit sounds play slightly earlier or later than the actual note.
-hitSoundOffset: 0
+hitSoundOffset: -30
 
 # Constant offset applied to all charts, to match up with the one hard-coded into the official
 # editor. This is only in the config file because I don't like hard-coding things. DO NOT CHANGE
@@ -100,3 +100,6 @@ hitSounds:
   marker1: false
   marker2: false
   marker3: false
+  
+# Enables or disables debug overlays that display some technical info
+debugMode: true

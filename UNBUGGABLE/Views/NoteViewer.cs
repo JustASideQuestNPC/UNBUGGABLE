@@ -13,7 +13,6 @@ namespace UNBUGGABLE.Views;
 
 public class NoteViewer : Control
 {
-    
     public static double ViewerWidth => 560;
     public static double ViewerHeight { get; private set; }
     public static double CurrentZoom { get; private set; } = 1.0;
@@ -50,7 +49,7 @@ public class NoteViewer : Control
     private readonly Pen _textOutlinePen;
 
     private readonly Typeface _numberTypeface =
-        new Typeface((FontFamily)App.Current.Resources["RobotoMonoBold"]);
+        new((FontFamily)App.Current.Resources["RobotoMonoBold"]);
     
     private readonly FormattedText _topLaneText;
     private readonly FormattedText _centerLaneText;

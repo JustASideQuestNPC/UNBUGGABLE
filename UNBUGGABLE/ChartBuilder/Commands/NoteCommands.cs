@@ -9,6 +9,8 @@ namespace UNBUGGABLE.Commands;
 
 public class AddNotesCommand(List<NoteBase> notes, bool isPaste = false) : ICommand
 {
+    public string Name => isPaste ? "Paste Notes" : "Add Notes";
+    
     public void Execute()
     {
         ChartBuilder.ClearSelection();
@@ -36,6 +38,8 @@ public class AddNotesCommand(List<NoteBase> notes, bool isPaste = false) : IComm
 
 public class DeleteNotesCommand(List<NoteBase> notes) : ICommand
 {
+    public string Name => "Delete Notes";
+    
     public void Execute()
     {
         ChartBuilder.ClearSelection();
@@ -58,6 +62,8 @@ public class DeleteNotesCommand(List<NoteBase> notes) : ICommand
 public class UpdateNotesCommand(List<NoteBase> oldNotes, List<NoteBase> newNotes,
     bool transferSelected = false) : ICommand
 {
+    public string Name => "Update Notes";
+    
     public void Execute()
     {
         if (transferSelected)
@@ -103,6 +109,8 @@ public class UpdateNotesCommand(List<NoteBase> oldNotes, List<NoteBase> newNotes
 
 public class MirrorNotesCommand(List<NoteBase> notes) : ICommand
 {
+    public string Name => "Mirror Notes";
+    
     public void Execute()
     {
         foreach (var note in notes)
@@ -134,6 +142,8 @@ public class MirrorNotesCommand(List<NoteBase> notes) : ICommand
 
 public class SetFlagsCommand(char flag, bool newValue, List<(NoteBase, bool)> notes) : ICommand
 {
+    public string Name => newValue ? "Set note flags" : $"Unset note flags";
+    
     public void Execute()
     {
         foreach (var note in notes)
@@ -175,8 +185,10 @@ public class SetFlagsCommand(char flag, bool newValue, List<(NoteBase, bool)> no
 
 public class SetNotesCopIdCommand : ICommand
 {
-    private List<NoteBase> _oldNotes;
-    private List<NoteBase> _newNotes;
+    public string Name => "Set Cop ID";
+    
+    private readonly List<NoteBase> _oldNotes;
+    private readonly List<NoteBase> _newNotes;
 
     public SetNotesCopIdCommand(List<NoteBase> notes, int copId)
     {

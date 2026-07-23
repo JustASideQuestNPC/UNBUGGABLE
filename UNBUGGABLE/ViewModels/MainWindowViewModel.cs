@@ -129,6 +129,7 @@ public partial class MainWindowViewModel : ViewModelBase
             // Trace.WriteLine("frame");
             App.MainWindow.NoteViewer.InvalidateVisual();
             App.MainWindow.GamePreview.InvalidateVisual();
+            App.MainWindow.DebugOverlay.InvalidateVisual();
             if (Chart.SongLoaded)
             {
                 var songTimeText = TimeSpan.FromMilliseconds(Chart.CurrentTime)

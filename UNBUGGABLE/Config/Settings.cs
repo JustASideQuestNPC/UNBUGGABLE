@@ -77,6 +77,8 @@ public class Settings
     [YamlMember(Alias = "showFreestyleSubNotesWhilePlacing", ApplyNamingConventions = false)]
     public required bool ShowSubFreestylesInNoteViewer;
 
+    public required bool DebugMode;
+
     public required List<int> BeatSnaps;
     public required double MinZoom;
     public required double MaxZoom;
@@ -111,6 +113,7 @@ public class Settings
                          hard chart offset: {HardChartOffset}
                          hit sound tick rate: {HitSoundTickRate}
                          hit sounds: {HitSounds.GetSettingsString()}
+                         debug mode: {DebugMode}
                          """);
     }
 }

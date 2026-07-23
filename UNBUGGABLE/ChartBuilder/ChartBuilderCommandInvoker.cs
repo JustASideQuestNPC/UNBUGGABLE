@@ -1,10 +1,23 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UNBUGGABLE.Commands;
 
 namespace UNBUGGABLE;
 
-public static class CommandInvoker
+public class DebugInfo
 {
+    public required List<string> UndoStackNames;
+    public required List<string> RedoStackNames;
+}
+
+public static class ChartBuilderCommandInvoker
+{
+    public static DebugInfo DebugInfo => new()
+    {
+        UndoStackNames = CommandStack.ToList().Select(c => c.Name).ToList(),
+        RedoStackNames = RedoStack.ToList().Select(c => c.Name).ToList()
+    };
+    
     private static readonly Stack<ICommand> CommandStack = new();
     private static readonly Stack<ICommand> RedoStack = new();
 

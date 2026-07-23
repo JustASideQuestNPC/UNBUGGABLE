@@ -89,7 +89,8 @@ public static class ChartBuilder
                 {
                     if (SelectedNotes.Count > 0)
                     {
-                        CommandInvoker.Execute(new SetNotesCopIdCommand([..SelectedNotes], 2));
+                        ChartBuilderCommandInvoker.Execute(
+                            new SetNotesCopIdCommand([..SelectedNotes], 2));
                     }
                     else
                     {
@@ -105,7 +106,8 @@ public static class ChartBuilder
                 {
                     if (SelectedNotes.Count > 0)
                     {
-                        CommandInvoker.Execute(new SetNotesCopIdCommand([..SelectedNotes], 3));
+                        ChartBuilderCommandInvoker.Execute(
+                            new SetNotesCopIdCommand([..SelectedNotes], 3));
                     }
                     else
                     {
@@ -125,7 +127,8 @@ public static class ChartBuilder
                 {
                     if (SelectedNotes.Count > 0)
                     {
-                        CommandInvoker.Execute(new SetNotesCopIdCommand([..SelectedNotes], 4));
+                        ChartBuilderCommandInvoker.Execute(
+                            new SetNotesCopIdCommand([..SelectedNotes], 4));
                     }
                     else
                     {
@@ -158,7 +161,8 @@ public static class ChartBuilder
                 {
                     if (SelectedNotes.Count > 0)
                     {
-                        CommandInvoker.Execute(new SetNotesCopIdCommand([..SelectedNotes], 0));
+                        ChartBuilderCommandInvoker.Execute(
+                            new SetNotesCopIdCommand([..SelectedNotes], 0));
                     }
                     else
                     {
@@ -173,7 +177,8 @@ public static class ChartBuilder
                 {
                     if (SelectedNotes.Count > 0)
                     {
-                        CommandInvoker.Execute(new SetNotesCopIdCommand([..SelectedNotes], 1));
+                        ChartBuilderCommandInvoker.Execute(
+                            new SetNotesCopIdCommand([..SelectedNotes], 1));
                     }
                     else
                     {
@@ -189,7 +194,7 @@ public static class ChartBuilder
             case Key.M:
                 if (CtrlPressed && SelectedNotes.Count > 0)
                 {
-                    CommandInvoker.Execute(new MirrorNotesCommand([..SelectedNotes]));
+                    ChartBuilderCommandInvoker.Execute(new MirrorNotesCommand([..SelectedNotes]));
                 }
 
                 break;
@@ -197,7 +202,7 @@ public static class ChartBuilder
             case Key.Delete:
                 if (SelectedNotes.Count > 0)
                 {
-                    CommandInvoker.Execute(new DeleteNotesCommand([..SelectedNotes]));
+                    ChartBuilderCommandInvoker.Execute(new DeleteNotesCommand([..SelectedNotes]));
                     SelectedNotes.Clear();
                 }
                 break;
@@ -435,7 +440,7 @@ public static class ChartBuilder
         
         if (RightMouseDrag)
         {
-            CommandInvoker.Execute(new DeleteNotesCommand(notes));
+            ChartBuilderCommandInvoker.Execute(new DeleteNotesCommand(notes));
         }
         else
         {
@@ -453,7 +458,7 @@ public static class ChartBuilder
         var result = await Chart.TryCreateChartFromAudio(path);
         if (result)
         {
-            CommandInvoker.Reset();
+            ChartBuilderCommandInvoker.Reset();
         }
 
         return result;
@@ -464,7 +469,7 @@ public static class ChartBuilder
         var result = await Chart.TryLoadChartFile(path);
         if (result)
         {
-            CommandInvoker.Reset();
+            ChartBuilderCommandInvoker.Reset();
         }
 
         return result;
@@ -497,12 +502,12 @@ public static class ChartBuilder
 
     public static void Undo()
     {
-        CommandInvoker.Undo();
+        ChartBuilderCommandInvoker.Undo();
     }
     
     public static void Redo()
     {
-        CommandInvoker.Redo();
+        ChartBuilderCommandInvoker.Redo();
     }
     
     public static void SelectAll()
@@ -513,7 +518,7 @@ public static class ChartBuilder
     public static void Cut()
     {
         _clipboard = new List<NoteBase>([..SelectedNotes]);
-        CommandInvoker.Execute(new DeleteNotesCommand([..SelectedNotes]));
+        ChartBuilderCommandInvoker.Execute(new DeleteNotesCommand([..SelectedNotes]));
     }
     
     public static void Copy()
@@ -536,7 +541,7 @@ public static class ChartBuilder
             newNotes.Add(note.Clone(note.Time + timeOffset));
         }
         
-        CommandInvoker.Execute(new AddNotesCommand(newNotes, true));
+        ChartBuilderCommandInvoker.Execute(new AddNotesCommand(newNotes, true));
     }
     
     public static void ClearSelection()
@@ -584,12 +589,12 @@ public static class ChartBuilder
                 bpm.Value.SoftEquals(region.Previous.Bpm))
             {
                 Trace.WriteLine("Merge bpm regions");
-                CommandInvoker.Execute(new RemoveBpmRegionCommand(region));
+                ChartBuilderCommandInvoker.Execute(new RemoveBpmRegionCommand(region));
             }
             else
             {
                 Trace.WriteLine("Edit bpm region");
-                CommandInvoker.Execute(new EditBpmRegionCommand(region, bpm.Value));
+                ChartBuilderCommandInvoker.Execute(new EditBpmRegionCommand(region, bpm.Value));
             }
         }
     }
@@ -597,7 +602,7 @@ public static class ChartBuilder
     public static void DeleteBpmRegion(BpmRegion region)
     {
         Trace.WriteLine($"Remove bpm region at {region.StartTime} ms");
-        CommandInvoker.Execute(new RemoveBpmRegionCommand(region));
+        ChartBuilderCommandInvoker.Execute(new RemoveBpmRegionCommand(region));
     }
 
     public static async Task EditLabel(Chart.Label label)
@@ -605,13 +610,13 @@ public static class ChartBuilder
         var text = await new TextEntryDialog("edit label", label.Text).ShowAsync();
         if (text.HasValue && text.Value != label.Text)
         {
-            CommandInvoker.Execute(new EditLabelCommand(label, text.Value));
+            ChartBuilderCommandInvoker.Execute(new EditLabelCommand(label, text.Value));
         }
     }
 
     public static void DeleteLabel(Chart.Label label)
     {
-        CommandInvoker.Execute(new RemoveLabelCommand(label));
+        ChartBuilderCommandInvoker.Execute(new RemoveLabelCommand(label));
     }
     
     public static void DeleteBreakpoint(bool showEventIndicator = true)
@@ -655,8 +660,9 @@ public static class ChartBuilder
                 var text = await new TextEntryDialog("add label").ShowAsync();
                 if (text.HasValue && text.Value != "")
                 {
-                    CommandInvoker.Execute(new AddLabelCommand(time + Chart.Metadata.ChartOffset,
-                                                               text.Value));
+                    ChartBuilderCommandInvoker.Execute(new AddLabelCommand(
+                                                           time + Chart.Metadata.ChartOffset,
+                                                           text.Value));
                 }
             }
         }
@@ -672,7 +678,7 @@ public static class ChartBuilder
             if (existingRegion != null && existingRegion != Chart.BpmRegions[0])
             {
                 Trace.WriteLine($"Remove bpm region at {time} ms");
-                CommandInvoker.Execute(new RemoveBpmRegionCommand(existingRegion));
+                ChartBuilderCommandInvoker.Execute(new RemoveBpmRegionCommand(existingRegion));
             }
         }
         else
@@ -687,7 +693,7 @@ public static class ChartBuilder
                 if (bpm.HasValue)
                 {
                     Trace.WriteLine($"Add bpm region at {time} ms");
-                    CommandInvoker.Execute(new AddBpmRegionCommand(time, bpm.Value));
+                    ChartBuilderCommandInvoker.Execute(new AddBpmRegionCommand(time, bpm.Value));
                 }
             }
         }
@@ -708,7 +714,7 @@ public static class ChartBuilder
         {
             if (start.SoftEquals(end))
             {
-                CommandInvoker.Execute(new DeleteNotesCommand([oldNote]));
+                ChartBuilderCommandInvoker.Execute(new DeleteNotesCommand([oldNote]));
                 return;
             }
         }
@@ -798,11 +804,11 @@ public static class ChartBuilder
 
         if (shouldReplace)
         {
-            CommandInvoker.Execute(new UpdateNotesCommand([oldNote], [newNote]));
+            ChartBuilderCommandInvoker.Execute(new UpdateNotesCommand([oldNote], [newNote]));
         }
         else
         {
-            CommandInvoker.Execute(new AddNotesCommand([newNote]));
+            ChartBuilderCommandInvoker.Execute(new AddNotesCommand([newNote]));
         }
     }
 
@@ -811,11 +817,11 @@ public static class ChartBuilder
         if (Chart.GetNote(Chart.CurrentTime, NoteLane.MARKER) is { } marker)
         {
             Trace.WriteLine("Delete marker");
-            CommandInvoker.Execute(new DeleteNotesCommand([marker]));
+            ChartBuilderCommandInvoker.Execute(new DeleteNotesCommand([marker]));
         }
         else
         {
-            CommandInvoker.Execute(new AddNotesCommand([
+            ChartBuilderCommandInvoker.Execute(new AddNotesCommand([
                 new MarkerDummyNote(Chart.CurrentTime,
                                     ShiftPressed ? 1 : CtrlPressed ? 2 : 0)
             ]));
@@ -826,11 +832,11 @@ public static class ChartBuilder
     {
         if (Chart.GetNote(Chart.CurrentTime, NoteLane.CAMERA) is { } note)
         {
-            CommandInvoker.Execute(new DeleteNotesCommand([note]));
+            ChartBuilderCommandInvoker.Execute(new DeleteNotesCommand([note]));
         }
         else
         {
-            CommandInvoker.Execute(new AddNotesCommand([new CameraChange
+            ChartBuilderCommandInvoker.Execute(new AddNotesCommand([new CameraChange
             {
                 Time = Chart.CurrentTime,
                 Flags = new NoteFlags(false, false, ShiftPressed)
@@ -865,7 +871,7 @@ public static class ChartBuilder
             }
         }
         
-        CommandInvoker.Execute(new SetFlagsCommand(flag, newValue, notes));
+        ChartBuilderCommandInvoker.Execute(new SetFlagsCommand(flag, newValue, notes));
     }
 
     private static void DoNoteMoveOperation(double delta)
@@ -881,7 +887,8 @@ public static class ChartBuilder
             newNotes.Add(note.Clone(note.Time + delta));
         }
         
-        CommandInvoker.Execute(new UpdateNotesCommand([..SelectedNotes], newNotes, true));
+        ChartBuilderCommandInvoker.Execute(new UpdateNotesCommand([..SelectedNotes], newNotes,
+                                                                  true));
     }
     
     private static void SetBreakpoint()

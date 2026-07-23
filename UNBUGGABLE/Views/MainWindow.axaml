@@ -278,15 +278,6 @@
                                 </ScrollViewer>
                             </StackPanel>
                         </Border>
-                        
-                        <!-- <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Vertical"> -->
-                        <!--     <TextBlock Classes="SmallText" Margin="10 5 0 0"> -->
-                        <!--         jump to time -->
-                        <!--     </TextBlock> -->
-                        <!--     <NumericUpDown Name="JumpToTimeBox" Value="0" ShowButtonSpinner="False" -->
-                        <!--                    Minimum="0" IsEnabled="{Binding EditorUiEnabled}" -->
-                        <!--                    Height="50" /> -->
-                        <!-- </StackPanel> -->
                     </Grid>
                     
                     <!-- Placeholder for custom graphics renderers. -->
@@ -305,6 +296,10 @@
                         <!-- <TextBlock Classes="PanelDescription">note placement</TextBlock> -->
                         <views:NoteViewer Name="NoteViewer" />
                     </Border>
+                    
+                    <views:DebugOverlay Name="DebugOverlay" Grid.Row="0" Grid.Column="0"
+                                        Grid.RowSpan="2" Grid.ColumnSpan="2" Focusable="False"
+                                        IsTabStop="False" IsEnabled="False" />
                 </Grid>
                 <ContentControl Content="{Binding EventIndicator}" />
             </Panel>
