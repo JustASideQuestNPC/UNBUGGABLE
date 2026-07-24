@@ -138,6 +138,8 @@ public class CopNote : NoteBase
                                      FlowDirection.LeftToRight, _typeface, 40, textColor);
         dc.DrawOutlinedText(text, new Point(x - text.Width / 2, startY - 2 - text.Height / 2),
                             textColor, textOutline);
+        
+        RenderDebugTime(dc, x, startY);
     }
 
     public override void RenderPreview(DrawingContext dc)

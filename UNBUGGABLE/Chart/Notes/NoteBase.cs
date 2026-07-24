@@ -350,6 +350,24 @@ public abstract partial class NoteBase
                             color, outline);
     }
 
+    protected void RenderDebugTime(DrawingContext dc, double x, double y)
+    {
+        if (!Config.Settings.DebugMode)
+        {
+            return;
+        }
+        
+        var timeString = Instant ? $"{Math.Round(Time, 2)}" :
+                $"{Math.Round(Time, 2)}-{Math.Round(EndTime, 2)}";
+        var color = (SolidColorBrush)App.Current.Resources["TextPrimary"];
+        var outline = new Pen((SolidColorBrush)App.Current.Resources["TextDark"], 1);
+        var text = new FormattedText(timeString, CultureInfo.CurrentCulture,
+                                     FlowDirection.LeftToRight, _typeface, 20, color);
+
+        dc.DrawOutlinedText(text, new Point(x - text.Width / 2, y - 14 - text.Height),
+                            color, outline);
+    }
+
     protected string GetFlagString(NoteFlags? flags = null)
     {
         var binaryString =

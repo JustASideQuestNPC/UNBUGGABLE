@@ -107,6 +107,7 @@ public class SingleNote : NoteBase
         }
         
         RenderFlags(dc, x, y);
+        RenderDebugTime(dc, x, y);
     }
 
     private void RenderSinglePreview(DrawingContext dc)

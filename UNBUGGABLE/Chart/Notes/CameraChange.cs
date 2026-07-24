@@ -50,6 +50,8 @@ public class CameraChange : NoteBase
             dc.DrawGeometry(null, new Pen(_selectedBrush, 4), shape);
         }
         RenderFlags(dc, x, y);
+        
+        RenderDebugTime(dc, x, y);
     }
 
     public override void RenderPreview(DrawingContext dc) { }

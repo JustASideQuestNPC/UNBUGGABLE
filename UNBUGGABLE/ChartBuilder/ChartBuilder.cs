@@ -608,69 +608,11 @@ public static class ChartBuilder
         }
     }
 
-    private static async Task DoLabelOperation()
-    {
-        var time = Chart.CurrentTime;
-        var existingLabel = Chart.GetLabel(time);
-        if (CtrlPressed)
-        {
-            if (existingLabel != null)
-            {
-                DeleteLabel(existingLabel);
-            }
-        }
-        else
-        {
-            if (existingLabel != null)
-            {
-                await EditLabel(existingLabel);
-            }
-            else
-            {
-                var text = await new TextEntryDialog("add label").ShowAsync();
-                if (text.HasValue && text.Value != "")
-                {
-                    ChartBuilderCommandInvoker.Execute(new AddLabelCommand(
-                                                           time + Chart.Metadata.ChartOffset,
-                                                           text.Value));
-                }
-            }
-        }
-    }
-
-    private static async Task DoBpmChangeOperation()
-    {
-        var time = Chart.CurrentTime;
-        var existingRegion = Chart.GetBpmRegion(time);
-        if (CtrlPressed)
-        {
-            // the first bpm region can't be removed for obvious reasons
-            if (existingRegion != null && existingRegion != Chart.BpmRegions[0])
-            {
-                Trace.WriteLine($"Remove bpm region at {time} ms");
-                ChartBuilderCommandInvoker.Execute(new RemoveBpmRegionCommand(existingRegion));
-            }
-        }
-        else
-        {
-            if (existingRegion != null)
-            {
-                await EditBpmRegion(existingRegion);
-            }
-            else
-            {
-                var bpm = await new NumberEntryDialog("add bpm change").ShowAsync();
-                if (bpm.HasValue)
-                {
-                    Trace.WriteLine($"Add bpm region at {time} ms");
-                    ChartBuilderCommandInvoker.Execute(new AddBpmRegionCommand(time, bpm.Value));
-                }
-            }
-        }
-    }
-
     private static void CheckForNoteOperation(NoteLane lane, double start, double end)
     {
+        start = Math.Floor(start);
+        end = Math.Floor(end);
+        
         var oldNote = Chart.GetNote(start, lane);
         Trace.WriteLine(oldNote);
         // hold notes can also extend from the start of the note
@@ -779,22 +721,6 @@ public static class ChartBuilder
         else
         {
             ChartBuilderCommandInvoker.Execute(new AddNotesCommand([newNote]));
-        }
-    }
-
-    private static void DoMarkerOperation()
-    {
-        if (Chart.GetNote(Chart.CurrentTime, NoteLane.MARKER) is { } marker)
-        {
-            Trace.WriteLine("Delete marker");
-            ChartBuilderCommandInvoker.Execute(new DeleteNotesCommand([marker]));
-        }
-        else
-        {
-            ChartBuilderCommandInvoker.Execute(new AddNotesCommand([
-                new MarkerDummyNote(Chart.CurrentTime,
-                                    ShiftPressed ? 1 : CtrlPressed ? 2 : 0)
-            ]));
         }
     }
     
