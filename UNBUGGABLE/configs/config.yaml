@@ -57,6 +57,10 @@ enableNegativeMashConversion: true
 # official editor.
 beatSnaps: [1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 20, 5, 9, 11, 13]
 
+# Whether pasting a note on top of another note will delete the existing note and keep the pasted
+# note, or vice versa.
+pasteOverwritesExistingNotes: true
+
 # Minimum possible zoom. Smaller values zoom out, larger values zoom in.
 minZoom: 0.5
 

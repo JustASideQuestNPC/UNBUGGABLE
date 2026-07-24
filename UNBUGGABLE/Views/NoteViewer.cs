@@ -7,6 +7,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using UNBEATABLEChartEditor;
+using UNBEATABLEChartEditor.Input;
 using UNBUGGABLE.Resources;
 
 namespace UNBUGGABLE.Views;
@@ -547,7 +548,7 @@ public class NoteViewer : Control
                 };
             }
             
-            return new CopNote(ChartBuilder.ShiftPressed ? NoteType.COP_MASH : NoteType.COP_HOLD,
+            return new CopNote(InputManager.ShiftPressed ? NoteType.COP_MASH : NoteType.COP_HOLD,
                                ChartBuilder.CopId)
             {
                 Time = start,
@@ -560,7 +561,7 @@ public class NoteViewer : Control
             return new SingleNote
             {
                 Time = start,
-                Flags = new NoteFlags(false, false, ChartBuilder.ShiftPressed)
+                Flags = new NoteFlags(false, false, InputManager.ShiftPressed)
             };
         }
         
@@ -568,7 +569,7 @@ public class NoteViewer : Control
         {
             Time = start,
             EndTime = end,
-            Flags = new NoteFlags(false, false, ChartBuilder.ShiftPressed)
+            Flags = new NoteFlags(false, false, InputManager.ShiftPressed)
         };
     }
 }

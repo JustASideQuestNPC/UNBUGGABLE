@@ -50,16 +50,16 @@ public static class InputManager
                 _rightCtrlPressed = true;
                 break;
             case Key.LeftShift:
-                _leftCtrlPressed = true;
+                _leftShiftPressed = true;
                 break;
             case Key.RightShift:
-                _rightCtrlPressed = true;
+                _rightShiftPressed = true;
                 break;
             case Key.LeftAlt:
-                _leftCtrlPressed = true;
+                _leftAltPressed = true;
                 break;
             case Key.RightAlt:
-                _rightCtrlPressed = true;
+                _rightAltPressed = true;
                 break;
             default:
                 await DoPressCallbacks(k);
@@ -83,16 +83,16 @@ public static class InputManager
                 _rightCtrlPressed = false;
                 break;
             case Key.LeftShift:
-                _leftCtrlPressed = false;
+                _leftShiftPressed = false;
                 break;
             case Key.RightShift:
-                _rightCtrlPressed = false;
+                _rightShiftPressed = false;
                 break;
             case Key.LeftAlt:
-                _leftCtrlPressed = false;
+                _leftAltPressed = false;
                 break;
             case Key.RightAlt:
-                _rightCtrlPressed = false;
+                _rightAltPressed = false;
                 break;
             default:
                 await DoReleaseCallbacks(k);
@@ -141,14 +141,21 @@ public static class InputManager
     {
         foreach (var action in Actions)
         {
+            var ranCallback = false;
             foreach (var keybind in action.Keybinds)
             {
-                if (CtrlPressed == keybind.Ctrl && ShiftPressed == keybind.Shift &&
-                    AltPressed == keybind.Alt && k == keybind.Key)
+                if (k == keybind.Key && ((CtrlPressed == keybind.Ctrl &&
+                                          ShiftPressed == keybind.Shift &&
+                                          AltPressed == keybind.Alt) || action.IgnoreModifiers))
                 {
                     await action.OnPress();
+                    ranCallback = true;
                     break;
                 }
+            }
+            if (ranCallback)
+            {
+                break;
             }
         }
     }
@@ -156,14 +163,22 @@ public static class InputManager
     {
         foreach (var action in Actions)
         {
+            var ranCallback = false;
             foreach (var keybind in action.Keybinds)
             {
-                if (CtrlPressed == keybind.Ctrl && ShiftPressed == keybind.Shift &&
-                    AltPressed == keybind.Alt && b == keybind.MouseButton)
+                if (b == keybind.MouseButton && ((CtrlPressed == keybind.Ctrl &&
+                                                  ShiftPressed == keybind.Shift && 
+                                                  AltPressed == keybind.Alt) ||
+                                                 action.IgnoreModifiers))
                 {
                     await action.OnPress();
+                    ranCallback = true;
                     break;
                 }
+            }
+            if (ranCallback)
+            {
+                break;
             }
         }
     }
@@ -172,14 +187,21 @@ public static class InputManager
     {
         foreach (var action in Actions)
         {
+            var ranCallback = false;
             foreach (var keybind in action.Keybinds)
             {
-                if (CtrlPressed == keybind.Ctrl && ShiftPressed == keybind.Shift &&
-                    AltPressed == keybind.Alt && k == keybind.Key)
+                if (k == keybind.Key && ((CtrlPressed == keybind.Ctrl &&
+                                          ShiftPressed == keybind.Shift &&
+                                          AltPressed == keybind.Alt) || action.IgnoreModifiers))
                 {
                     await action.OnRelease();
+                    ranCallback = true;
                     break;
                 }
+            }
+            if (ranCallback)
+            {
+                break;
             }
         }
     }
@@ -187,14 +209,22 @@ public static class InputManager
     {
         foreach (var action in Actions)
         {
+            var ranCallback = false;
             foreach (var keybind in action.Keybinds)
             {
-                if (CtrlPressed == keybind.Ctrl && ShiftPressed == keybind.Shift &&
-                    AltPressed == keybind.Alt && b == keybind.MouseButton)
+                if (b == keybind.MouseButton && ((CtrlPressed == keybind.Ctrl &&
+                                                  ShiftPressed == keybind.Shift && 
+                                                  AltPressed == keybind.Alt) ||
+                                                 action.IgnoreModifiers))
                 {
                     await action.OnRelease();
+                    ranCallback = true;
                     break;
                 }
+            }
+            if (ranCallback)
+            {
+                break;
             }
         }
     }

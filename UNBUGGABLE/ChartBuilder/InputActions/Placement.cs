@@ -4,7 +4,7 @@ using UNBEATABLEChartEditor.Input;
 
 namespace UNBUGGABLE.Keybinds;
 
-public class PlaceTopLaneAction(List<string> keybinds) : InputActionBase(keybinds)
+public class PlaceTopLaneAction(List<string> keybinds) : InputActionBase(keybinds, true)
 {
     public override async Task OnPress()
     {
@@ -17,7 +17,7 @@ public class PlaceTopLaneAction(List<string> keybinds) : InputActionBase(keybind
     }
 }
 
-public class PlaceBottomLaneAction(List<string> keybinds) : InputActionBase(keybinds)
+public class PlaceBottomLaneAction(List<string> keybinds) : InputActionBase(keybinds, true)
 {
     public override async Task OnPress()
     {
@@ -38,7 +38,7 @@ public class PlaceCameraLaneAction(List<string> keybinds) : InputActionBase(keyb
     }
 }
 
-public class PlaceCenterLaneAction(List<string> keybinds) : InputActionBase(keybinds)
+public class PlaceCenterLaneAction(List<string> keybinds) : InputActionBase(keybinds, true)
 {
     public override async Task OnPress()
     {

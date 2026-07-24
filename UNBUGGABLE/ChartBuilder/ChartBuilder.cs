@@ -8,6 +8,7 @@ using Avalonia;
 using Avalonia.Input;
 using UNBEATABLEChartEditor;
 using UNBEATABLEChartEditor.Dialogs;
+using UNBEATABLEChartEditor.Input;
 using UNBUGGABLE.Commands;
 using UNBUGGABLE.Resources;
 using UNBUGGABLE.Views;
@@ -32,15 +33,6 @@ public static class ChartBuilder
     // 0 for normal notes, 1-4 for cop notes
     public static int CopId { get; private set; } = 0;
     
-    // for handling modifiers and key binds that behave differently if the key is held down
-    private static bool _leftCtrlPressed = false;
-    private static bool _rightCtrlPressed = false;
-    public static bool CtrlPressed => _leftCtrlPressed || _rightCtrlPressed;
-    
-    private static bool _leftShiftPressed = false;
-    private static bool _rightShiftPressed = false;
-    public static bool ShiftPressed => _leftShiftPressed || _rightShiftPressed;
-    
     private static List<NoteBase> _clipboard = new();
     
     private static readonly List<string> NoteTypeNames = [
@@ -55,10 +47,6 @@ public static class ChartBuilder
         TopLaneStartTime = -1000;
         BottomLaneStartTime = -1000;
         CenterLaneStartTime = -1000;
-        _leftCtrlPressed = false;
-        _rightCtrlPressed = false;
-        _leftShiftPressed = false;
-        _rightShiftPressed = false;
     }
 
     public static async Task OnMousePress(bool rightButton)
@@ -211,7 +199,7 @@ public static class ChartBuilder
             newNotes.Add(note.Clone(note.Time + timeOffset));
         }
         
-        ChartBuilderCommandInvoker.Execute(new AddNotesCommand(newNotes, true));
+        ChartBuilderCommandInvoker.Execute(new PasteNotesCommand(newNotes));
     }
     
     public static void ClearSelection()
@@ -375,7 +363,7 @@ public static class ChartBuilder
                 {
                     Time = Chart.CurrentTime,
                     Flags = new NoteFlags(
-                        false, false, ShiftPressed)
+                        false, false, InputManager.ShiftPressed)
                 }
             ]));
         }
@@ -397,18 +385,22 @@ public static class ChartBuilder
 
     public static void PrevCop()
     {
-        if (SelectedNotes.Count == 0)
+        --CopId;
+        if (CopId < 0)
         {
-            SetCopId(((CopId - 1) % 4 + 4) % 4);
+            CopId = 4;
         }
+        SetCopId(CopId);
     }
 
     public static void NextCop()
     {
-        if (SelectedNotes.Count == 0)
+        ++CopId;
+        if (CopId > 4)
         {
-            SetCopId(CopId + 1 % 4);
+            CopId = 0;
         }
+        SetCopId(CopId);
     }
 
     public static async Task AddBpmChange()
@@ -645,7 +637,7 @@ public static class ChartBuilder
                         {
                             Lane = lane,
                             Time = start,
-                            Flags = new NoteFlags(false, false, ShiftPressed)
+                            Flags = new NoteFlags(false, false, InputManager.ShiftPressed)
                         };
                     }
                     else
@@ -655,13 +647,13 @@ public static class ChartBuilder
                             Lane = lane,
                             Time = start,
                             EndTime = end,
-                            Flags = new NoteFlags(false, false, ShiftPressed)
+                            Flags = new NoteFlags(false, false, InputManager.ShiftPressed)
                         };
                     }
                 }
                 else
                 {
-                    if (start.SoftNotEquals(end) && ShiftPressed && lane == NoteLane.TOP &&
+                    if (start.SoftNotEquals(end) && InputManager.ShiftPressed && lane == NoteLane.TOP &&
                         !Config.Settings.AllowTopLaneCopMashes)
                     {
                         App.MainWindowViewModel.ShowEventIndicator(
@@ -669,8 +661,9 @@ public static class ChartBuilder
                         return;
                     }
                     
-                    newNote = new CopNote((start.SoftEquals(end) ? NoteType.COP_SINGLE :
-                            ShiftPressed ? NoteType.COP_MASH : NoteType.COP_HOLD), CopId)
+                    newNote = new CopNote(start.SoftEquals(end) ? NoteType.COP_SINGLE : 
+                                          InputManager.ShiftPressed ? NoteType.COP_MASH :
+                                          NoteType.COP_HOLD, CopId)
                     {
                         Time = start,
                         EndTime = end,

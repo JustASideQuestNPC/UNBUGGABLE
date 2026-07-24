@@ -77,6 +77,9 @@ public class Settings
     [YamlMember(Alias = "showFreestyleSubNotesWhilePlacing", ApplyNamingConventions = false)]
     public required bool ShowSubFreestylesInNoteViewer;
 
+    [YamlMember(Alias = "pasteOverwritesExistingNotes", ApplyNamingConventions = false)]
+    public required bool PasteOverwrite;
+
     public required bool DebugMode;
 
     public required List<int> BeatSnaps;

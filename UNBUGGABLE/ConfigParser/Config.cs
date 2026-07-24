@@ -83,6 +83,7 @@ public static class Config
         CurrentTimePosition = 175,
         DebugMode = false,
         NegativeMashConversion = true,
+        PasteOverwrite = true,
         HitSounds = new()
         {
             Single = true,
@@ -357,11 +358,11 @@ public static class Config
             new OpenFileAction(keybinds.OpenFile),
             new ResetPlaySpeedAction(keybinds.ResetPlaySpeed),
             new ReloadConfigCommand(keybinds.ReloadConfig),
+            new ZoomInAction(keybinds.ZoomIn),
+            new ZoomOutAction(keybinds.ZoomOut),
             new MoveForwardAction(keybinds.MoveForward),
             new MoveBackAction(keybinds.MoveBack),
             new PlayPauseAction(keybinds.PlayPause),
-            new ZoomInAction(keybinds.ZoomIn),
-            new ZoomOutAction(keybinds.ZoomOut),
             new PrevLabelAction(keybinds.PrevLabel),
             new NextLabelAction(keybinds.NextLabel),
             new PrevNoteSnapAction(keybinds.PrevNoteSnap),

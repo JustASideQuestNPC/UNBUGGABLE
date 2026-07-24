@@ -5,7 +5,7 @@ using UNBUGGABLE.Views;
 
 namespace UNBUGGABLE.Keybinds;
 
-public class MoveForwardAction(List<string> keybinds) : InputActionBase(keybinds)
+public class MoveForwardAction(List<string> keybinds) : InputActionBase(keybinds, true)
 {
     public override async Task OnPress()
     {
@@ -13,7 +13,7 @@ public class MoveForwardAction(List<string> keybinds) : InputActionBase(keybinds
     }
 }
 
-public class MoveBackAction(List<string> keybinds) : InputActionBase(keybinds)
+public class MoveBackAction(List<string> keybinds) : InputActionBase(keybinds, true)
 {
     public override async Task OnPress()
     {

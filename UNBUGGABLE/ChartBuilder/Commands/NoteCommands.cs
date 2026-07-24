@@ -7,9 +7,9 @@ using UNBUGGABLE.Resources;
 
 namespace UNBUGGABLE.Commands;
 
-public class AddNotesCommand(List<NoteBase> notes, bool isPaste = false) : ICommand
+public class AddNotesCommand(List<NoteBase> notes) : ICommand
 {
-    public string Name => isPaste ? "Paste Notes" : "Add Notes";
+    public string Name => "Add Notes";
     
     public void Execute()
     {
@@ -17,11 +17,6 @@ public class AddNotesCommand(List<NoteBase> notes, bool isPaste = false) : IComm
         foreach (var note in notes)
         {
             Chart.AddNote(note);
-        }
-
-        if (isPaste && Config.Settings.AutoSelectPastedNotes)
-        {
-            ChartBuilder.SelectedNotes = [..notes];
         }
     }
     
@@ -32,6 +27,75 @@ public class AddNotesCommand(List<NoteBase> notes, bool isPaste = false) : IComm
         foreach (var note in notes)
         {
             Chart.RemoveNote(note);
+        }
+    }
+}
+
+public class PasteNotesCommand : ICommand
+{
+    public string Name => "Paste Notes";
+
+    private List<NoteBase> _addedNotes;
+    private List<NoteBase> _removedNotes = [];
+    
+    public PasteNotesCommand(List<NoteBase> notes)
+    {
+        if (Config.Settings.PasteOverwrite)
+        {
+            _addedNotes = notes;
+            foreach (var note in notes)
+            {
+                var existingNote = Chart.GetNote(note.Time, note.Lane);
+                if (existingNote != null)
+                {
+                    _removedNotes.Add(existingNote);
+                }
+            }
+        }
+        else
+        {
+            _addedNotes = [];
+            foreach (var note in notes)
+            {
+                var existingNote = Chart.GetNote(note.Time, note.Lane);
+                if (existingNote == null)
+                {
+                    _addedNotes.Add(note);
+                }
+            }
+        }
+    }
+    
+    public void Execute()
+    {
+        ChartBuilder.ClearSelection();
+        foreach (var note in _removedNotes)
+        {
+            Chart.RemoveNote(note);
+        }
+
+        foreach (var note in _addedNotes)
+        {
+            Chart.AddNote(note);
+        }
+        
+        if (Config.Settings.AutoSelectPastedNotes)
+        {
+            ChartBuilder.SelectedNotes = [.._addedNotes];
+        }
+    }
+
+    public void Undo()
+    {
+        ChartBuilder.ClearSelection();
+        foreach (var note in _addedNotes)
+        {
+            Chart.RemoveNote(note);
+        }
+        
+        foreach (var note in _removedNotes)
+        {
+            Chart.AddNote(note);
         }
     }
 }
