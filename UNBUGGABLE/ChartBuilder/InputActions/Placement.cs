@@ -34,6 +34,7 @@ public class PlaceBottomLaneAction(List<string> keybinds) : InputActionBase(keyb
 
 public class PlaceCameraLaneAction(List<string> keybinds) : InputActionBase(keybinds)
 {
+    public override bool IgnoreModifiers => true;
     public override async Task OnPress()
     {
         ChartBuilder.PlaceCameraChange();
