@@ -43,3 +43,11 @@ public class ResetPlaySpeedAction(List<string> keybinds) : InputActionBase(keybi
         App.MainWindowViewModel.ResetPlaySpeedCommand.Execute(null);
     }
 }
+
+public class ReloadConfigCommand(List<string> keybinds) : InputActionBase(keybinds)
+{
+    public override async Task OnPress()
+    {
+        App.MainWindowViewModel.ReloadConfigCommand.Execute(null);
+    }   
+}

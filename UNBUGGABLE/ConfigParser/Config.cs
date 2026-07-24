@@ -117,12 +117,12 @@ public static class Config
     /// <summary>
     /// Path to the file with user settings.
     /// </summary>
-    private const string ConfigFileName = "config.yaml";
+    private const string ConfigFileName = "configs/config.yaml";
     
     /// <summary>
     /// Path to the file with keybinds.
     /// </summary>
-    private const string KeybindFileName = "keybinds.yaml";
+    private const string KeybindFileName = "configs/keybinds.yaml";
 
     /// <summary>
     /// Path to the file with all color themes.
@@ -233,10 +233,12 @@ public static class Config
             Redo = ["ctrl+y"],
             SaveFile = ["ctrl+s"],
             OpenFile = ["ctrl+o"],
-            ResetPlaySpeed = [],
+            ResetPlaySpeed = ["r"],
+            ReloadConfig = [""],
 
             MoveForward = ["scrollDown", "down"],
             MoveBack = ["scrollUp", "up"],
+            PlayPause = ["space"],
             ZoomIn = ["ctrl+scrollUp", "ctrl+oemPlus"],
             ZoomOut = ["ctrl+scrollDown", "ctrl+oemMinus"],
             PrevLabel = ["pageUp"],
@@ -292,8 +294,10 @@ public static class Config
                     VerifyKeybindStrings(loadedKeybinds.SaveFile) &&
                     VerifyKeybindStrings(loadedKeybinds.OpenFile) &&
                     VerifyKeybindStrings(loadedKeybinds.ResetPlaySpeed) &&
+                    VerifyKeybindStrings(loadedKeybinds.ReloadConfig) &&
                     VerifyKeybindStrings(loadedKeybinds.MoveForward) &&
                     VerifyKeybindStrings(loadedKeybinds.MoveBack) &&
+                    VerifyKeybindStrings(loadedKeybinds.PlayPause) &&
                     VerifyKeybindStrings(loadedKeybinds.ZoomIn) &&
                     VerifyKeybindStrings(loadedKeybinds.ZoomOut) &&
                     VerifyKeybindStrings(loadedKeybinds.PrevLabel) &&
@@ -352,8 +356,10 @@ public static class Config
             new SaveFileAction(keybinds.SaveFile),
             new OpenFileAction(keybinds.OpenFile),
             new ResetPlaySpeedAction(keybinds.ResetPlaySpeed),
+            new ReloadConfigCommand(keybinds.ReloadConfig),
             new MoveForwardAction(keybinds.MoveForward),
             new MoveBackAction(keybinds.MoveBack),
+            new PlayPauseAction(keybinds.PlayPause),
             new ZoomInAction(keybinds.ZoomIn),
             new ZoomOutAction(keybinds.ZoomOut),
             new PrevLabelAction(keybinds.PrevLabel),

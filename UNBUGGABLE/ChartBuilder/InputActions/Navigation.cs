@@ -21,6 +21,15 @@ public class MoveBackAction(List<string> keybinds) : InputActionBase(keybinds)
     }
 }
 
+
+public class PlayPauseAction(List<string> keybinds) : InputActionBase(keybinds)
+{
+    public override async Task OnPress()
+    {
+        Chart.PlayOrPauseSong();
+    }
+}
+
 public class ZoomInAction(List<string> keybinds) : InputActionBase(keybinds)
 {
     public override async Task OnPress()

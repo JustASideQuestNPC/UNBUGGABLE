@@ -108,7 +108,7 @@ hitSounds:
   marker3: false
   
 # Enables or disables debug overlays that display some technical info.
-debugMode: false
+debugMode: true
 
 # While the song is playing, how many times to check for whether any notes should play a hit sound.
 # Lower values can improve performance, but may cause hit sounds to desync.

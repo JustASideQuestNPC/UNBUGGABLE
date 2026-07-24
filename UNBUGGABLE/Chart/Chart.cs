@@ -357,18 +357,18 @@ public static partial class Chart
 
     public static void MoveToPreviousSnap()
     {
-        if (_currentSnapLineSetIndex > 0)
+        if (_currentSnapLineSetIndex < _currentSnapLineSet.Count - 1)
         {
-            --_currentSnapLineSetIndex;
+            ++_currentSnapLineSetIndex;
             CurrentTime = _currentSnapLineSet[_currentSnapLineSetIndex];
         }
     }
 
     public static void MoveToNextSnap()
     {
-        if (_currentSnapLineSetIndex < _currentSnapLineSet.Count - 1)
+        if (_currentSnapLineSetIndex > 0)
         {
-            ++_currentSnapLineSetIndex;
+            --_currentSnapLineSetIndex;
             CurrentTime = _currentSnapLineSet[_currentSnapLineSetIndex];
         }
     }
@@ -512,7 +512,7 @@ public static partial class Chart
         _notes = [];
         _labels = [];
         ChartBuilder.ClearSelection();
-        ChartBuilder.DeleteBreakpoint(false);
+        ChartBuilder.RemoveBreakpoint(false);
             
         _bpmRegions = [new BpmRegion(0, 60)];
         RebuildSnapLineSets();

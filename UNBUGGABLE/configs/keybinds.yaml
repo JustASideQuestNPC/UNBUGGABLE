@@ -9,8 +9,11 @@ openFile:
   - "ctrl+o"
 resetPlaySpeed:
   - "r"
+reloadConfig: [] # use [] to unbind a key
 
 # navigation
+playPause:
+  - "space"
 moveForward:
   - "scrollDown"
   - "down"
@@ -40,7 +43,7 @@ placeBottomLane:
 placeCameraLane:
   - "d5"
 placeCenterLane:
-  - "d"
+  - "d6"
   
 
 # selection

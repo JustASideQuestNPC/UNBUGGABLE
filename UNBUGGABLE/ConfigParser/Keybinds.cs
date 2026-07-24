@@ -9,8 +9,10 @@ public class Keybinds
     public required List<string> SaveFile;
     public required List<string> OpenFile;
     public required List<string> ResetPlaySpeed;
+    public required List<string> ReloadConfig;
     public required List<string> MoveForward;
     public required List<string> MoveBack;
+    public required List<string> PlayPause;
     public required List<string> ZoomIn;
     public required List<string> ZoomOut;
     public required List<string> PrevLabel;
