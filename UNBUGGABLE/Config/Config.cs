@@ -75,8 +75,10 @@ public static class Config
         HitSoundOffset = 0,
         HardChartOffset = -60,
         HitSoundTickRate = 150,
+        MaxConcurrentSfx = 16,
         CurrentTimePosition = 175,
         DebugMode = false,
+        NegativeMashConversion = true,
         HitSounds = new()
         {
             Single = true,

@@ -1,4 +1,9 @@
-﻿# Which color theme to use for the editor. This must be the name of one of the themes in
+﻿# NOTE: These settings will not change until you completely restart the editor:
+# - colorTheme
+# - hitSoundTickRate
+# - maxConcurrentHitSounds
+
+# Which color theme to use for the editor. This must be the name of one of the themes in
 # `themes.json` (case sensitive).
 colorTheme: "default"
 
@@ -38,9 +43,14 @@ autoSelectPastedNotes: true
 # lane, regardless of what lane they were actually placed in.
 allowTopLaneCopMashes: false
 
-# If true, freestyle notes appear smaller in the note viewer if they will be subnotes of another
+# If true, freestyles appear smaller in the note viewer if they will be subnotes of another
 # freestyle note in-game.
 showFreestyleSubNotesWhilePlacing: true
+
+# If true, freestyles (not mashes) with the F flag will be converted to negative mashes when a chart
+# is saved. Negative mashes look like normal mashes in-game, but behave like freestyles and die
+# immediately upon being hit.
+enableNegativeMashConversion: true
 
 # A list of every value that the chart editor can snap to. For some reason, the official editor
 # multiplies all snap values by 4. The default snap values for UNBUGGABLE match the ones in the
@@ -71,10 +81,6 @@ hitSoundOffset: -30
 # THIS NUMBER UNLESS YOU KNOW WHAT YOU'RE DOING.
 hardChartOffset: -60
 
-# While the song is playing, how many times to check for whether any notes should play a hit sound.
-# Lower values can improve performance, but may cause hit sounds to desync.
-hitSoundTickRate: 150
-
 # How far (in pixels) from the top of the screen the line for the current time is. Higher values
 # show more notes before the current time and less notes after it.
 currentTimePosition: 175
@@ -101,5 +107,13 @@ hitSounds:
   marker2: false
   marker3: false
   
-# Enables or disables debug overlays that display some technical info
-debugMode: true
+# Enables or disables debug overlays that display some technical info.
+debugMode: false
+
+# While the song is playing, how many times to check for whether any notes should play a hit sound.
+# Lower values can improve performance, but may cause hit sounds to desync.
+hitSoundTickRate: 180
+
+# How many hit sounds can be playing at once. Turn this up if you're placing long streams of notes
+# and the hit sounds are glitching.
+maxConcurrentHitSounds: 16

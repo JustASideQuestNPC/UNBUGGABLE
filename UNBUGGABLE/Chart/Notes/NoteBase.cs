@@ -243,6 +243,18 @@ public abstract partial class NoteBase
         note.Flags = flags;
         note.EndTime = endTime;
         
+        // convert negative mashes back to flagged freestyles
+        if (note.Type == NoteType.MASH && note.EndTime < note.Time)
+        {
+            note = new FreestyleNote
+            {
+                Lane = note.Lane,
+                Time = note.Time,
+                Flags = note.Flags,
+                EndTime = note.EndTime
+            };
+        }
+        
         errorMessage = "";
         return note;
     }
@@ -300,7 +312,7 @@ public abstract partial class NoteBase
                 _ => throw new ArgumentOutOfRangeException()
             },
             "192",
-            Math.Floor(Time + Chart.Metadata.ChartOffset).ToString(),
+            Math.Floor(Time + Chart.Metadata.ChartOffset).ToString()
         ];
         if (Instant)
         {
@@ -311,7 +323,8 @@ public abstract partial class NoteBase
             chunks.Add(isFirstNote ? "132" : "128");
         }
         chunks.Add(GetFlagString());
-        chunks.Add(Instant ? "0:0:0:0:" : $"{Math.Floor(EndTime + Chart.Metadata.ChartOffset)}:0:0:0:0:");
+        chunks.Add(Instant ? "0:0:0:0:" :
+                       $"{Math.Floor(EndTime + Chart.Metadata.ChartOffset)}:0:0:0:0:");
 
         return string.Join(",", chunks);
     }
@@ -337,7 +350,7 @@ public abstract partial class NoteBase
                             color, outline);
     }
 
-    protected string GetFlagString()
+    protected string GetFlagString(NoteFlags? flags = null)
     {
         var binaryString =
             $"{(Flags.C ? 1 : 0)}{(Flags.F ? 1 : 0)}{(Flags.W ? 1 : 0)}0";
