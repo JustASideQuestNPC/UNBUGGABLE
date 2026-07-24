@@ -50,6 +50,8 @@ public class NoteViewer : Control
 
     private readonly Typeface _numberTypeface =
         new((FontFamily)App.Current.Resources["RobotoMonoBold"]);
+    private readonly Typeface _beatLineTypeface =
+        new((FontFamily)App.Current.Resources["RobotoMono"]);
     
     private readonly FormattedText _topLaneText;
     private readonly FormattedText _centerLaneText;
@@ -286,13 +288,10 @@ public class NoteViewer : Control
                             new Point(ViewerWidth, adjustedTime * scaledPixelsPerMs));
             }
             
-            foreach (var beatTime in Chart.GetBeatTimesInRange(visibleRangeStart,
+            foreach (var beatLine in Chart.GetBeatTimesInRange(visibleRangeStart,
                                                                       visibleRangeEnd))
             {
-                var adjustedTime = beatTime - visibleRangeStart;
-                dc.DrawLine(new Pen(_fullBeatLineBrush, 3),
-                            new Point(150, adjustedTime * scaledPixelsPerMs),
-                            new Point(ViewerWidth, adjustedTime * scaledPixelsPerMs));
+                RenderFullBeatSnapLine(dc, beatLine, visibleRangeStart, scaledPixelsPerMs);
             }
         }
         
@@ -424,6 +423,22 @@ public class NoteViewer : Control
         }
 
         return false;
+    }
+
+    private void RenderFullBeatSnapLine(DrawingContext dc, (double, int) snapLine,
+        double visibleRangeStart, double scaledPixelsPerMs)
+    {
+        var time = snapLine.Item1;
+        var index = snapLine.Item2;
+        
+        var y = (time - visibleRangeStart) * scaledPixelsPerMs;
+        dc.DrawLine(new Pen(_fullBeatLineBrush, 3), new Point(150, y), new Point(ViewerWidth, y));
+        
+        var beatNumberText = new FormattedText(index.ToString(), CultureInfo.CurrentCulture,
+                                               FlowDirection.RightToLeft, _beatLineTypeface, 16,
+                                               _fullBeatLineBrush);
+        dc.DrawText(beatNumberText, new Point(ViewerWidth - beatNumberText.Width - 10,
+                                              y - beatNumberText.Height - 2));
     }
 
     private void RenderBpmChange(DrawingContext dc, BpmRegion bpmRegion)

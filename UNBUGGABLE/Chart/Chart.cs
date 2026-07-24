@@ -721,17 +721,19 @@ public static partial class Chart
     }
 
     /// <summary>
-    /// Returns the timestamps (in milliseconds) of every single full beat in some range.
+    /// Returns the timestamps (in milliseconds) of every single full beat in some range, along with
+    /// their beat number.
     /// </summary>
-    public static IEnumerable<double> GetBeatTimesInRange(double start, double end)
+    public static IEnumerable<(double, int)> GetBeatTimesInRange(double start, double end)
     {
         start = Math.Max(start, 0);
         end = Math.Min(end, Length);
-        foreach (var beatTime in SnapLineSets[1]) 
+        for (var i = 0; i < SnapLineSets[1].Count; ++i)
         {
+            var beatTime = SnapLineSets[1][i];
             if (beatTime >= start && beatTime <= end)
             {
-                yield return beatTime;
+                yield return (beatTime, i);
             }
         }
     }
