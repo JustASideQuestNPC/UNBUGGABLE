@@ -116,17 +116,23 @@ public class NoteViewer : Control
         };
         
         _textOutlinePen = new Pen((SolidColorBrush)App.Current.Resources["TextDark"], 2);
+
+        var topLaneKeybind = Utils.GetReadableKeybindString(Config.Keybinds.PlaceTopLane[0]);
+        var bottomLaneKeybind = Utils.GetReadableKeybindString(Config.Keybinds.PlaceBottomLane[0]);
+        var centerLaneKeybind = Utils.GetReadableKeybindString(Config.Keybinds.PlaceCenterLane[0]);
+        var cameraLaneKeybind = Utils.GetReadableKeybindString(Config.Keybinds.PlaceCameraLane[0]);
         
         // brush color doesn't matter because it's ignored by DrawOutlinedText
-        _topLaneText = new FormattedText("3", CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
-                                         _numberTypeface, 40, Brushes.White);
-        _centerLaneText = new FormattedText("6", CultureInfo.CurrentCulture,
+        _topLaneText = new FormattedText(topLaneKeybind, CultureInfo.CurrentCulture,
+                                         FlowDirection.LeftToRight, _numberTypeface, 40,
+                                         Brushes.White);
+        _centerLaneText = new FormattedText(centerLaneKeybind, CultureInfo.CurrentCulture,
                                             FlowDirection.LeftToRight, _numberTypeface, 40,
                                             Brushes.White);
-        _bottomLaneText = new FormattedText("4", CultureInfo.CurrentCulture,
+        _bottomLaneText = new FormattedText(bottomLaneKeybind, CultureInfo.CurrentCulture,
                                             FlowDirection.LeftToRight, _numberTypeface, 40,
                                             Brushes.White);
-        _cameraLaneText = new FormattedText("5", CultureInfo.CurrentCulture,
+        _cameraLaneText = new FormattedText(cameraLaneKeybind, CultureInfo.CurrentCulture,
                                             FlowDirection.LeftToRight, _numberTypeface, 40,
                                             Brushes.White);
         

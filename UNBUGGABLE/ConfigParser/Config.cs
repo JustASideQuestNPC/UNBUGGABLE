@@ -110,6 +110,8 @@ public static class Config
     public static bool PracticeModInstalled { get; private set; } = false;
     public static string PracticeModConfigPath { get; private set; } = "";
     
+    public static Keybinds Keybinds { get; private set; }
+    
     /// <summary>
     /// Default starting location for saving and loading files.
     /// </summary>
@@ -351,6 +353,7 @@ public static class Config
             Trace.WriteLine("Keybind file not found.");
         }
 
+        Keybinds = keybinds;
         InputManager.Actions = [
             new UndoAction(keybinds.Undo),
             new RedoAction(keybinds.Redo),

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Avalonia;
 using Avalonia.Media;
 
@@ -94,4 +95,37 @@ public static class Utils
     public static double Map(double input, double inputStart, double inputEnd, double outputStart,
         double outputEnd) =>
         outputStart + ((outputEnd - outputStart) / (inputEnd - inputStart)) * (input - inputStart);
+
+    public static string GetReadableKeybindString(string keybind)
+    {
+        var split = keybind.Split('+').ToList();
+        var primaryKey = split[^1] switch
+        {
+            "d0" => "0",
+            "d1" => "1",
+            "d2" => "2",
+            "d3" => "3",
+            "d4" => "4",
+            "d5" => "5",
+            "d6" => "6",
+            "d7" => "7",
+            "d8" => "8",
+            "d9" => "9",
+            "oem3" => "`",
+            "oemMinus" => "-",
+            "oemPlus" => "+",
+            "oem4" => "[",
+            "oemCloseBrackets" => "]",
+            "oemPipe" => "\\",
+            "return" => "enter",
+            "oemSemicolon" => ";",
+            "oemQuotes" => "'",
+            "oemComma" => ",",
+            "oemPeriod" => ".",
+            "oemQuestion" => "/",
+            _ => split[^1]
+        };
+        
+        return split.Count > 1 ? string.Join("+", split[..^1]) + "+" + primaryKey : primaryKey;
+    }
 }
