@@ -88,6 +88,7 @@ public static partial class Chart
         set
         {  
             _metadata = value;
+            UnsavedChanges = true;
             
             // technically the chart can only be saved if it has a difficulty slot, but the way the
             // enum is set up makes it impossible to not have one
@@ -127,6 +128,8 @@ public static partial class Chart
     public static double Length => _mediaPlayer.Media.Duration - AdjustedOffset;
 
     public static double AdjustedOffset => Metadata.ChartOffset + Config.Settings.HardChartOffset;
+
+    public static bool UnsavedChanges { get; private set; } = false;
 
     private static double _currentTime = 0;
     public static double CurrentTime
@@ -251,8 +254,6 @@ public static partial class Chart
     // cursed regex because chart tags allow double quotes in a string so i can't just use json
     [GeneratedRegex("""{"Level":(\d+),"FlavorText":"(.*)","SongLength":(?:\d+?(?:\.\d+)),"CoverArt":"(.*)"}""")]
     private static partial Regex TagRegex();
-
-    private static double _temp = 0;
 
     /// <summary>
     /// Initializes everything. This must be called before any other methods are used!
@@ -529,6 +530,7 @@ public static partial class Chart
         App.MainWindowViewModel.CanSave = false;
 
         SongLoaded = true;
+        UnsavedChanges = false;
         UserData.LastOpenedChartFile = ""; 
         return true;
     }
@@ -620,6 +622,7 @@ public static partial class Chart
             ChartFileName = GetChartFileName();
             ChartFolderName = Directory.GetParent(path)?.Name ?? "";
             SongLoaded = true;
+            UnsavedChanges = false;
             UserData.LastOpenedChartFile = path;
 
             // last editor state never makes the load fail (and the data for it may not even exist)
@@ -690,6 +693,7 @@ public static partial class Chart
         await WriteHitObjects(writer, false);
         
         UserData.LastOpenedChartFile = path;
+        UnsavedChanges = false;
     }
     
     /// <summary>
@@ -718,6 +722,7 @@ public static partial class Chart
         await WriteHitObjects(writer, true);
         
         UserData.LastOpenedChartFile = path;
+        UnsavedChanges = false;
     }
 
     /// <summary>
@@ -853,12 +858,14 @@ public static partial class Chart
         }
         
         App.MainWindowViewModel.UpdatePriorityListEntries(GetNotesAtTime(CurrentTime));
+        UnsavedChanges = true;
     }
 
     public static void RemoveNote(NoteBase note)
     {
         _notes.Remove(note);
         App.MainWindowViewModel.UpdatePriorityListEntries(GetNotesAtTime(CurrentTime));
+        UnsavedChanges = true;
     }
     
     /// <summary>
@@ -868,6 +875,7 @@ public static partial class Chart
     {
         _notes[_notes.IndexOf(oldNote)] = newNote;
         App.MainWindowViewModel.UpdatePriorityListEntries(GetNotesAtTime(CurrentTime));
+        UnsavedChanges = true;
     }
 
     /// <summary>
@@ -886,6 +894,8 @@ public static partial class Chart
         {
             _notes[indices[i]] = notes[i];
         }
+        
+        UnsavedChanges = true;
     }
 
     /// <summary>
@@ -908,11 +918,14 @@ public static partial class Chart
         {
             _labels.Insert(_labels.FindIndex(x => x.Time > label.Time), label);
         }
+        
+        UnsavedChanges = true;
     }
 
     public static void RemoveLabel(Label label)
     {
         _labels.Remove(label);
+        UnsavedChanges = true;
     }
 
     /// <summary>
@@ -972,6 +985,7 @@ public static partial class Chart
         }
         
         RebuildSnapLineSets();
+        UnsavedChanges = true;
     }
 
     public static void RemoveBpmRegion(BpmRegion region)
@@ -988,6 +1002,7 @@ public static partial class Chart
 
         _bpmRegions.Remove(region);
         RebuildSnapLineSets();
+        UnsavedChanges = true;
     }
 
     public static void EditBpmRegion(BpmRegion region, double newBpm)
@@ -999,6 +1014,7 @@ public static partial class Chart
         
         region.Bpm = newBpm;
         RebuildSnapLineSets();
+        UnsavedChanges = true;
     }
 
     /// <summary>

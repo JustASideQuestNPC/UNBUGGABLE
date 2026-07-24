@@ -83,6 +83,7 @@ public partial class App : Application
                 DataContext = new MainWindowViewModel(),
             };
             desktop.MainWindow = MainWindow;
+            MainWindow.Closing += (sender, e) => MainWindowViewModel.OnWindowClosed(sender, e);
         }
 
         base.OnFrameworkInitializationCompleted();

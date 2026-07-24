@@ -5,13 +5,16 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
+using AvaloniaDialogs.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using DialogHostAvalonia;
 using UNBEATABLEChartEditor;
 using UNBEATABLEChartEditor.Dialogs;
 using UNBUGGABLE.Resources;
@@ -222,6 +225,45 @@ public partial class MainWindowViewModel : ViewModelBase
         ActivePriorityListEntries.Clear();
     }
 
+    private bool _forceClose = false;
+    public async Task OnWindowClosed(object? sender, WindowClosingEventArgs e)
+    {
+        if (Chart.SongLoaded && Chart.UnsavedChanges && !_forceClose)
+        {
+            e.Cancel = true;
+            if (!App.DialogIsOpen)
+            {
+                var dialog = new ThreefoldDialog
+                {
+                    Message =
+                        "Do you want to save the current chart? Unsaved changes will be lost.",
+                    PositiveText = "Save",
+                    NegativeText = "Discard",
+                    NeutralText = "Cancel",
+                };
+                var result = await dialog.ShowAsync();
+                if (result == ThreefoldDialog.ButtonType.Positive)
+                {
+                    if (Config.Settings.DefaultSaveToBeatFiles)
+                    {
+                        await SaveBeatFile();
+                    }
+                    else
+                    {
+                        await SaveStandardFile();
+                    }
+                }
+                
+                if (result != ThreefoldDialog.ButtonType.Neutral)
+                {
+                    _forceClose = true;
+                    e.Cancel = false;
+                    App.MainWindow.Close();
+                }
+            }
+        }
+    }
+
     private void OnPriorityListReorder(object? sender, NotifyCollectionChangedEventArgs e)
     {
         if (_skipListEvents)
@@ -243,6 +285,39 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task LoadFile()
     {
+        if (Chart.SongLoaded && Chart.UnsavedChanges)
+        {
+            if (!App.DialogIsOpen)
+            {
+                var dialog = new ThreefoldDialog
+                {
+                    Message =
+                        "Do you want to save the current chart? Unsaved changes will be lost.",
+                    PositiveText = "Save",
+                    NegativeText = "Discard",
+                    NeutralText = "Cancel",
+                };
+                var result = await dialog.ShowAsync();
+                
+                if (result == ThreefoldDialog.ButtonType.Neutral)
+                {
+                    return;
+                }
+                
+                if (result == ThreefoldDialog.ButtonType.Positive)
+                {
+                    if (Config.Settings.DefaultSaveToBeatFiles)
+                    {
+                        await SaveBeatFile();
+                    }
+                    else
+                    {
+                        await SaveStandardFile();
+                    }
+                }
+            }
+        }
+        
         if (App.TopLevel == null)
         {
             Trace.WriteLine("No top level window!");
