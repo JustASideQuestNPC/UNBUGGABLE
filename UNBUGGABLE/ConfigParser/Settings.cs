@@ -88,6 +88,12 @@ public class Settings
     public required double HardChartOffset;
     public required double HitSoundTickRate;
     public required double CurrentTimePosition;
+    
+    [YamlMember(Alias = "enableNegativeMashConversion", ApplyNamingConventions = false)]
+    public required bool NegativeMashConversion;
+    
+    [YamlMember(Alias = "maxConcurrentHitSounds", ApplyNamingConventions = false)]
+    public required int MaxConcurrentSfx;
     public required HitSounds HitSounds;
 
     public void PrintSettings()
@@ -112,6 +118,7 @@ public class Settings
                          hit sound offset: {HitSoundOffset}
                          hard chart offset: {HardChartOffset}
                          hit sound tick rate: {HitSoundTickRate}
+                         max concurrent hit sounds: {MaxConcurrentSfx}
                          hit sounds: {HitSounds.GetSettingsString()}
                          debug mode: {DebugMode}
                          """);

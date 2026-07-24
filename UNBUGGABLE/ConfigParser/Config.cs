@@ -79,8 +79,10 @@ public static class Config
         HitSoundOffset = 0,
         HardChartOffset = -60,
         HitSoundTickRate = 150,
+        MaxConcurrentSfx = 16,
         CurrentTimePosition = 175,
         DebugMode = false,
+        NegativeMashConversion = true,
         HitSounds = new()
         {
             Single = true,
@@ -121,11 +123,12 @@ public static class Config
     /// Path to the file with keybinds.
     /// </summary>
     private const string KeybindFileName = "keybinds.yaml";
+    private const string ConfigFileName = "configs/config.yaml";
 
     /// <summary>
     /// Path to the file with all color themes.
     /// </summary>
-    private const string ColorThemeListFileName = "themes.json";
+    private const string ColorThemeListFileName = "configs/themes.json";
     
     private static readonly Dictionary<string, Dictionary<string, Color>> ColorThemes = new();
     

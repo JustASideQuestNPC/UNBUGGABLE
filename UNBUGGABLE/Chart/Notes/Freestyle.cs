@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Media;
 using UNBUGGABLE.Resources;
@@ -26,8 +27,9 @@ public class FreestyleNote : NoteBase
         }
 
         var rect = new Rect(x - 40, y - 12, 80, 24);
-        if (Chart.GetPreviousNote(this)?.Type == NoteType.FREESTYLE &&
-            Config.Settings.ShowSubFreestylesInNoteViewer)
+        var parentNote = Chart.GetPreviousNote(this);
+        if (parentNote?.Type == NoteType.FREESTYLE
+            && !(Config.Settings.NegativeMashConversion && (parentNote.Flags.F || Flags.F)))
         {
             rect = new Rect(x - 24, y - 12, 48, 24);
         }
@@ -43,9 +45,6 @@ public class FreestyleNote : NoteBase
 
     public override void RenderPreview(DrawingContext dc)
     {
-        var parentNote = Chart.GetPreviousNote(this);
-        var isSubNote = parentNote?.Type == NoteType.FREESTYLE;
-        
         if (Time < Chart.CurrentTime || Time > Chart.CurrentTime + 1000)
         {
             return;
@@ -53,6 +52,19 @@ public class FreestyleNote : NoteBase
         
         var x = GamePreview.TimeToScreenCoords(Time < Chart.CurrentTime ?
                                                    Chart.CurrentTime : Time);
+        
+        if (Config.Settings.NegativeMashConversion && Flags.F)
+        {
+            var rect = new RoundedRect(
+                new Rect(x - 30, GamePreview.TopLaneY, 60,
+                         -GamePreview.TopLaneY + GamePreview.BottomLaneY), 30);
+            dc.DrawRectangle(_fillBrush, new Pen(_outlineBrush, 6), rect);
+            return;
+        }
+        
+        var parentNote = Chart.GetPreviousNote(this);
+        var isSubNote = parentNote?.Type == NoteType.FREESTYLE
+                        && !(Config.Settings.NegativeMashConversion && parentNote.Flags.F);
         if (isSubNote)
         {
             if (parentNote?.Time < Chart.CurrentTime)
@@ -76,6 +88,24 @@ public class FreestyleNote : NoteBase
         }
 
         return null;
+    }
+
+    public override string ToHitObjectString(bool isFirstNote, bool isStandardFile)
+    {
+        if (Config.Settings.NegativeMashConversion && Flags.F)
+        {
+            // convert to a mash note with the end set to the very beginning of the chart
+            List<string> chunks = [
+                "469",
+                "192",
+                Math.Floor(Time + Chart.Metadata.ChartOffset).ToString(),
+                isFirstNote ? "132" : "128",
+                GetFlagString(),
+                "0:0:0:0:0:"
+            ];
+            return string.Join(",", chunks);
+        }
+        return base.ToHitObjectString(isFirstNote, isStandardFile);
     }
 
     public override string ToString() => $"Freestyle: Time={Time}ms";

@@ -29,7 +29,13 @@ public class PlacementPriorityListEntry : ViewModelBase
         {
             if (Note is null)
             {
-                return "Bottom Cop Single";
+                return "";
+            }
+
+            if ((Config.Settings.NegativeMashConversion && Note.Type == NoteType.FREESTYLE &&
+                 Note.Flags.F) || (Note.Type == NoteType.MASH && Note.EndTime < Note.Time))
+            {
+                return "Negative Mash";
             }
             
             var laneName = Note.Lane switch
