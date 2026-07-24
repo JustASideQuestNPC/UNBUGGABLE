@@ -123,7 +123,6 @@ public static class Config
     /// Path to the file with keybinds.
     /// </summary>
     private const string KeybindFileName = "keybinds.yaml";
-    private const string ConfigFileName = "configs/config.yaml";
 
     /// <summary>
     /// Path to the file with all color themes.
