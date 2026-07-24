@@ -8,7 +8,7 @@ public class AddBpmChangeAction(List<string> keybinds) : InputActionBase(keybind
 {
     public override async Task OnPress()
     {
-        ChartBuilder.AddBpmChange();
+        await ChartBuilder.AddBpmChange();
     }
 }
 
@@ -24,7 +24,7 @@ public class AddLabelAction(List<string> keybinds) : InputActionBase(keybinds)
 {
     public override async Task OnPress()
     {
-        ChartBuilder.AddLabel();
+        await ChartBuilder.AddLabel();
     }
 }
 

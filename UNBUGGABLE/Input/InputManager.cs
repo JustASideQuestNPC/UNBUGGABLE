@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Input;
@@ -156,9 +157,11 @@ public static class InputManager
             }
             if (ranCallback)
             {
-                break;
+                return;
             }
         }
+        
+        Trace.WriteLine($"Unbound key pressed: {k}");
     }
     private static async Task DoPressCallbacks(MouseButton b)
     {
@@ -180,9 +183,11 @@ public static class InputManager
             }
             if (ranCallback)
             {
-                break;
+                return;
             }
         }
+        
+        Trace.WriteLine($"Unbound mouse button pressed: {b}");
     }
     
     private static async Task DoReleaseCallbacks(Key k)

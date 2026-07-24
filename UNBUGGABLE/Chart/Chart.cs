@@ -427,8 +427,7 @@ public static partial class Chart
     }
 
     /// <summary>
-    /// Called once per frame, used to update chart time while the song is "playing" but the song
-    /// time is actually negative due to offset.
+    /// Called once per tick, used to update chart time and play hit sounds.
     /// </summary>
     public static void PerTickUpdate()
     {
@@ -456,7 +455,6 @@ public static partial class Chart
                 {
                     if (_hitSound != null)
                     {
-                        Trace.WriteLine($"play hit sound, {note.Time}, {CurrentTime}");
                         SfxEngine.Play(_hitSound, offset);
                     }
                     break;
