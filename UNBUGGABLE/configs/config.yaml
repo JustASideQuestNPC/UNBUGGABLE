@@ -4,7 +4,7 @@
 # - maxConcurrentHitSounds
 
 # Which color theme to use for the editor. This must be the name of one of the themes in
-# `themes.json` (case sensitive).
+# `configs/themes.json` (case sensitive).
 colorTheme: "default"
 
 # Whether UNBUGGABLE should default to saving charts as .beat.txt files, or as standard .txt files.

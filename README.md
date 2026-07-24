@@ -64,7 +64,7 @@ There are also a few UNBUGGABLE-specific keybinds:
 - Drag while holding right click to delete notes instead of selecting them.
 
 # Settings
-All settings for UNBUGGABLE can be changed by editing `config.yaml` (descriptions for each setting
-are in the config file). After editing the config file, either restart the editor or hit the "Reload
-Config" button in the top left corner to reload most settings. **Note:** For technical reasons, some
-settings will not update until you fully restart the editor.
+All settings for UNBUGGABLE can be changed by editing `configs/config.yaml` (descriptions for each
+setting are in the config file). After editing the config file, either restart the editor or hit the
+"Reload Config" button in the top left corner to reload most settings. **Note:** For technical
+reasons, some settings will not update until you fully restart the editor.

@@ -113,12 +113,12 @@ public static class Config
     /// <summary>
     /// Path to the file with user settings.
     /// </summary>
-    private const string ConfigFileName = "config.yaml";
+    private const string ConfigFileName = "configs/config.yaml";
 
     /// <summary>
     /// Path to the file with all color themes.
     /// </summary>
-    private const string ColorThemeListFileName = "themes.json";
+    private const string ColorThemeListFileName = "configs/themes.json";
     
     private static readonly Dictionary<string, Dictionary<string, Color>> ColorThemes = new();
     
