@@ -2,6 +2,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using UNBEATABLEChartEditor.Input;
 using UNBUGGABLE.Resources;
 
 namespace UNBUGGABLE.Views;
@@ -31,6 +32,12 @@ public class DebugOverlay : Control
                           --- command invoker ---
                           undo stack: {undoStackString}
                           redo stack: {redoStackString}
+                          
+                          --- key states ---
+                          ctrl: {InputManager.CtrlPressed}
+                          shift: {InputManager.ShiftPressed}
+                          alt: {InputManager.AltPressed}
+                          last pressed: {InputManager.LastPressedKey}
                           """;
         
         var column1Text = new FormattedText(column1Str, CultureInfo.CurrentCulture,

@@ -2,6 +2,7 @@ using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using UNBEATABLEChartEditor.Input;
 
 namespace UNBUGGABLE.Views;
 
@@ -18,19 +19,19 @@ public partial class MainWindow : Window
 
     private async void OnKeyDown(TopLevel sender, KeyEventArgs e)
     {
-        await ChartBuilder.OnKeyDown(e.Key);
+        await InputManager.OnKeyDown(e.Key);
     }
     
-    private void OnKeyUp(TopLevel sender, KeyEventArgs e)
+    private async void OnKeyUp(TopLevel sender, KeyEventArgs e)
     {
-        ChartBuilder.OnKeyUp(e.Key);
+        await InputManager.OnKeyUp(e.Key);
     }
     
-    private void OnPointerWheelChanged(TopLevel sender, PointerWheelEventArgs e)
+    private async void OnPointerWheelChanged(TopLevel sender, PointerWheelEventArgs e)
     {
         if (e.Delta.X == 0)
         {
-            ChartBuilder.OnScroll(e.Delta.Y);
+            await InputManager.OnScroll(e.Delta.Y);
         }
     }
 
@@ -41,11 +42,13 @@ public partial class MainWindow : Window
 
     private async void OnNoteViewerPointerPress(object? sender, PointerPressedEventArgs e)
     {
-        await ChartBuilder.OnMousePress(e.Properties.IsRightButtonPressed);
+        await InputManager.OnMousePress(e.Properties.IsRightButtonPressed,
+                                        e.Properties.IsMiddleButtonPressed);
     }
 
-    private void OnNoteViewerPointerRelease(object? sender, PointerReleasedEventArgs e)
+    private async void OnNoteViewerPointerRelease(object? sender, PointerReleasedEventArgs e)
     {
-        ChartBuilder.OnMouseRelease();
+        await InputManager.OnMouseRelease(e.Properties.IsRightButtonPressed,
+                                          e.Properties.IsMiddleButtonPressed);
     }
 }

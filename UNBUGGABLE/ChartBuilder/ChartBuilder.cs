@@ -46,7 +46,7 @@ public static class ChartBuilder
     private static readonly List<string> NoteTypeNames = [
         "notes", "cop 1", "cop 2", "cop 3", "cop 4"];
 
-    public static void ResetKeyStates()
+    public static void ResetInputStates()
     {
         MousePosition = new Point(-1000, -1000);
         MouseDragStart = null;
@@ -155,39 +155,6 @@ public static class ChartBuilder
 
             // non-hold keybinds
             // case Key.D0:
-            case Key.OemTilde: // not an official editor keybind
-            case Key.D0:
-                if (CtrlPressed)
-                {
-                    if (SelectedNotes.Count > 0)
-                    {
-                        ChartBuilderCommandInvoker.Execute(
-                            new SetNotesCopIdCommand([..SelectedNotes], 0));
-                    }
-                    else
-                    {
-                        CopId = 0;
-                        App.MainWindowViewModel.CurrentNoteTypeText = NoteTypeNames[CopId];
-                    }
-                }
-
-                break;
-            case Key.D1:
-                if (CtrlPressed)
-                {
-                    if (SelectedNotes.Count > 0)
-                    {
-                        ChartBuilderCommandInvoker.Execute(
-                            new SetNotesCopIdCommand([..SelectedNotes], 1));
-                    }
-                    else
-                    {
-                        CopId = (CopId == 1 ? 0 : 1);
-                        App.MainWindowViewModel.CurrentNoteTypeText = NoteTypeNames[CopId];
-                    }
-                }
-
-                break;
             case Key.D5:
                 DoCameraSwapOperation();
                 break;
@@ -210,10 +177,6 @@ public static class ChartBuilder
                 if (SelectedNotes.Count > 0)
                 {
                     ClearSelection();
-                }
-                else
-                {
-                    App.MainWindowViewModel.EditChartMetadataCommand.Execute(null);
                 }
                 break;
             case Key.L:
@@ -286,23 +249,6 @@ public static class ChartBuilder
                 }
                 App.MainWindowViewModel.CurrentNoteTypeText = NoteTypeNames[CopId];
                 break;
-            case Key.E:
-            case Key.F:
-                DoSetFlagOperation('f');
-                break;
-            case Key.W:
-                DoSetFlagOperation('w');
-                break;
-            case Key.C:
-            case Key.R:
-                DoSetFlagOperation('c');
-                break;
-            case Key.Space:
-                Chart.PlayOrPauseSong();
-                break;
-            // default:
-            //     Trace.WriteLine($"Unhandled key: {k}");
-            //     break;
         }
     }
 
@@ -357,37 +303,6 @@ public static class ChartBuilder
                     CenterLaneStartTime = -1000;
                 }
                 break;
-        }
-    }
-
-    public static void OnScroll(double scrollAmount)
-    {
-        if (!Chart.SongLoaded || App.DialogIsOpen)
-        {
-            return;
-        }
-        
-        if (scrollAmount > 0)
-        {
-            if (CtrlPressed)
-            {
-                NoteViewer.IncreaseZoom();
-            }
-            else if (!Chart.Playing)
-            {
-                Chart.MoveToPreviousSnap();
-            }
-        }
-        else
-        {
-            if (CtrlPressed)
-            {
-                NoteViewer.DecreaseZoom();
-            }
-            else if (!Chart.Playing)
-            {
-                Chart.MoveToNextSnap();
-            }
         }
     }
 
@@ -549,26 +464,36 @@ public static class ChartBuilder
         SelectedNotes.Clear();
     }
 
-    public static void CheckExistingBreakpoint()
+    public static void DeleteSelection()
     {
-        if (!Config.Settings.EnableBreakpoints || !Config.PracticeModInstalled)
+        if (SelectedNotes.Count > 0)
         {
-            return;
+            ChartBuilderCommandInvoker.Execute(new DeleteNotesCommand([..SelectedNotes]));
+            SelectedNotes.Clear();
         }
-        
-        var lines = File.ReadAllLines(Config.PracticeModConfigPath).ToList();
-        var index = lines.FindIndex(
-            l => l.StartsWith($"{Chart.Metadata.SongName.ToLowerInvariant()}:"));
-        if (index != -1 && double.TryParse(lines[index].Split(':')[1], out var time))
+    }
+
+    public static void MirrorSelection()
+    {
+        if (SelectedNotes.Count > 0)
         {
-            BreakpointTime = time;
-            App.MainWindowViewModel.BreakpointTimeText = TimeSpan.FromMilliseconds(BreakpointTime)
-                                                                 .ToString(@"mm\:ss\.fff");
-            Trace.WriteLine($"Found existing breakpoint at {BreakpointTime}");
+            ChartBuilderCommandInvoker.Execute(new MirrorNotesCommand([..SelectedNotes]));
         }
-        else
+    }
+
+    public static void MoveSelectionForward()
+    {
+        if (SelectedNotes.Count > 0)
         {
-            DeleteBreakpoint(false);
+            DoNoteMoveOperation(Chart.GetPreviousSnapTime() - Chart.CurrentTime);
+        }
+    }
+
+    public static void MoveSelectionBack()
+    {
+        if (SelectedNotes.Count > 0)
+        {
+            DoNoteMoveOperation(Chart.GetNextSnapTime() - Chart.CurrentTime);
         }
     }
 
@@ -619,7 +544,113 @@ public static class ChartBuilder
         ChartBuilderCommandInvoker.Execute(new RemoveLabelCommand(label));
     }
     
-    public static void DeleteBreakpoint(bool showEventIndicator = true)
+    public static void StartTopLanePlacement() {}
+    
+    public static void EndTopLanePlacement() {}
+    
+    public static void StartBottomLanePlacement() {}
+    
+    public static void EndBottomLanePlacement() {}
+    
+    public static void StartCenterLanePlacement() {}
+    
+    public static void EndCenterLanePlacement() {}
+    
+    public static void PlaceCameraChange()
+    {
+        if (Chart.GetNote(Chart.CurrentTime, NoteLane.CAMERA) is { } note)
+        {
+            ChartBuilderCommandInvoker.Execute(new DeleteNotesCommand([note]));
+        }
+        else
+        {
+            ChartBuilderCommandInvoker.Execute(new AddNotesCommand([
+                new CameraChange
+                {
+                    Time = Chart.CurrentTime,
+                    Flags = new NoteFlags(
+                        false, false, ShiftPressed)
+                }
+            ]));
+        }
+    }
+
+    public static void SetCopId(int id)
+    {
+        if (SelectedNotes.Count > 0)
+        {
+            ChartBuilderCommandInvoker.Execute(
+                new SetNotesCopIdCommand([..SelectedNotes], id));
+        }
+        else
+        {
+            CopId = id;
+            App.MainWindowViewModel.CurrentNoteTypeText = NoteTypeNames[id];
+        }
+    }
+
+    public static void PrevCop() {}
+    
+    public static void NextCop() {}
+    
+    public static void AddBpmChange() {}
+    
+    public static void RemoveBpmChange() {}
+    
+    public static void AddLabel() {}
+    
+    public static void RemoveLabel() {}
+    
+    public static void SetBreakpoint()
+    {
+        if (!Config.Settings.EnableBreakpoints)
+        {
+            App.MainWindowViewModel.ShowEventIndicator("Breakpoints are disabled.");
+            return;
+        }
+
+        if (!Config.PracticeModInstalled)
+        {
+            App.MainWindowViewModel.ShowEventIndicator("Install Practice Mod to use breakpoints.");
+            return;
+        }
+
+        if (Chart.Metadata.SongName == "")
+        {
+            App.MainWindowViewModel.ShowEventIndicator("Set song name to use breakpoints.");
+            return;
+        }
+
+        if (Chart.CurrentTime.SoftEquals(BreakpointTime))
+        {
+            RemoveBreakpoint();
+            return;
+        }
+        
+        BreakpointTime = Chart.CurrentTime;
+        App.MainWindowViewModel.ShowEventIndicator(
+            $@"Breakpoint set at {TimeSpan.FromMilliseconds(BreakpointTime):mm\:ss\.fff} seconds.");
+        App.MainWindowViewModel.BreakpointTimeText = TimeSpan.FromMilliseconds(BreakpointTime)
+                                                             .ToString(@"mm\:ss\.fff");
+        
+        // this loads the entire file into memory but the practice mode settings file is going to be
+        // small enough that i can get away without streaming it
+        var lines = File.ReadAllLines(Config.PracticeModConfigPath).ToList();
+        var index = lines.FindIndex(
+            l => l.StartsWith($"{Chart.Metadata.SongName.ToLowerInvariant()}:"));
+        if (index == -1)
+        {
+            lines.Add($"{Chart.Metadata.SongName.ToLowerInvariant()}:{Math.Floor(BreakpointTime)}");
+        }
+        else
+        {
+            lines[index] =
+                $"{Chart.Metadata.SongName.ToLowerInvariant()}:{Math.Floor(BreakpointTime)}";
+        }
+        File.WriteAllLines(Config.PracticeModConfigPath, lines);
+    }
+    
+    public static void RemoveBreakpoint(bool showEventIndicator = true)
     {
         BreakpointTime = -1000;
         if (showEventIndicator)
@@ -636,6 +667,61 @@ public static class ChartBuilder
             lines.RemoveAt(index);
         }
         File.WriteAllLines(Config.PracticeModConfigPath, lines);
+    }
+
+    public static void AddMarker(int type) {}
+
+    public static void SetNoteFlags(char flag)
+    {
+        if (SelectedNotes.Count == 0)
+        {
+            App.MainWindowViewModel.ShowEventIndicator("No notes selected to set flags");
+            return;
+        }
+        
+        // flag operations prioritize making the flag true for all notes
+        var newValue = false;
+        List<(NoteBase, bool)> notes = [];
+        foreach (var note in SelectedNotes)
+        {
+            var currentValue = flag switch
+            {
+                'c' => note.Flags.C,
+                'f' => note.Flags.F,
+                'w' => note.Flags.W,
+                _ => throw new ArgumentOutOfRangeException(nameof(flag), flag, null)
+            };
+            notes.Add((note, currentValue));
+            if (!currentValue)
+            {
+                newValue = true;
+            }
+        }
+        
+        ChartBuilderCommandInvoker.Execute(new SetFlagsCommand(flag, newValue, notes));
+    }
+
+    public static void CheckExistingBreakpoint()
+    {
+        if (!Config.Settings.EnableBreakpoints || !Config.PracticeModInstalled)
+        {
+            return;
+        }
+        
+        var lines = File.ReadAllLines(Config.PracticeModConfigPath).ToList();
+        var index = lines.FindIndex(
+            l => l.StartsWith($"{Chart.Metadata.SongName.ToLowerInvariant()}:"));
+        if (index != -1 && double.TryParse(lines[index].Split(':')[1], out var time))
+        {
+            BreakpointTime = time;
+            App.MainWindowViewModel.BreakpointTimeText = TimeSpan.FromMilliseconds(BreakpointTime)
+                                                                 .ToString(@"mm\:ss\.fff");
+            Trace.WriteLine($"Found existing breakpoint at {BreakpointTime}");
+        }
+        else
+        {
+            RemoveBreakpoint(false);
+        }
     }
 
     private static async Task DoLabelOperation()
@@ -828,52 +914,6 @@ public static class ChartBuilder
         }
     }
     
-    private static void DoCameraSwapOperation()
-    {
-        if (Chart.GetNote(Chart.CurrentTime, NoteLane.CAMERA) is { } note)
-        {
-            ChartBuilderCommandInvoker.Execute(new DeleteNotesCommand([note]));
-        }
-        else
-        {
-            ChartBuilderCommandInvoker.Execute(new AddNotesCommand([new CameraChange
-            {
-                Time = Chart.CurrentTime,
-                Flags = new NoteFlags(false, false, ShiftPressed)
-            }]));
-        }
-    }
-
-    private static void DoSetFlagOperation(char flag)
-    {
-        if (SelectedNotes.Count == 0)
-        {
-            App.MainWindowViewModel.ShowEventIndicator("No notes selected to set flags");
-            return;
-        }
-        
-        // flag operations prioritize making the flag true for all notes
-        var newValue = false;
-        List<(NoteBase, bool)> notes = [];
-        foreach (var note in SelectedNotes)
-        {
-            var currentValue = flag switch
-            {
-                'c' => note.Flags.C,
-                'f' => note.Flags.F,
-                'w' => note.Flags.W,
-                _ => throw new ArgumentOutOfRangeException(nameof(flag), flag, null)
-            };
-            notes.Add((note, currentValue));
-            if (!currentValue)
-            {
-                newValue = true;
-            }
-        }
-        
-        ChartBuilderCommandInvoker.Execute(new SetFlagsCommand(flag, newValue, notes));
-    }
-
     private static void DoNoteMoveOperation(double delta)
     {
         if (delta == 0)
@@ -889,54 +929,5 @@ public static class ChartBuilder
         
         ChartBuilderCommandInvoker.Execute(new UpdateNotesCommand([..SelectedNotes], newNotes,
                                                                   true));
-    }
-    
-    private static void SetBreakpoint()
-    {
-        if (!Config.Settings.EnableBreakpoints)
-        {
-            App.MainWindowViewModel.ShowEventIndicator("Breakpoints are disabled.");
-            return;
-        }
-
-        if (!Config.PracticeModInstalled)
-        {
-            App.MainWindowViewModel.ShowEventIndicator("Install Practice Mod to use breakpoints.");
-            return;
-        }
-
-        if (Chart.Metadata.SongName == "")
-        {
-            App.MainWindowViewModel.ShowEventIndicator("Set song name to use breakpoints.");
-            return;
-        }
-
-        if (Chart.CurrentTime.SoftEquals(BreakpointTime))
-        {
-            DeleteBreakpoint();
-            return;
-        }
-        
-        BreakpointTime = Chart.CurrentTime;
-        App.MainWindowViewModel.ShowEventIndicator(
-            $@"Breakpoint set at {TimeSpan.FromMilliseconds(BreakpointTime):mm\:ss\.fff} seconds.");
-        App.MainWindowViewModel.BreakpointTimeText = TimeSpan.FromMilliseconds(BreakpointTime)
-                                                             .ToString(@"mm\:ss\.fff");
-        
-        // this loads the entire file into memory but the practice mode settings file is going to be
-        // small enough that i can get away without streaming it
-        var lines = File.ReadAllLines(Config.PracticeModConfigPath).ToList();
-        var index = lines.FindIndex(
-            l => l.StartsWith($"{Chart.Metadata.SongName.ToLowerInvariant()}:"));
-        if (index == -1)
-        {
-            lines.Add($"{Chart.Metadata.SongName.ToLowerInvariant()}:{Math.Floor(BreakpointTime)}");
-        }
-        else
-        {
-            lines[index] =
-                $"{Chart.Metadata.SongName.ToLowerInvariant()}:{Math.Floor(BreakpointTime)}";
-        }
-        File.WriteAllLines(Config.PracticeModConfigPath, lines);
     }
 }

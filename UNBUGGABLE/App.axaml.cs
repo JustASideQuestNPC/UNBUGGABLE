@@ -9,6 +9,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using UNBEATABLEChartEditor;
 using UNBEATABLEChartEditor.Audio;
+using UNBEATABLEChartEditor.Input;
 using UNBUGGABLE.Resources;
 using UNBUGGABLE.ViewModels;
 using UNBUGGABLE.Views;
@@ -32,7 +33,7 @@ public partial class App : Application
         set
         {
             _dialogIsOpen = value;
-            ChartBuilder.ResetKeyStates();
+            InputManager.ResetInputStates();
         }
     }
     

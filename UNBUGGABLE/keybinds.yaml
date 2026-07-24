@@ -1,0 +1,112 @@
+﻿# general
+undo:
+  - "ctrl+z"
+redo:
+  - "ctrl+y"
+saveFile:
+  - "ctrl+s"
+openFile:
+  - "ctrl+o"
+resetPlaySpeed:
+  - "r"
+
+# navigation
+moveForward:
+  - "scrollDown"
+  - "down"
+moveBack:
+  - "scrollUp"
+  - "up"
+zoomIn:
+  - "ctrl+scrollUp"
+  - "ctrl+oemPlus" # ctrl++
+zoomOut:
+  - "ctrl+scrollDown"
+  - "ctrl+oemMinus" # ctrl+-
+prevLabel:
+  - "pageUp"
+nextLabel:
+  - "pageDown"
+prevNoteSnap:
+  - "left"
+nextNoteSnap:
+  - "right"
+
+# placement
+placeTopLane:
+  - "d3"
+placeBottomLane:
+  - "d4"
+placeCameraLane:
+  - "d5"
+placeCenterLane:
+  - "d"
+  
+
+# selection
+selectAll:
+  - "ctrl+a"
+cut:
+  - "ctrl+x"
+copy:
+  - "ctrl+c"
+paste:
+  - "ctrl+v"
+clearSelection:
+  - "escape"
+deleteSelection:
+  - "back"
+  - "delete"
+mirrorSelection:
+  - "ctrl+m"
+moveSelectionForward:
+  - "shift+down"
+moveSelectionBack:
+  - "shift+up"
+setFinishFlag:
+  - "e"
+  - "f"
+setWhistleFlag:
+  - "w"
+setClapFlag:
+  - "c"
+  - "r"
+
+# cops
+copId0:
+  - "ctrl+d0"
+  - "ctrl+oem3" # ctrl+`
+copId1:
+  - "ctrl+d1"
+copId2:
+  - "ctrl+d2"
+copId3:
+  - "ctrl+d3"
+copId4:
+  - "ctrl+d4"
+prevCop:
+  - "oemComma" # c,
+  - "oemPipe" # \
+nextCop:
+  - "oemPeriod" # .
+  - "oemQuestion" # /
+
+# misc
+addBpmChange: # also edits bpm changes
+  - "f9"
+removeBpmChange:
+  - "ctrl+f9"
+addLabel: # also edits labels
+  - "l"
+removeLabel:
+  - "ctrl+l"
+addMarker1:
+  - "q"
+addMarker2:
+  - "shift+q"
+addMarker3:
+  - "ctrl+q"
+setBreakpoint:
+  - "b"
+removeBreakpoint:
+  - "ctrl+b"

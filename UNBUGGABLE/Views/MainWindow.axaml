@@ -25,21 +25,6 @@
         <StyleInclude Source="WindowStyles.axaml" />
         <StyleInclude Source="/Dialogs/DialogStyles.axaml" />
     </Window.Styles>
-    
-    <!-- This only has keybinds that require modifier keys, AND that don't change depending on what
-         modifier keys are pressed. -->
-    <Window.KeyBindings>
-        <KeyBinding Gesture="Ctrl+o" Command="{Binding LoadFileCommand}" />
-        <KeyBinding Gesture="Ctrl+s" Command="{Binding SaveBeatFileCommand}" />
-        <KeyBinding Gesture="Ctrl+Shift+s" Command="{Binding SaveNewBeatFileCommand}" />
-        <KeyBinding Gesture="Ctrl+z" Command="{Binding UndoCommand}" />
-        <KeyBinding Gesture="Ctrl+y" Command="{Binding RedoCommand}" />
-        <KeyBinding Gesture="Ctrl+a" Command="{Binding SelectAllCommand}" />
-        <KeyBinding Gesture="Ctrl+x" Command="{Binding CutCommand}" />
-        <KeyBinding Gesture="Ctrl+c" Command="{Binding CopyCommand}" />
-        <KeyBinding Gesture="Ctrl+v" Command="{Binding PasteCommand}" />
-    </Window.KeyBindings>
-    
     <dialogs:ReactiveDialogHost CloseOnClickAway="True" DialogMargin="0">
         <DockPanel Name="Container">
             <StackPanel DockPanel.Dock="Top" Name="TopButtonBar" Orientation="Horizontal"
