@@ -18,7 +18,7 @@ public static class UserData
     /// </summary>
     public static string LastOpenedChartFile = "";
     
-    private const string DataFilePath = "userData.json";
+    private const string DataFilePath = "configs/userData.json";
 
     public static void LoadData()
     {
