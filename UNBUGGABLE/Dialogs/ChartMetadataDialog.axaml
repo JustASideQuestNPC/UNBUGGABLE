@@ -15,20 +15,24 @@
         <Grid RowDefinitions="50, 50, 50, 50, 50, 50, 50, 50, 50, 50" ColumnDefinitions="Auto, 400"
               RowSpacing="5" ColumnSpacing="10">
             <TextBlock Grid.Row="0" Grid.Column="0">song name</TextBlock>
-            <TextBox Grid.Row="0" Grid.Column="1" Name="SongNameBox" />
+            <TextBox Grid.Row="0" Grid.Column="1" Name="SongNameBox" CanCut="True" CanCopy="True"
+                     CanPaste="True" />
         
             <TextBlock Grid.Row="1" Grid.Column="0">artist</TextBlock>
-            <TextBox Grid.Row="1" Grid.Column="1" Name="ArtistNameBox" />
+            <TextBox Grid.Row="1" Grid.Column="1" Name="ArtistNameBox" CanCut="True" CanCopy="True"
+                     CanPaste="True" />
         
             <TextBlock Grid.Row="2" Grid.Column="0">cover artist</TextBlock>
-            <TextBox Grid.Row="2" Grid.Column="1" Name="CoverArtistNameBox" />
+            <TextBox Grid.Row="2" Grid.Column="1" Name="CoverArtistNameBox" CanCut="True"
+                     CanCopy="True" CanPaste="True" />
         
             <TextBlock Grid.Row="3" Grid.Column="0">charter</TextBlock>
-            <TextBox Grid.Row="3" Grid.Column="1" Name="CharterNameBox" />
+            <TextBox Grid.Row="3" Grid.Column="1" Name="CharterNameBox" CanCut="True" CanCopy="True"
+                     CanPaste="True" />
             
             <TextBlock Grid.Row="4" Grid.Column="0">offset</TextBlock>
             <TextBox Classes="NumberBox" Grid.Row="4" Grid.Column="1" Name="OffsetBox" Text="0"
-                     LostFocus="OffsetBoxLostFocus" />
+                     LostFocus="OffsetBoxLostFocus" CanCut="True" CanCopy="True" CanPaste="True" />
         
             <TextBlock Grid.Row="5" Grid.Column="0">difficulty slot</TextBlock>
             <ComboBox Grid.Row="5" Grid.Column="1" SelectedIndex="0" Name="DifficultySlotBox"
@@ -42,7 +46,8 @@
             </ComboBox>
         
             <TextBlock Grid.Row="6" Grid.Column="0">difficulty name</TextBlock>
-            <TextBox Grid.Row="6" Grid.Column="1" Name="DifficultyNameBox" IsEnabled="False" />
+            <TextBox Grid.Row="6" Grid.Column="1" Name="DifficultyNameBox" IsEnabled="False"
+                     CanCut="True" CanCopy="True" CanPaste="True" />
         
             <TextBlock Grid.Row="7" Grid.Column="0">difficulty level</TextBlock>
             <NumericUpDown Grid.Row="7" Grid.Column="1" Name="DifficultyLevelBox" Value="0"
@@ -50,7 +55,8 @@
                            ParsingNumberStyle="Integer" />
             
             <TextBlock Grid.Row="8" Grid.Column="0">flavor text</TextBlock>
-            <TextBox Grid.Row="8" Grid.Column="1" Name="FlavorTextBox" />
+            <TextBox Grid.Row="8" Grid.Column="1" Name="FlavorTextBox" CanCut="True" CanCopy="True"
+                     CanPaste="True" />
         
             <StackPanel Grid.Row="9" Grid.Column="0" Orientation="Horizontal">
                 <Button Classes="SquareIconButton" Click="ConfirmButtonClick">

@@ -12,7 +12,8 @@
     <Border Classes="Container">
         <Grid RowDefinitions="50, 50, 50" ColumnDefinitions="500" RowSpacing="10">
             <TextBlock Grid.Row="0" Name="Title" FontSize="42" />
-            <TextBox Grid.Row="1" Name="TextBox" AcceptsReturn="False" />
+            <TextBox Grid.Row="1" Name="TextBox" AcceptsReturn="False" CanCut="True" CanCopy="True"
+                     CanPaste="True" />
             <StackPanel Grid.Row="2" Orientation="Horizontal">
                 <Button Classes="SquareIconButton" Click="ConfirmButtonClick">
                     <materialIcons:MaterialIcon Kind="Check" />

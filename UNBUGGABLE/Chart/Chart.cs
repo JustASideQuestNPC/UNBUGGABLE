@@ -87,29 +87,29 @@ public static partial class Chart
         get => _metadata;
         set
         {  
+            _metadata = value;
+            
             // technically the chart can only be saved if it has a difficulty slot, but the way the
             // enum is set up makes it impossible to not have one
-            var canSave = (value.SongName != "" && value.ArtistName != "" &&
-                           value.CharterName != "");
+            var canSave = (_metadata.SongName != "" && _metadata.ArtistName != "" &&
+                           _metadata.CharterName != "");
             App.MainWindowViewModel.CanSave = canSave;
 
             if (_bpmRegions.Count != 0 && _bpmRegions[0].StartTime
-                                                        .SoftNotEquals(value.ChartOffset))
+                                                        .SoftNotEquals(_metadata.ChartOffset))
             {
-                _bpmRegions[0].StartTime = value.ChartOffset;
+                _bpmRegions[0].StartTime = _metadata.ChartOffset;
 
                 if (_bpmRegions.Count > 1)
                 {
                     foreach (var region in _bpmRegions.Skip(1))
                     {
-                        region.StartTime -= _metadata.ChartOffset - value.ChartOffset;
+                        region.StartTime -= _metadata.ChartOffset - _metadata.ChartOffset;
                     }
                 }
                 
                 RebuildSnapLineSets();
             }
-            
-            _metadata = value;
             if (canSave)
             {
                 ChartFileName = GetChartFileName();

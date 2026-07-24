@@ -439,6 +439,7 @@ public partial class MainWindowViewModel : ViewModelBase
         Config.LoadConfig();
         NoteViewer.UpdateNoteColumnPositions();
         Chart.RebuildSnapLineSets();
+        ShowEventIndicator("Reloaded config.");
     }
 
     [RelayCommand]
