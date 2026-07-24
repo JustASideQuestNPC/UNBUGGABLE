@@ -5,16 +5,19 @@ using UNBUGGABLE.Views;
 
 namespace UNBUGGABLE.Keybinds;
 
-public class MoveForwardAction(List<string> keybinds) : InputActionBase(keybinds, true)
+public class MoveForwardAction(List<string> keybinds) : InputActionBase(keybinds)
 {
+    public override bool IgnoreModifiers => true;
+
     public override async Task OnPress()
     {
         Chart.MoveToNextSnap();
     }
 }
 
-public class MoveBackAction(List<string> keybinds) : InputActionBase(keybinds, true)
+public class MoveBackAction(List<string> keybinds) : InputActionBase(keybinds)
 {
+    public override bool IgnoreModifiers => true;
     public override async Task OnPress()
     {
         Chart.MoveToPreviousSnap();
@@ -24,6 +27,8 @@ public class MoveBackAction(List<string> keybinds) : InputActionBase(keybinds, t
 
 public class PlayPauseAction(List<string> keybinds) : InputActionBase(keybinds)
 {
+    public override bool CanUseWhilePlaying => true;
+
     public override async Task OnPress()
     {
         Chart.PlayOrPauseSong();

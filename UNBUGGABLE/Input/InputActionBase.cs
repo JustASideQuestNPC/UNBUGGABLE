@@ -29,11 +29,11 @@ public class Keybind
 public abstract class InputActionBase
 {
     public readonly List<Keybind> Keybinds = [];
-    public readonly bool IgnoreModifiers = false;
+    public virtual bool IgnoreModifiers => false;
+    public virtual bool CanUseWhilePlaying => false;
     
-    public InputActionBase(List<string> keybindStrings, bool ignoreModifiers = false)
+    public InputActionBase(List<string> keybindStrings)
     {
-        IgnoreModifiers = ignoreModifiers;
         foreach (var keybindString in keybindStrings)
         {
             Keybinds.Add(GetKeybind(keybindString));

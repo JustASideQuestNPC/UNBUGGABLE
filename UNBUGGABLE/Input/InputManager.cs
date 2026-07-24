@@ -146,7 +146,8 @@ public static class InputManager
             {
                 if (k == keybind.Key && ((CtrlPressed == keybind.Ctrl &&
                                           ShiftPressed == keybind.Shift &&
-                                          AltPressed == keybind.Alt) || action.IgnoreModifiers))
+                                          AltPressed == keybind.Alt) || action.IgnoreModifiers) &&
+                    (!Chart.Playing || action.CanUseWhilePlaying))
                 {
                     await action.OnPress();
                     ranCallback = true;
@@ -169,7 +170,8 @@ public static class InputManager
                 if (b == keybind.MouseButton && ((CtrlPressed == keybind.Ctrl &&
                                                   ShiftPressed == keybind.Shift && 
                                                   AltPressed == keybind.Alt) ||
-                                                 action.IgnoreModifiers))
+                                                 action.IgnoreModifiers) &&
+                    (!Chart.Playing || action.CanUseWhilePlaying))
                 {
                     await action.OnPress();
                     ranCallback = true;
@@ -192,7 +194,8 @@ public static class InputManager
             {
                 if (k == keybind.Key && ((CtrlPressed == keybind.Ctrl &&
                                           ShiftPressed == keybind.Shift &&
-                                          AltPressed == keybind.Alt) || action.IgnoreModifiers))
+                                          AltPressed == keybind.Alt) || action.IgnoreModifiers) &&
+                    (!Chart.Playing || action.CanUseWhilePlaying))
                 {
                     await action.OnRelease();
                     ranCallback = true;
@@ -215,7 +218,8 @@ public static class InputManager
                 if (b == keybind.MouseButton && ((CtrlPressed == keybind.Ctrl &&
                                                   ShiftPressed == keybind.Shift && 
                                                   AltPressed == keybind.Alt) ||
-                                                 action.IgnoreModifiers))
+                                                 action.IgnoreModifiers) &&
+                    (!Chart.Playing || action.CanUseWhilePlaying))
                 {
                     await action.OnRelease();
                     ranCallback = true;

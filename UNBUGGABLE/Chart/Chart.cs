@@ -20,6 +20,7 @@ using LibVLCSharp.Shared;
 using Tmds.DBus.Protocol;
 using UNBEATABLEChartEditor;
 using UNBEATABLEChartEditor.Audio;
+using UNBEATABLEChartEditor.Input;
 using UNBUGGABLE.Resources;
 using UNBUGGABLE.Views;
 using Path = System.IO.Path;
@@ -215,6 +216,7 @@ public static partial class Chart
         {
             _playing = value;
             App.MainWindowViewModel.EditorUiEnabled = !value && SongLoaded;
+            InputManager.ResetInputStates();
             if (value)
             {
                 App.MainWindowViewModel.ClearPriorityListEntries();
