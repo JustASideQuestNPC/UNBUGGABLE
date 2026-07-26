@@ -352,7 +352,7 @@ public abstract partial class NoteBase
 
     protected void RenderDebugTime(DrawingContext dc, double x, double y)
     {
-        if (!Config.Settings.DebugMode)
+        if (!Config.Settings.DebugToggles.Enabled || !Config.Settings.DebugToggles.NoteTimeStamps)
         {
             return;
         }

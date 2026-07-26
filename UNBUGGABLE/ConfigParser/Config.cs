@@ -81,7 +81,6 @@ public static class Config
         HitSoundTickRate = 150,
         MaxConcurrentSfx = 16,
         CurrentTimePosition = 175,
-        DebugMode = false,
         NegativeMashConversion = true,
         PasteOverwrite = true,
         HitSounds = new()
@@ -104,6 +103,14 @@ public static class Config
             Marker1 = false,
             Marker2 = false,
             Marker3 = false
+        },
+        DebugToggles = new()
+        {
+            Enabled = false,
+            CommandStacks = true,
+            InputData = true,
+            MediaPlayer = true,
+            NoteTimeStamps = true
         }
     };
     

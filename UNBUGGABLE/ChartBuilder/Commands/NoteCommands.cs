@@ -328,3 +328,36 @@ public class SetNotesCopIdCommand : ICommand
         return newNote;
     }
 }
+
+public class ReorderNotesCommand(List<(NoteBase, int)> indexedOldOrder, List<NoteBase> newOrder) : ICommand
+{
+    public string Name => "Reorder Notes";
+    
+    private readonly List<NoteBase> _oldOrder = indexedOldOrder.Select(i => i.Item1).ToList();
+    private readonly List<(NoteBase, int)> _indexedNewOrder =
+        newOrder.Select((note, i) => (note, i)).ToList();
+
+    // prevents a crash caused by modifying the ui during an event
+    private bool _isFirstRun = true;
+    
+    public void Execute()
+    {
+        Chart.SetNoteOrder(newOrder);
+        Trace.WriteLine(string.Join(',', _indexedNewOrder.Select(n => n.Item1.Lane)));
+        if (!_isFirstRun)
+        {
+            App.MainWindowViewModel.UpdatePriorityListEntries(_indexedNewOrder);
+        }
+        else
+        {
+            _isFirstRun = false;
+        }
+    }
+    
+    public void Undo()
+    {
+        Chart.SetNoteOrder(_oldOrder);
+        App.MainWindowViewModel.UpdatePriorityListEntries(indexedOldOrder);
+        Trace.WriteLine(string.Join(',', indexedOldOrder.Select(n => n.Item1.Lane)));
+    }   
+}

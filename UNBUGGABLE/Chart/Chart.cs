@@ -37,6 +37,15 @@ public enum DifficultySlot
     STAR
 }
 
+public class ChartDebugInfo
+{
+    public required bool SongLoaded;
+    public required bool Playing;
+    public required long MediaPlayerTime;
+    public required VLCState MediaPlayerState;
+    public required string LastVlcOutput;
+}
+
 public static partial class Chart
 {
     /// <summary>
@@ -62,9 +71,17 @@ public static partial class Chart
         public int DifficultyLevel = 0;
         public double ChartOffset = 0;
     }
+    
+    public static ChartDebugInfo DebugInfo => new()
+    {
+        Playing = Playing,
+        SongLoaded = SongLoaded,
+        MediaPlayerTime = _mediaPlayer.Time,
+        MediaPlayerState = _mediaPlayer.State,
+        LastVlcOutput = _lastVlcConsoleOutput,
+    };
 
     private static List<NoteBase> _notes = [];
-
     /// <summary>
     /// All notes in the chart, including markers.
     /// </summary>
@@ -87,7 +104,7 @@ public static partial class Chart
     {
         get => _metadata;
         set
-        {  
+        {
             _metadata = value;
             UnsavedChanges = true;
             
@@ -247,6 +264,9 @@ public static partial class Chart
     private static List<double> _currentSnapLineSet = [];
     private static int _currentSnapLineSetIndex = 0;
     
+    // for debugging
+    private static string _lastVlcConsoleOutput = "";
+    
     [GeneratedRegex(@"\d+,\d+.\d+,\d+,\d+,\d+,\d+,\d+,\d+")]
     private static partial Regex TimingPointRegex();
 
@@ -266,7 +286,10 @@ public static partial class Chart
         _mediaPlayer = new MediaPlayer(_libVlc);
         _hitSoundMediaPlayer = new MediaPlayer(_libVlc);
         _mediaPlayer.EndReached += MediaPlayer_EndReached;
-        
+        _libVlc.Log += (_, args) =>
+        {
+            _lastVlcConsoleOutput = args.Message;
+        };
         try
         {
             _hitSound = new CachedSound(
@@ -1105,7 +1128,7 @@ public static partial class Chart
             Trace.WriteLine(_mediaPlayer.Time);
         });
     }
-
+    
     /// <summary>
     /// Parses metadata and returns the suggested file name (without extension) for the chart,
     /// accounting for Unicode characters and brackets/parentheses.

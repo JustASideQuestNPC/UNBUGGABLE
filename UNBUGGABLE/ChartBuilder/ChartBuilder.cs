@@ -695,7 +695,9 @@ public static class ChartBuilder
                 shouldReplace = true;
             }
 
-            if (!shouldReplace && !newNote.Instant && !oldNote.Instant)
+            // holding ctrl ignores always places a new note instead of trying to extend existing
+            // notes (this is mainly useful for chaining doubles)
+            if (!shouldReplace && !newNote.Instant && !oldNote.Instant && !InputManager.CtrlPressed)
             {
                 if ((newNote.Time.SoftEquals(oldNote.EndTime) ||
                      oldNote.Time.SoftEquals(newNote.EndTime)) && newNote.Type == oldNote.Type)

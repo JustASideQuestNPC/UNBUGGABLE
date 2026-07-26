@@ -4,7 +4,7 @@ using UNBUGGABLE.Commands;
 
 namespace UNBUGGABLE;
 
-public class DebugInfo
+public class CommandInvokerDebugInfo
 {
     public required List<string> UndoStackNames;
     public required List<string> RedoStackNames;
@@ -12,7 +12,7 @@ public class DebugInfo
 
 public static class ChartBuilderCommandInvoker
 {
-    public static DebugInfo DebugInfo => new()
+    public static CommandInvokerDebugInfo DebugInfo => new()
     {
         UndoStackNames = CommandStack.ToList().Select(c => c.Name).ToList(),
         RedoStackNames = RedoStack.ToList().Select(c => c.Name).ToList()

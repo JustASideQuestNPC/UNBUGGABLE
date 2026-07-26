@@ -17,6 +17,7 @@ using CommunityToolkit.Mvvm.Input;
 using DialogHostAvalonia;
 using UNBEATABLEChartEditor;
 using UNBEATABLEChartEditor.Dialogs;
+using UNBUGGABLE.Commands;
 using UNBUGGABLE.Resources;
 using UNBUGGABLE.Views;
 
@@ -94,6 +95,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private ObservableCollection<PlacementPriorityListEntry> _activePriorityListEntries = [];
 
     private bool _skipListEvents = false;
+    private List<(NoteBase, int)> _initialNoteOrder = [];
     
     public int SongVolume
     {
@@ -208,6 +210,7 @@ public partial class MainWindowViewModel : ViewModelBase
             return;
         }
 
+        _initialNoteOrder = notes.ToList();
         foreach (var (note, _) in notes)
         {
             ActivePriorityListEntries.Add(new PlacementPriorityListEntry
@@ -264,14 +267,27 @@ public partial class MainWindowViewModel : ViewModelBase
         }
     }
 
+    private bool _firstEvent = true;
     private void OnPriorityListReorder(object? sender, NotifyCollectionChangedEventArgs e)
     {
         if (_skipListEvents)
         {
             return;
         }
+
+        // reordering the list fires 2 events for some reason?
+        if (_firstEvent)
+        {
+            _firstEvent = false;
+            return;
+        }
         
-        Chart.SetNoteOrder(ActivePriorityListEntries.Select(x => x.Note!).ToList());
+        _firstEvent = true;
+        
+        Console.WriteLine("Reordered priority list");
+        ChartBuilderCommandInvoker.Execute(
+            new ReorderNotesCommand(_initialNoteOrder,
+                                    ActivePriorityListEntries.Select(x => x.Note!).ToList()));
         
         List<string> orderedLaneNames = [];
         foreach (var entry in ActivePriorityListEntries)
