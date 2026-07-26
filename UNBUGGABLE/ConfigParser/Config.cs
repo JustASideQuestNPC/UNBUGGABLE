@@ -216,7 +216,7 @@ public static class Config
     /// Loads and parses user settings and color themes.
     /// <param name="resources">The resource dictionary to add theme brushes to.</param>
     /// </summary>
-    public static void LoadFiles(IResourceDictionary resources)
+    public static void LoadAllConfigFiles(IResourceDictionary resources)
     {
         LoadThemes(resources);
         LoadKeybinds();

@@ -67,7 +67,7 @@ public partial class App : Application
     public override void OnFrameworkInitializationCompleted()
     {
         // load configs and apply UI settings
-        Config.LoadFiles(Resources);
+        Config.LoadAllConfigFiles(Resources);
         SfxEngine.Init(Config.Settings.MaxConcurrentSfx);
         UserData.LoadData();
         ApplyColorTheme(Config.CurrentTheme);

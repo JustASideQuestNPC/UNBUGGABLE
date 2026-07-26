@@ -653,6 +653,13 @@ public static partial class Chart
                     NoteViewer.SetZoom(zoom);
                 }
             }
+            // clear the editor state from the last file that was open
+            else
+            {
+                CurrentTime = 0;
+                SetBeatSnapIndex(0);
+                NoteViewer.SetZoom(1);
+            }
 
             ChartBuilder.CheckExistingBreakpoint();
             SetTimeToNearestSnap();

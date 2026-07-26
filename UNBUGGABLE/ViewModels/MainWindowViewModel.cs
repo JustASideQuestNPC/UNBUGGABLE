@@ -512,6 +512,8 @@ public partial class MainWindowViewModel : ViewModelBase
     private void ReloadConfig()
     {
         Config.LoadConfig();
+        Config.LoadKeybinds();
+        
         NoteViewer.UpdateNoteColumnPositions();
         Chart.RebuildSnapLineSets();
         ShowEventIndicator("Reloaded config.");
