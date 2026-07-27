@@ -48,7 +48,7 @@ public static class Config
         { "CurrentTimeLine", Color.Parse("#FF0000") },
         { "Breakpoint", Color.Parse("#FF0000") },
         { "Marker1", Color.Parse("#40DB11") },
-        { "Marker2", Color.Parse("#EADF09") },
+        { "Marker2", Color.Parse("#0979EA") },
         { "Marker3", Color.Parse("#B609EA") },
         { "BpmChange", Color.Parse("#0981EA") },
         { "Label", Color.Parse("#EADF09") },

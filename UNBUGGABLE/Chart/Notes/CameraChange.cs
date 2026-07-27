@@ -65,13 +65,5 @@ public class CameraChange : NoteBase
 
         return null;
     }
-
-    public override bool MouseOver()
-    {
-        var x = NoteViewer.GetNoteX(Lane);
-        var y = NoteViewer.TimeToScreenCoords(Time);
-        return Utils.PointInPolygon(Vertices, new Point(x, y), ChartBuilder.MousePosition);
-    }
-
     public override string ToString() => $"Camera Change: Type={Type} Time={Time}ms";
 }

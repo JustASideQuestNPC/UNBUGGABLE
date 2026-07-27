@@ -2,6 +2,7 @@ using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using UNBEATABLEChartEditor.Input;
 
 namespace UNBUGGABLE.Views;
@@ -50,5 +51,10 @@ public partial class MainWindow : Window
     {
         await InputManager.OnMouseRelease(e.Properties.IsRightButtonPressed,
                                           e.Properties.IsMiddleButtonPressed);
+    }
+
+    private void OnWindowLoseFocus(object? sender, RoutedEventArgs e)
+    {
+        InputManager.ResetInputStates();
     }
 }

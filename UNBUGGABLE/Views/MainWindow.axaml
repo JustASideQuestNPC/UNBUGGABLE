@@ -12,7 +12,7 @@
         Icon="/Assets/icon.ico"
         Title="UNBUGGABLE"
         Background="{DynamicResource EditorBackground}"
-        Width="1600" Height="900">
+        Width="1600" Height="900" LostFocus="OnWindowLoseFocus">
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,

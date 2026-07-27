@@ -77,18 +77,6 @@ public class SingleNote : NoteBase
 
         return null;
     }
-
-    public override bool MouseOver()
-    {
-        if (Type == NoteType.SINGLE)
-        {
-            return base.MouseOver();
-        }
-        
-        var x = NoteViewer.GetNoteX(Lane);
-        var y = NoteViewer.TimeToScreenCoords(Time);
-        return Utils.PointInPolygon(SpikeVertices, new Point(x, y), ChartBuilder.MousePosition);
-    }
     
     private void RenderSingle(DrawingContext dc, bool selected)
     {

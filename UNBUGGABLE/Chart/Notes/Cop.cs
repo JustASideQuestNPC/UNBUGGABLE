@@ -195,16 +195,6 @@ public class CopNote : NoteBase
 
         return null;
     }
-
-    public override bool MouseOver()
-    {
-        var x = NoteViewer.GetNoteX(Lane);
-        var y = NoteViewer.TimeToScreenCoords(Time);
-        return IsFinisher ?
-            Utils.PointInPolygon(FinisherStarVertices, new Point(x, y),
-                                 ChartBuilder.MousePosition) :
-            new Rect(x - 40, y - 12, 80, 24).Contains(ChartBuilder.MousePosition);
-    }
     
     public override string ToHitObjectString(bool isFirstNote, bool isStandardFile)
     {

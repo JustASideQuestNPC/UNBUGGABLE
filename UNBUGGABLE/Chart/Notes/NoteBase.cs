@@ -281,7 +281,7 @@ public abstract partial class NoteBase
 
     public abstract long? ShouldPlayHitSound(double rangeStart, double rangeEnd);
 
-    public virtual bool MouseOver()
+    public bool MouseOver()
     {
         var x = NoteViewer.GetNoteX(Lane);
         var y = NoteViewer.TimeToScreenCoords(Time);
