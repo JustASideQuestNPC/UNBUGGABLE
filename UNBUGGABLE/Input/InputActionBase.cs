@@ -29,7 +29,20 @@ public class Keybind
 public abstract class InputActionBase
 {
     public readonly List<Keybind> Keybinds = [];
+    
+    /// <summary>
+    /// If true, the action can activate regardless of what modifier keys are pressed, unless an
+    /// action with those specific modifiers exists. For example, the default keybind for moving
+    /// back in the song is [up] and ignores modifiers. The default keybind for moving a
+    /// selection back in the song is [shift+up]. Moving back in the song will activate if any
+    /// combination of modifier keys <i>except</i> [shift], because the keybind for moving a
+    /// selection overrides it.
+    /// </summary>
     public virtual bool IgnoreModifiers => false;
+    
+    /// <summary>
+    /// If true, the action can activate whether the song is playing.
+    /// </summary>
     public virtual bool CanUseWhilePlaying => false;
     
     public InputActionBase(List<string> keybindStrings)

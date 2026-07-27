@@ -6,6 +6,14 @@ using Avalonia.Input;
 using UNBUGGABLE;
 
 namespace UNBEATABLEChartEditor.Input;
+internal enum CallbackType
+{
+    KEY_PRESS,
+    KEY_RELEASE,
+    MOUSE_PRESS,
+    MOUSE_RELEASE,
+    SCROLL
+}
 
 public static class InputManager
 {
@@ -63,7 +71,7 @@ public static class InputManager
                 _rightAltPressed = true;
                 break;
             default:
-                await DoPressCallbacks(k);
+                await RunCallbacks(CallbackType.KEY_PRESS, k);
                 break;
         }
     }
@@ -96,7 +104,7 @@ public static class InputManager
                 _rightAltPressed = false;
                 break;
             default:
-                await DoReleaseCallbacks(k);
+                await RunCallbacks(CallbackType.KEY_RELEASE, k);
                 break;
         }
     }
@@ -109,7 +117,7 @@ public static class InputManager
         }
         
         var button = scrollAmount < 0 ? MouseButton.WHEEL_UP : MouseButton.WHEEL_DOWN;
-        await DoPressCallbacks(button);
+        await RunCallbacks(CallbackType.MOUSE_PRESS, button);
     }
 
     public static async Task OnMousePress(bool isRightButton, bool isMiddleButton)
@@ -121,7 +129,7 @@ public static class InputManager
         
         var button = isRightButton ? MouseButton.RIGHT : isMiddleButton ? MouseButton.MIDDLE :
             MouseButton.LEFT;
-        await DoPressCallbacks(button);
+        await RunCallbacks(CallbackType.MOUSE_PRESS, button);
         await ChartBuilder.OnMousePress(isRightButton);
     }
 
@@ -134,106 +142,59 @@ public static class InputManager
         
         var button = isRightButton ? MouseButton.RIGHT : isMiddleButton ? MouseButton.MIDDLE :
             MouseButton.LEFT;
-        await DoReleaseCallbacks(button);
+        await RunCallbacks(CallbackType.MOUSE_RELEASE, button);
         ChartBuilder.OnMouseRelease();
     }
 
-    private static async Task DoPressCallbacks(Key k)
+    private static async Task RunCallbacks(CallbackType type, object arg)
     {
+        // actions that ignore modifiers only activate if no other actions were
+        InputActionBase? ignoreModifierFallback = null;
         foreach (var action in Actions)
         {
-            var ranCallback = false;
             foreach (var keybind in action.Keybinds)
             {
-                if (k == keybind.Key && ((CtrlPressed == keybind.Ctrl &&
-                                          ShiftPressed == keybind.Shift &&
-                                          AltPressed == keybind.Alt) || action.IgnoreModifiers) &&
-                    (!Chart.Playing || action.CanUseWhilePlaying))
+                if ((type is CallbackType.KEY_PRESS or CallbackType.KEY_RELEASE &&
+                     (Key)arg == keybind.Key) || (
+                        type is CallbackType.MOUSE_PRESS or CallbackType.MOUSE_RELEASE or
+                            CallbackType.SCROLL && // scroll wheel is considered a mouse button here
+                        (MouseButton)arg == keybind.MouseButton))
                 {
-                    await action.OnPress();
-                    ranCallback = true;
-                    break;
+                    if (CtrlPressed == keybind.Ctrl && ShiftPressed == keybind.Shift &&
+                        AltPressed == keybind.Alt)
+                    {
+                        if (type is CallbackType.KEY_PRESS or CallbackType.MOUSE_PRESS or
+                            CallbackType.SCROLL)
+                        {
+                            await action.OnPress();
+                        }
+                        else
+                        {
+                            await action.OnRelease();
+                        }
+
+                        return;
+                    }
+                    
+                    if (action.IgnoreModifiers && ignoreModifierFallback == null)
+                    {
+                        ignoreModifierFallback = action;
+                        break;
+                    }
                 }
-            }
-            if (ranCallback)
-            {
-                return;
             }
         }
         
-        Trace.WriteLine($"Unbound key pressed: {k}");
-    }
-    private static async Task DoPressCallbacks(MouseButton b)
-    {
-        foreach (var action in Actions)
+        if (ignoreModifierFallback != null)
         {
-            var ranCallback = false;
-            foreach (var keybind in action.Keybinds)
+            if (type is CallbackType.KEY_PRESS or CallbackType.MOUSE_PRESS or
+                CallbackType.SCROLL)
             {
-                if (b == keybind.MouseButton && ((CtrlPressed == keybind.Ctrl &&
-                                                  ShiftPressed == keybind.Shift && 
-                                                  AltPressed == keybind.Alt) ||
-                                                 action.IgnoreModifiers) &&
-                    (!Chart.Playing || action.CanUseWhilePlaying))
-                {
-                    await action.OnPress();
-                    ranCallback = true;
-                    break;
-                }
+                await ignoreModifierFallback.OnPress();
             }
-            if (ranCallback)
+            else
             {
-                return;
-            }
-        }
-        
-        Trace.WriteLine($"Unbound mouse button pressed: {b}");
-    }
-    
-    private static async Task DoReleaseCallbacks(Key k)
-    {
-        foreach (var action in Actions)
-        {
-            var ranCallback = false;
-            foreach (var keybind in action.Keybinds)
-            {
-                if (k == keybind.Key && ((CtrlPressed == keybind.Ctrl &&
-                                          ShiftPressed == keybind.Shift &&
-                                          AltPressed == keybind.Alt) || action.IgnoreModifiers) &&
-                    (!Chart.Playing || action.CanUseWhilePlaying))
-                {
-                    await action.OnRelease();
-                    ranCallback = true;
-                    break;
-                }
-            }
-            if (ranCallback)
-            {
-                break;
-            }
-        }
-    }
-    private static async Task DoReleaseCallbacks(MouseButton b)
-    {
-        foreach (var action in Actions)
-        {
-            var ranCallback = false;
-            foreach (var keybind in action.Keybinds)
-            {
-                if (b == keybind.MouseButton && ((CtrlPressed == keybind.Ctrl &&
-                                                  ShiftPressed == keybind.Shift && 
-                                                  AltPressed == keybind.Alt) ||
-                                                 action.IgnoreModifiers) &&
-                    (!Chart.Playing || action.CanUseWhilePlaying))
-                {
-                    await action.OnRelease();
-                    ranCallback = true;
-                    break;
-                }
-            }
-            if (ranCallback)
-            {
-                break;
+                await ignoreModifierFallback.OnRelease();
             }
         }
     }

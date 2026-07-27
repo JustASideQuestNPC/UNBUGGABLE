@@ -228,7 +228,7 @@ public static class ChartBuilder
     {
         if (SelectedNotes.Count > 0)
         {
-            DoNoteMoveOperation(Chart.GetPreviousSnapTime() - Chart.CurrentTime);
+            DoNoteMoveOperation(Chart.GetNextSnapTime() - Chart.CurrentTime);
         }
     }
 
@@ -236,7 +236,7 @@ public static class ChartBuilder
     {
         if (SelectedNotes.Count > 0)
         {
-            DoNoteMoveOperation(Chart.GetNextSnapTime() - Chart.CurrentTime);
+            DoNoteMoveOperation(Chart.GetPreviousSnapTime() - Chart.CurrentTime);
         }
     }
 
