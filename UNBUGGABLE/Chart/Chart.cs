@@ -873,11 +873,11 @@ public static partial class Chart
     /// </summary>
     public static void AddNote(NoteBase note)
     {
-        if (_notes.Count == 0 || _notes[^1].Time <= note.Time)
+        if (_notes.Count == 0 || _notes[^1].Time <= Math.Round(note.Time))
         {
             _notes.Add(note);
         }
-        else if (_notes[0].Time > note.Time)
+        else if (_notes[0].Time > Math.Round(note.Time))
         {
             _notes.Insert(0, note);
         }

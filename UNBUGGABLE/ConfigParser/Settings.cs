@@ -58,6 +58,8 @@ public class DebugToggles
     public required bool CommandStacks;
     public required bool InputData;
     public required bool MediaPlayer;
+    
+    [YamlMember(Alias = "noteTimestamps", ApplyNamingConventions = false)]
     public required bool NoteTimeStamps;
     
     public string GetFormattedString()

@@ -267,7 +267,7 @@ public partial class MainWindowViewModel : ViewModelBase
         }
     }
 
-    private bool _firstEvent = true;
+    private bool _secondEvent = false;
     private void OnPriorityListReorder(object? sender, NotifyCollectionChangedEventArgs e)
     {
         if (_skipListEvents)
@@ -276,13 +276,11 @@ public partial class MainWindowViewModel : ViewModelBase
         }
 
         // reordering the list fires 2 events for some reason?
-        if (_firstEvent)
+        _secondEvent = !_secondEvent;
+        if (_secondEvent)
         {
-            _firstEvent = false;
             return;
         }
-        
-        _firstEvent = true;
         
         Console.WriteLine("Reordered priority list");
         ChartBuilderCommandInvoker.Execute(
