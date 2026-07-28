@@ -712,8 +712,8 @@ public static class ChartBuilder
                 shouldReplace = true;
             }
 
-            // holding ctrl ignores always places a new note instead of trying to extend existing
-            // notes (this is mainly useful for chaining doubles)
+            // holding ctrl always places a new note instead of trying to extend existing notes
+            // (this is mainly useful for chaining doubles)
             if (!shouldReplace && !newNote.Instant && !oldNote.Instant && !InputManager.CtrlPressed)
             {
                 if ((newNote.Time == oldNote.EndTime ||
@@ -728,6 +728,12 @@ public static class ChartBuilder
 
         if (shouldReplace)
         {
+            if (Config.Settings.PreserveNoiszFlag && newNote is SingleNote or HoldNote &&
+                oldNote is SingleNote or HoldNote)
+            {
+                newNote.Flags.N = oldNote.Flags.N;
+            }
+            
             ChartBuilderCommandInvoker.Execute(new UpdateNotesCommand([oldNote], [newNote]));
         }
         else

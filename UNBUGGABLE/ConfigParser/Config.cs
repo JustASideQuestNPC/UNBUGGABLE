@@ -70,6 +70,7 @@ public static class Config
         AlwaysEnableCustomDifficultyName = false,
         AutoSelectPastedNotes = true,
         AllowTopLaneCopMashes = false,
+        PreserveNoiszFlag = true,
         ShowSubFreestylesInNoteViewer = true,
         BeatSnaps = [1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 20, 5, 9, 11, 13],
         MinZoom = 0.5,

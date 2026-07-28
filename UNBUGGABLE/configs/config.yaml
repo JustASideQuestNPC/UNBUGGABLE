@@ -61,6 +61,10 @@ beatSnaps: [1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 20, 5, 9, 11, 13]
 # note, or vice versa.
 pasteOverwritesExistingNotes: true
 
+# If true, replacing/extending a note will preserve whether the N (noisz spawn) flag is on that
+# note. Does not apply to cop notes.
+preserveNoiszFlag: true
+
 # Minimum possible zoom. Smaller values zoom out, larger values zoom in.
 minZoom: 0.5
 
