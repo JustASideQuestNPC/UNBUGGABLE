@@ -273,14 +273,14 @@ public static partial class Chart
     
     private static bool _canAutosave = false;
     
-    [GeneratedRegex(@"\d+,\d+.\d+,\d+,\d+,\d+,\d+,\d+,\d+")]
+    [GeneratedRegex(@"[0-9]+,[0-9]+.[0-9]+,[0-9]+,[0-9]+,[0-9]+,[0-9]+,[0-9]+,[0-9]+")]
     private static partial Regex TimingPointRegex();
 
     [GeneratedRegex(@".*\[(.+)\].*")]
     private static partial Regex DifficultySlotRegex();
 
     // cursed regex because chart tags allow double quotes in a string so i can't just use json
-    [GeneratedRegex("""{"Level":(\d+),"FlavorText":"(.*)","SongLength":(?:\d+?(?:\.\d+)),"CoverArt":"(.*)"}""")]
+    [GeneratedRegex("""{"Level":([0-9]+),"FlavorText":"(.*)","SongLength":(?:[+-]?([0-9]*[.])?[0-9]+),"CoverArt":"(.*)"}""")]
     private static partial Regex TagRegex();
 
     /// <summary>
@@ -1430,6 +1430,7 @@ public static partial class Chart
                 try
                 {
                     var match = TagRegex().Match(line);
+                    Console.WriteLine(match.Success);
                     if (match.Success)
                     {
                         Metadata.DifficultyLevel = int.Parse(match.Groups[1].Value);
@@ -1463,7 +1464,7 @@ public static partial class Chart
             !hasFlavorTextTag || !hasCoverArtTag)
         {
             var errorMessageBuilder = new StringBuilder(
-                "Chart is missing one or more required metadata fields (or their values were  +" +
+                "Chart is missing one or more required metadata fields (or their values were " +
                 "invalid): ");
             if (!hasTitle)
             {

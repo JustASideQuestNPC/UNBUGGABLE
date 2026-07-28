@@ -11,7 +11,7 @@
     
     <Border Classes="Container">
         <StackPanel Orientation="Vertical" Spacing="10">
-            <TextBlock Name="Message" FontSize="30" />
+            <TextBlock Name="Message" FontSize="20" />
             <Button Classes="SquareIconButton" Click="ConfirmButtonClick" Height="50">
                 <avalonia:MaterialIcon Kind="Check" />
             </Button>
