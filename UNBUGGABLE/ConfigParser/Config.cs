@@ -83,6 +83,8 @@ public static class Config
         CurrentTimePosition = 175,
         NegativeMashConversion = true,
         PasteOverwrite = true,
+        AutosaveInterval = 60000,
+        DoublePreviewAlpha = 0.5,
         HitSounds = new()
         {
             Single = true,
@@ -262,6 +264,10 @@ public static class Config
             PlaceCenterLane = ["6"],
 
             SelectAll = ["ctrl+a"],
+            SelectTopLane = ["alt+3"],
+            SelectBottomLane = ["alt+4"],
+            SelectCameraLane = ["alt+5"],
+            SelectCenterLane = ["alt+6"],
             Cut = ["ctrl+x"],
             Copy = ["ctrl+c"],
             Paste = ["ctrl+v"],
@@ -273,6 +279,7 @@ public static class Config
             SetFinishFlag = ["e", "f"],
             SetWhistleFlag = ["w"],
             SetClapFlag = ["c", "r"],
+            SetNoiszFlag = ["n"],
 
             CopId0 = ["ctrl+0", "ctrl+oem3"],
             CopId1 = ["ctrl+1"],
@@ -382,6 +389,10 @@ public static class Config
             new PlaceCameraLaneAction(keybinds.PlaceCameraLane),
             new PlaceCenterLaneAction(keybinds.PlaceCenterLane),
             new SelectAllAction(keybinds.SelectAll),
+            new SelectLaneAction(keybinds.SelectTopLane, NoteLane.TOP),
+            new SelectLaneAction(keybinds.SelectBottomLane, NoteLane.BOTTOM),
+            new SelectLaneAction(keybinds.SelectCameraLane, NoteLane.CAMERA),
+            new SelectLaneAction(keybinds.SelectCenterLane, NoteLane.CENTER),
             new CutAction(keybinds.Cut),
             new CopyAction(keybinds.Copy),
             new PasteAction(keybinds.Paste),
@@ -393,6 +404,7 @@ public static class Config
             new SetNoteFlagAction(keybinds.SetFinishFlag, 'f'),
             new SetNoteFlagAction(keybinds.SetWhistleFlag, 'w'),
             new SetNoteFlagAction(keybinds.SetClapFlag, 'c'),
+            new SetNoteFlagAction(keybinds.SetNoiszFlag, 'n'),
             new CopId0Action(keybinds.CopId0),
             new CopId1Action(keybinds.CopId1),
             new CopId2Action(keybinds.CopId2),

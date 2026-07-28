@@ -121,6 +121,9 @@ public class Settings
     [YamlMember(Alias = "debug", ApplyNamingConventions = false)]
     public required DebugToggles DebugToggles;
 
+    public required long AutosaveInterval;
+    public required double DoublePreviewAlpha;
+
     public void PrintSettings()
     {
         Trace.WriteLine($"""
@@ -135,6 +138,9 @@ public class Settings
                          auto select pasted notes: {AutoSelectPastedNotes}
                          allow top lane cop mashes: {AllowTopLaneCopMashes}
                          show sub freestyles while placing: {ShowSubFreestylesInNoteViewer}
+                         negative mash conversion: {NegativeMashConversion}
+                         double preview alpha: {DoublePreviewAlpha}
+                         autosave interval: {AutosaveInterval} seconds
                          beat snaps: [{string.Join(", ", BeatSnaps)}]
                          min zoom: {MinZoom}
                          max zoom: {MaxZoom}

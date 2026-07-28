@@ -172,6 +172,11 @@ public static class ChartBuilder
     {
         SelectedNotes = Chart.Notes.ToList();
     }
+
+    public static void SelectLane(NoteLane lane)
+    {
+        SelectedNotes = Chart.Notes.Where(n => n.Lane == lane).ToList();
+    }
     
     public static void Cut()
     {
@@ -492,7 +497,7 @@ public static class ChartBuilder
         
         BreakpointTime = Chart.CurrentTime;
         App.MainWindowViewModel.ShowEventIndicator(
-            $@"Breakpoint set at {TimeSpan.FromMilliseconds(BreakpointTime):mm\:ss\.fff} seconds.");
+            $@"Breakpoint set at {TimeSpan.FromMilliseconds(BreakpointTime):mm\:ss\.fff}");
         App.MainWindowViewModel.BreakpointTimeText = TimeSpan.FromMilliseconds(BreakpointTime)
                                                              .ToString(@"mm\:ss\.fff");
         
@@ -560,11 +565,18 @@ public static class ChartBuilder
         List<(NoteBase, bool)> notes = [];
         foreach (var note in SelectedNotes)
         {
+            if (flag == 'n' && (note.Type is not NoteType.SINGLE and not NoteType.SPIKE
+                    and not NoteType.HOLD and not NoteType.DOUBLE))
+            {
+                continue;
+            }
+            
             var currentValue = flag switch
             {
                 'c' => note.Flags.C,
                 'f' => note.Flags.F,
                 'w' => note.Flags.W,
+                'n' => note.Flags.N,
                 _ => throw new ArgumentOutOfRangeException(nameof(flag), flag, null)
             };
             notes.Add((note, currentValue));

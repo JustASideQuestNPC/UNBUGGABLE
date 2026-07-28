@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using YamlDotNet.Serialization;
 
 namespace UNBUGGABLE.Resources;
 
@@ -24,6 +25,14 @@ public class Keybinds
     public required List<string> PlaceCameraLane;
     public required List<string> PlaceCenterLane;
     public required List<string> SelectAll;
+    [YamlMember(Alias = "selectAllTopLane", ApplyNamingConventions = false)]
+    public required List<string> SelectTopLane;
+    [YamlMember(Alias = "selectAllBottomLane", ApplyNamingConventions = false)]
+    public required List<string> SelectBottomLane;
+    [YamlMember(Alias = "selectAllCameraLane", ApplyNamingConventions = false)]
+    public required List<string> SelectCameraLane;
+    [YamlMember(Alias = "selectAllCenterLane", ApplyNamingConventions = false)]
+    public required List<string> SelectCenterLane;
     public required List<string> Cut;
     public required List<string> Copy;
     public required List<string> Paste;
@@ -35,6 +44,8 @@ public class Keybinds
     public required List<string> SetFinishFlag;
     public required List<string> SetWhistleFlag;
     public required List<string> SetClapFlag;
+    [YamlMember(Alias = "setNoiszSpawn", ApplyNamingConventions = false)]
+    public required List<string> SetNoiszFlag;
     public required List<string> CopId0;
     public required List<string> CopId1;
     public required List<string> CopId2;

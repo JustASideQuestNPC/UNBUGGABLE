@@ -114,6 +114,10 @@ public static partial class Chart
                            _metadata.CharterName != "");
             App.MainWindowViewModel.CanSave = canSave;
 
+            // charts can't be autosaved unless they've been saved with their current file name at
+            // least once (or were loaded from a chart file and the metadata hasn't changed)
+            _canAutosave = false;
+
             if (_bpmRegions.Count != 0 && _bpmRegions[0].StartTime
                                                         .SoftNotEquals(_metadata.ChartOffset))
             {
@@ -132,7 +136,7 @@ public static partial class Chart
             if (canSave)
             {
                 ChartFileName = GetChartFileName();
-                Trace.WriteLine(ChartFileName);
+                Trace.WriteLine($"chart file name: \"{ChartFileName}\"");
             }
         }
     }
@@ -267,6 +271,8 @@ public static partial class Chart
     // for debugging
     private static string _lastVlcConsoleOutput = "";
     
+    private static bool _canAutosave = false;
+    
     [GeneratedRegex(@"\d+,\d+.\d+,\d+,\d+,\d+,\d+,\d+,\d+")]
     private static partial Regex TimingPointRegex();
 
@@ -357,7 +363,7 @@ public static partial class Chart
         BeatSnap = Config.Settings.BeatSnaps[_beatSnapIndex];
         App.MainWindow.BeatSnapText.Text = BeatSnap.ToString();
         _currentSnapLineSet = SnapLineSets[BeatSnap];
-        Trace.WriteLine(BeatSnap);
+        Trace.WriteLine($"Beat snap: {BeatSnap} (index {_beatSnapIndex})");
         SetTimeToNearestSnap();
     }
     
@@ -566,6 +572,7 @@ public static partial class Chart
     public static async Task<bool> TryLoadChartFile(string path)
     {
         SongLoaded = false;
+        _canAutosave = false;
         Trace.WriteLine($"Loading chart file: {path}");
         if (!File.Exists(path))
         {
@@ -686,6 +693,7 @@ public static partial class Chart
 
             ChartBuilder.CheckExistingBreakpoint();
             SetTimeToNearestSnap();
+            _canAutosave = true;
             return true;
         }
         
@@ -1081,13 +1089,40 @@ public static partial class Chart
                 snapLineSet.Add(time);
             }
             
-            Trace.WriteLine(
-                $"Snap line set for snap value {snapValue} has {snapLineSet.Count} lines");
+            // Trace.WriteLine(
+            //     $"Snap line set for snap value {snapValue} has {snapLineSet.Count} lines");
             SnapLineSets[snapValue] = snapLineSet;
         }
         
         _currentSnapLineSet = SnapLineSets[BeatSnap];
         SetTimeToNearestSnap();
+    }
+
+    public static async Task TryAutosave()
+    {
+        Trace.WriteLine("Attempting to autosave chart...");
+        if (!_canAutosave)
+        {
+            Trace.WriteLine("Autosave failed: Chart state is invalid.");
+            return;
+        }
+        
+        Trace.WriteLine($"saving to \"{UserData.LastOpenedChartFile}.auto\"");
+        if (UserData.LastOpenedChartFile.EndsWith(".beat.txt"))
+        {
+            await SaveToBeatPath(UserData.LastOpenedChartFile + ".auto");
+        }
+        else
+        {
+            await SaveToStandardPath(UserData.LastOpenedChartFile + ".auto");
+        }
+        Trace.WriteLine("Autosave complete!");
+        
+        // reset the last opened file so we don't continuously add ".auto" to the end
+        UserData.LastOpenedChartFile = UserData.LastOpenedChartFile.Replace(".auto", "");
+        
+        App.MainWindowViewModel.ShowEventIndicator(
+            $"Autosaved to {Path.GetFileName(UserData.LastOpenedChartFile)}.auto");
     }
 
     private static void PlaySong()
@@ -1123,9 +1158,9 @@ public static partial class Chart
     {
         Dispatcher.UIThread.InvokeAsync(() =>
         {
-            Trace.WriteLine("End reached");
+            Trace.WriteLine("Song end reached");
             PauseSong();
-            Trace.WriteLine(_mediaPlayer.Time);
+            //Trace.WriteLine(_mediaPlayer.Time);
         });
     }
     
@@ -1164,7 +1199,7 @@ public static partial class Chart
         {
             if (!File.Exists(path))
             {
-                Trace.WriteLine($"Could not load audio file: File not found or invalid format.");
+                Trace.WriteLine("Could not load audio file: File not found or invalid format.");
                 return false;
             }
             
@@ -1245,7 +1280,7 @@ public static partial class Chart
                 }
                 if (double.TryParse(split[0], out var time))
                 {
-                    Trace.WriteLine($"Adding label at {time} with text \"{split[1]}\"");
+                    // Trace.WriteLine($"Adding label at {time} with text \"{split[1]}\"");
                     _labels.Add(new Label(time, split[1]));
                 }
                 else
@@ -1296,7 +1331,7 @@ public static partial class Chart
                     var split = marker.Split('`');
                     if (double.TryParse(split[0], out var time))
                     {
-                        Trace.WriteLine($"Adding marker at {time} with type {split[1]}");
+                        // Trace.WriteLine($"Adding marker at {time} with type {split[1]}");
                         TryAddMarker(time, int.Parse(split[1]));
                     }
                     else
@@ -1489,11 +1524,11 @@ public static partial class Chart
 
         if (_bpmRegions.Count == 0)
         {
-            Trace.WriteLine($"Could not parse timing points: Chart has no timing points.");
+            Trace.WriteLine("Could not parse timing points: Chart has no timing points.");
             return -1;
         }
         
-        Trace.WriteLine($"Chart has {_bpmRegions.Count} BPM regions.");
+        Trace.WriteLine($"Chart has {_bpmRegions.Count} BPM regions/timing points.");
         return i;
     }
 

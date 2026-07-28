@@ -36,11 +36,18 @@ public enum NoteLane
     MARKER
 }
 
-public class NoteFlags(bool c, bool f, bool w)
+public class NoteFlags(bool c, bool f, bool w, bool n = false)
 {
     public bool C { get; set; } = c;
     public bool F { get; set; } = f;
     public bool W { get; set; } = w;
+    
+    /// <summary>
+    /// Whether to make the note spawn in the center of the screen like in the Noisz stages from the
+    /// base game; only applies to singles and holds. This isn't actually a note flag, but treating
+    /// it like one makes things work infinitely better under the hood. 
+    /// </summary>
+    public bool N { get; set; } = n;
 }
 
 /// <summary>
@@ -118,7 +125,8 @@ public abstract partial class NoteBase
         NoteFlags flags;
         double endTime = 0;
         
-        if ((laneNumber is 213 or 298 or 384 or 469) || (laneNumber == 128 && Config.Settings.Lane2Markers))
+        if ((laneNumber is 213 or 298 or 384 or 469) ||
+            (laneNumber == 128 && Config.Settings.Lane2Markers))
         {
             if (laneNumber == 128)
             {
@@ -255,6 +263,12 @@ public abstract partial class NoteBase
             };
         }
         
+        // handle noisz spawns
+        if ((instant && param1 == 1) || (!instant && param2 == 1))
+        {
+            note.Flags.N = true;
+        }
+        
         errorMessage = "";
         return note;
     }
@@ -323,8 +337,17 @@ public abstract partial class NoteBase
             chunks.Add(isFirstNote ? "132" : "128");
         }
         chunks.Add(GetFlagString());
-        chunks.Add(Instant ? "0:0:0:0:" :
-                       $"{Math.Floor(EndTime + Chart.Metadata.ChartOffset)}:0:0:0:0:");
+
+        var paramString = Instant ? "" : $"{Math.Floor(EndTime + Chart.Metadata.ChartOffset)}:";
+        if (Flags.N)
+        {
+            paramString += "1:0:0:0:";
+        }
+        else
+        {
+            paramString += "0:0:0:0:";
+        }
+        chunks.Add(paramString);
 
         return string.Join(",", chunks);
     }
@@ -337,6 +360,7 @@ public abstract partial class NoteBase
         }
 
         var flagString =
+            (flags.N ? "N" : "") +
             (flags.C ? "C" : "") +
             (flags.F ? "F" : "") +
             (flags.W ? "W" : "");

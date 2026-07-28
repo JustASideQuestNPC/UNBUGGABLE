@@ -30,6 +30,8 @@ public class GamePreview : Control
     public static string LeftCopText { get; private set; } = "Left:";
     public static string RightCopText { get; private set; } = "Right:";
     
+    public const int PixelsPerSecond = 650;
+    
     private readonly SolidColorBrush _viewableAreaBrush =
         (SolidColorBrush)App.Current.Resources["ViewableArea"];
     private readonly SolidColorBrush _accentBrush =
@@ -38,8 +40,6 @@ public class GamePreview : Control
         (SolidColorBrush)App.Current.Resources["SubBeatSnapLine"];
     private readonly SolidColorBrush _editorBackgroundBrush =
         (SolidColorBrush)App.Current.Resources["EditorBackground"];
-    
-    private const int PixelsPerSecond = 650;
     
     /// <summary>
     /// Given a time in milliseconds, returns the x coordinate of that time.
@@ -253,32 +253,7 @@ public class GamePreview : Control
             }
             else
             {
-                double clipX, clipY, clipWidth, currentHeight;
-                if (currentNoteZoomedOut)
-                {
-                    clipX = -PreviewWidth / 2;
-                    clipY = -PreviewHeight / 2 + 20;
-                    clipWidth = PreviewWidth;
-                    currentHeight = PreviewHeight - 40;
-                }
-                else if (CurrentNotesFromRight)
-                {
-                    clipX = 30;
-                    clipY = -PreviewHeight / 2 + 30;
-                    clipWidth = PreviewWidth / 2 - 30;
-                    currentHeight = PreviewHeight - 60;
-                }
-                else
-                {
-                    clipX = -PreviewWidth / 2;
-                    clipY = -PreviewHeight / 2 + 30;
-                    clipWidth = PreviewWidth / 2 - 30;
-                    currentHeight = PreviewHeight - 60;
-                }
-                
-                // var cameraClip = dc.PushClip(new Rect(clipX, clipY, clipWidth, currentHeight));
                 note.RenderPreview(dc);
-                // cameraClip.Dispose();
             }
         }
 

@@ -180,6 +180,7 @@ public partial class MainWindowViewModel : ViewModelBase
             }
         };
         frameTimer.Start();
+        Trace.WriteLine($"started frame timer: runs every {frameTimer.Interval}");
 
         var tickTimer = new DispatcherTimer
         {
@@ -187,7 +188,23 @@ public partial class MainWindowViewModel : ViewModelBase
         };
         tickTimer.Tick += (sender, args) => Chart.PerTickUpdate();
         tickTimer.Start();
-        
+        Trace.WriteLine($"started tick timer: runs every {tickTimer.Interval}");
+
+        if (Config.Settings.AutosaveInterval > 0)
+        {
+            var autosaveTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(Config.Settings.AutosaveInterval)
+            };
+            autosaveTimer.Tick += async (sender, args) => await Chart.TryAutosave();
+            autosaveTimer.Start();
+            Trace.WriteLine($"started autosave timer: runs every {autosaveTimer.Interval}");
+        }
+        else
+        {
+            Trace.WriteLine("autosaves are disabled");
+        }
+
         ActivePriorityListEntries = [];
         ActivePriorityListEntries.CollectionChanged += OnPriorityListReorder;
     }
@@ -415,7 +432,7 @@ public partial class MainWindowViewModel : ViewModelBase
                                         $"{Chart.ChartFileName}.beat.txt");
             Trace.WriteLine($"Saving to {fullPath}");
             await ChartBuilder.SaveToBeatPath(fullPath);
-            ShowEventIndicator($"Saved to {fullPath}");
+            ShowEventIndicator($"Saved to {Chart.ChartFileName}.beat.txt");
         }
     }
     
@@ -447,8 +464,8 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             var fullPath = file.Path.LocalPath;
             Trace.WriteLine($"Saving to {fullPath}");
-             await ChartBuilder.SaveToBeatPath(fullPath);
-             ShowEventIndicator($"Saved to {fullPath}");
+            await ChartBuilder.SaveToBeatPath(fullPath);
+            ShowEventIndicator($"Saved to {Chart.ChartFileName}.beat.txt");
         }
     }
     
@@ -470,7 +487,7 @@ public partial class MainWindowViewModel : ViewModelBase
                                         $"{Chart.ChartFileName}.txt");
             Trace.WriteLine($"Saving to {fullPath}");
             await ChartBuilder.SaveToStandardPath(fullPath);
-            ShowEventIndicator($"Saved to {fullPath}");
+            ShowEventIndicator($"Saved to {Chart.ChartFileName}.txt");
         }
     }
     
@@ -503,7 +520,7 @@ public partial class MainWindowViewModel : ViewModelBase
             var fullPath = file.Path.LocalPath;
             Trace.WriteLine($"Saving to {fullPath}");
             await ChartBuilder.SaveToStandardPath(fullPath);
-            ShowEventIndicator($"Saved to {fullPath}");
+            ShowEventIndicator($"Saved to {Chart.ChartFileName}.txt");
         }
     }
 

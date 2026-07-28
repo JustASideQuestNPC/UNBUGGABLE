@@ -2,6 +2,7 @@
 # - colorTheme
 # - hitSoundTickRate
 # - maxConcurrentHitSounds
+# - autosaveInterval
 
 # Which color theme to use for the editor. This must be the name of one of the themes in
 # `configs/themes.json` (case sensitive).
@@ -77,6 +78,14 @@ zoomIncrement: 0.25
 # ["top", "bottom", "camera", "center"].
 laneOrder: ["top", "center", "bottom", "camera"]
 
+# Opacity of doubles in the in-game preview while they are moving toward their landing point.
+# Between 0 and 1, where 0 is fully transparent and 1 is fully opaque.
+doublePreviewAlpha: 0.5
+
+# How far (in pixels) from the top of the screen the line for the current time is. Higher values
+# show more notes before the current time and less notes after it.
+currentTimePosition: 175
+
 # Constant offset to make hit sounds play slightly earlier or later than the actual note.
 hitSoundOffset: -30
 
@@ -85,9 +94,17 @@ hitSoundOffset: -30
 # THIS NUMBER UNLESS YOU KNOW WHAT YOU'RE DOING.
 hardChartOffset: -60
 
-# How far (in pixels) from the top of the screen the line for the current time is. Higher values
-# show more notes before the current time and less notes after it.
-currentTimePosition: 175
+# While the song is playing, how many times to check for whether any notes should play a hit sound.
+# Lower values can improve performance, but may cause hit sounds to desync.
+hitSoundTickRate: 180
+
+# How many hit sounds can be playing at once. Turn this up if you're placing long streams of notes
+# and the hit sounds are glitching.
+maxConcurrentHitSounds: 16
+
+# How often to autosave (only if the chart was loaded from an existing chart file and/or has been
+# saved to a file at least once), in seconds. Set to 0 (or less) to disable autosaves. 
+autosaveInterval: 600
 
 # Enables or disables hit sounds for every note type. The official editor enables hit sounds for
 # everything except markers and camera changes.
@@ -113,16 +130,8 @@ hitSounds:
   
 # Enables or disables debug overlays that display some technical info.
 debug:
-  enabled: true
-  commandStacks: false
-  inputData: false
-  mediaPlayer: false
-  noteTimestamps: false
-
-# While the song is playing, how many times to check for whether any notes should play a hit sound.
-# Lower values can improve performance, but may cause hit sounds to desync.
-hitSoundTickRate: 180
-
-# How many hit sounds can be playing at once. Turn this up if you're placing long streams of notes
-# and the hit sounds are glitching.
-maxConcurrentHitSounds: 16
+  enabled: false
+  commandStacks: true
+  inputData: true
+  mediaPlayer: true
+  noteTimestamps: true

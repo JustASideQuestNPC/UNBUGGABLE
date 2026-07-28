@@ -212,6 +212,11 @@ public class SetFlagsCommand(char flag, bool newValue, List<(NoteBase, bool)> no
     {
         foreach (var note in notes)
         {
+            if (flag == 'n' && (note.Item1.Type is not NoteType.SINGLE and not NoteType.SPIKE
+                    and not NoteType.HOLD and not NoteType.DOUBLE))
+            {
+                continue;
+            }
             switch (flag)
             {
                 case 'c':
@@ -223,6 +228,9 @@ public class SetFlagsCommand(char flag, bool newValue, List<(NoteBase, bool)> no
                 case 'w':
                     note.Item1.Flags.W = newValue;
                     break;
+                case 'n':
+                    note.Item1.Flags.N = newValue;
+                    break;
             }
         }
     }
@@ -231,6 +239,11 @@ public class SetFlagsCommand(char flag, bool newValue, List<(NoteBase, bool)> no
     {
         foreach (var note in notes)
         {
+            if (flag == 'n' && (note.Item1.Type is not NoteType.SINGLE and not NoteType.SPIKE
+                    and not NoteType.HOLD and not NoteType.DOUBLE))
+            {
+                continue;
+            }
             switch (flag)
             {
                 case 'c':
@@ -241,6 +254,9 @@ public class SetFlagsCommand(char flag, bool newValue, List<(NoteBase, bool)> no
                     break;
                 case 'w':
                     note.Item1.Flags.W = note.Item2;
+                    break;
+                case 'n':
+                    note.Item1.Flags.N = note.Item2;
                     break;
             }
         }   
@@ -329,7 +345,8 @@ public class SetNotesCopIdCommand : ICommand
     }
 }
 
-public class ReorderNotesCommand(List<(NoteBase, int)> indexedOldOrder, List<NoteBase> newOrder) : ICommand
+public class ReorderNotesCommand(List<(NoteBase, int)> indexedOldOrder, List<NoteBase> newOrder) :
+    ICommand
 {
     public string Name => "Reorder Notes";
     

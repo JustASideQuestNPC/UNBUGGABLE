@@ -66,8 +66,8 @@ public static class Utils
         rect.Left <= point.X && point.X <= rect.Right &&
         rect.Top  <= point.Y && point.Y <= rect.Bottom;
     
-    public static double Map(double input, double inputStart, double inputEnd, double outputStart,
-        double outputEnd) =>
+    public static double MapRanges(double input, double inputStart, double inputEnd,
+        double outputStart, double outputEnd) =>
         outputStart + ((outputEnd - outputStart) / (inputEnd - inputStart)) * (input - inputStart);
 
     public static string GetReadableKeybindString(string keybind)
