@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Avalonia;
 using Avalonia.Media;
 
@@ -64,34 +65,41 @@ public static class Utils
     public static bool ContainsPoint(this Rect rect, Point point) =>
         rect.Left <= point.X && point.X <= rect.Right &&
         rect.Top  <= point.Y && point.Y <= rect.Bottom;
-
-    /// <summary>
-    /// Returns whether a point is inside a polygon.
-    /// </summary>
-    public static bool PointInPolygon(List<Point> vertices, Point offset, Point point)
-    {
-        // Raycasting algorithm based on https://wrfranklin.org/Research/Short_Notes/pnpoly.html
-        // This looks complicated but it's relatively simple:
-        // 1. Draw a line out from the test point (the direction doesn't matter, but I use a
-        //    horizontal one here because the math is easier).
-        // 2. Check whether that line intersects each edge of the polygon.
-        // 3. If the line intersects an odd number of edges, the point is inside the polygon.
-        var inside = false;
-        for (int i = 0, j = vertices.Count - 1; i < vertices.Count; j = i++)
-        {
-            Point v1 = vertices[i], v2 = vertices[j];
-            double x1 = v1.X + offset.X, y1 = v1.Y + offset.Y, x2 = v2.X + offset.X,
-                   y2 = v2.Y + offset.Y;
-            if (((y1 > point.Y) != (y2 > point.Y)) &&
-                point.X < (x2 - x1) * (point.Y - y1) / (y2 - y1) + x1)
-            {
-                inside = !inside;
-            }
-        }
-        return inside;
-    }
     
-    public static double Map(double input, double inputStart, double inputEnd, double outputStart,
-        double outputEnd) =>
+    public static double MapRanges(double input, double inputStart, double inputEnd,
+        double outputStart, double outputEnd) =>
         outputStart + ((outputEnd - outputStart) / (inputEnd - inputStart)) * (input - inputStart);
+
+    public static string GetReadableKeybindString(string keybind)
+    {
+        var split = keybind.Split('+').ToList();
+        var primaryKey = split[^1] switch
+        {
+            "d0" => "0",
+            "d1" => "1",
+            "d2" => "2",
+            "d3" => "3",
+            "d4" => "4",
+            "d5" => "5",
+            "d6" => "6",
+            "d7" => "7",
+            "d8" => "8",
+            "d9" => "9",
+            "oem3" => "`",
+            "oemMinus" => "-",
+            "oemPlus" => "+",
+            "oem4" => "[",
+            "oemCloseBrackets" => "]",
+            "oemPipe" => "\\",
+            "return" => "enter",
+            "oemSemicolon" => ";",
+            "oemQuotes" => "'",
+            "oemComma" => ",",
+            "oemPeriod" => ".",
+            "oemQuestion" => "/",
+            _ => split[^1]
+        };
+        
+        return split.Count > 1 ? string.Join("+", split[..^1]) + "+" + primaryKey : primaryKey;
+    }
 }

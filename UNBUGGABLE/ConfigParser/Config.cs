@@ -3,12 +3,16 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Security.Authentication.ExtendedProtection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Media;
 using UNBEATABLEChartEditor;
+using UNBEATABLEChartEditor.Input;
+using UNBUGGABLE.Keybinds;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -44,7 +48,7 @@ public static class Config
         { "CurrentTimeLine", Color.Parse("#FF0000") },
         { "Breakpoint", Color.Parse("#FF0000") },
         { "Marker1", Color.Parse("#40DB11") },
-        { "Marker2", Color.Parse("#EADF09") },
+        { "Marker2", Color.Parse("#0979EA") },
         { "Marker3", Color.Parse("#B609EA") },
         { "BpmChange", Color.Parse("#0981EA") },
         { "Label", Color.Parse("#EADF09") },
@@ -77,8 +81,10 @@ public static class Config
         HitSoundTickRate = 150,
         MaxConcurrentSfx = 16,
         CurrentTimePosition = 175,
-        DebugMode = false,
         NegativeMashConversion = true,
+        PasteOverwrite = true,
+        AutosaveInterval = 60000,
+        DoublePreviewAlpha = 0.5,
         HitSounds = new()
         {
             Single = true,
@@ -99,11 +105,21 @@ public static class Config
             Marker1 = false,
             Marker2 = false,
             Marker3 = false
+        },
+        DebugToggles = new()
+        {
+            Enabled = false,
+            CommandStacks = true,
+            InputData = true,
+            MediaPlayer = true,
+            NoteTimeStamps = true
         }
     };
     
     public static bool PracticeModInstalled { get; private set; } = false;
     public static string PracticeModConfigPath { get; private set; } = "";
+    
+    public static Keybinds Keybinds { get; private set; }
     
     /// <summary>
     /// Default starting location for saving and loading files.
@@ -114,6 +130,11 @@ public static class Config
     /// Path to the file with user settings.
     /// </summary>
     private const string ConfigFileName = "configs/config.yaml";
+    
+    /// <summary>
+    /// Path to the file with keybinds.
+    /// </summary>
+    private const string KeybindFileName = "configs/keybinds.yaml";
 
     /// <summary>
     /// Path to the file with all color themes.
@@ -204,10 +225,205 @@ public static class Config
     /// Loads and parses user settings and color themes.
     /// <param name="resources">The resource dictionary to add theme brushes to.</param>
     /// </summary>
-    public static void LoadFiles(IResourceDictionary resources)
+    public static void LoadAllConfigFiles(IResourceDictionary resources)
     {
         LoadThemes(resources);
+        LoadKeybinds();
         LoadConfig();
+    }
+
+    public static void LoadKeybinds()
+    {
+        var deserializer = new DeserializerBuilder()
+                           .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                           .IgnoreUnmatchedProperties()
+                           .Build();
+
+        var keybinds = new Keybinds
+        {
+            Undo = ["ctrl+z"],
+            Redo = ["ctrl+y"],
+            SaveFile = ["ctrl+s"],
+            OpenFile = ["ctrl+o"],
+            ResetPlaySpeed = ["r"],
+            ReloadConfig = [""],
+
+            MoveForward = ["scrollDown", "down"],
+            MoveBack = ["scrollUp", "up"],
+            PlayPause = ["space"],
+            ZoomIn = ["ctrl+scrollUp", "ctrl+oemPlus"],
+            ZoomOut = ["ctrl+scrollDown", "ctrl+oemMinus"],
+            PrevLabel = ["pageUp"],
+            NextLabel = ["pageDown"],
+            PrevNoteSnap = ["left"],
+            NextNoteSnap = ["right"],
+
+            PlaceTopLane = ["3"],
+            PlaceBottomLane = ["4"],
+            PlaceCameraLane = ["5"],
+            PlaceCenterLane = ["6"],
+
+            SelectAll = ["ctrl+a"],
+            SelectTopLane = ["alt+3"],
+            SelectBottomLane = ["alt+4"],
+            SelectCameraLane = ["alt+5"],
+            SelectCenterLane = ["alt+6"],
+            Cut = ["ctrl+x"],
+            Copy = ["ctrl+c"],
+            Paste = ["ctrl+v"],
+            ClearSelection = ["escape"],
+            DeleteSelection = ["delete", "back"],
+            MirrorSelection = ["ctrl+m"],
+            MoveSelectionForward = ["shift+up"],
+            MoveSelectionBack = ["shift+down"],
+            SetFinishFlag = ["e", "f"],
+            SetWhistleFlag = ["w"],
+            SetClapFlag = ["c", "r"],
+            SetNoiszFlag = ["n"],
+
+            CopId0 = ["ctrl+0", "ctrl+oem3"],
+            CopId1 = ["ctrl+1"],
+            CopId2 = ["ctrl+2"],
+            CopId3 = ["ctrl+3"],
+            CopId4 = ["ctrl+4"],
+            PrevCop = ["oemComma", "oemPip"],
+            NextCop = ["oemPeriod", "oemQuestion"],
+
+            AddBpmChange = ["f9"],
+            RemoveBpmChange = ["ctrl+f9"],
+            AddLabel = ["l"],
+            RemoveLabel = ["ctrl+l"],
+            AddMarker1 = ["q"],
+            AddMarker2 = ["shift+q"],
+            AddMarker3 = ["ctrl+q"],
+            SetBreakpoint = ["b"],
+            RemoveBreakpoint = ["ctrl+b"]
+        };
+
+        var path = Path.Combine(Environment.CurrentDirectory, KeybindFileName);
+        if (File.Exists(path))
+        {
+            try
+            {
+                var loadedKeybinds = deserializer.Deserialize<Keybinds>(File.ReadAllText(path));
+                if (VerifyKeybindStrings(loadedKeybinds.Undo) &&
+                    VerifyKeybindStrings(loadedKeybinds.Redo) &&
+                    VerifyKeybindStrings(loadedKeybinds.SaveFile) &&
+                    VerifyKeybindStrings(loadedKeybinds.OpenFile) &&
+                    VerifyKeybindStrings(loadedKeybinds.ResetPlaySpeed) &&
+                    VerifyKeybindStrings(loadedKeybinds.ReloadConfig) &&
+                    VerifyKeybindStrings(loadedKeybinds.MoveForward) &&
+                    VerifyKeybindStrings(loadedKeybinds.MoveBack) &&
+                    VerifyKeybindStrings(loadedKeybinds.PlayPause) &&
+                    VerifyKeybindStrings(loadedKeybinds.ZoomIn) &&
+                    VerifyKeybindStrings(loadedKeybinds.ZoomOut) &&
+                    VerifyKeybindStrings(loadedKeybinds.PrevLabel) &&
+                    VerifyKeybindStrings(loadedKeybinds.NextLabel) &&
+                    VerifyKeybindStrings(loadedKeybinds.PrevNoteSnap) &&
+                    VerifyKeybindStrings(loadedKeybinds.NextNoteSnap) &&
+                    VerifyKeybindStrings(loadedKeybinds.PlaceTopLane) &&
+                    VerifyKeybindStrings(loadedKeybinds.PlaceBottomLane) &&
+                    VerifyKeybindStrings(loadedKeybinds.PlaceCameraLane) &&
+                    VerifyKeybindStrings(loadedKeybinds.PlaceCenterLane) &&
+                    VerifyKeybindStrings(loadedKeybinds.SelectAll) &&
+                    VerifyKeybindStrings(loadedKeybinds.Cut) &&
+                    VerifyKeybindStrings(loadedKeybinds.Copy) &&
+                    VerifyKeybindStrings(loadedKeybinds.Paste) &&
+                    VerifyKeybindStrings(loadedKeybinds.ClearSelection) &&
+                    VerifyKeybindStrings(loadedKeybinds.DeleteSelection) &&
+                    VerifyKeybindStrings(loadedKeybinds.MirrorSelection) &&
+                    VerifyKeybindStrings(loadedKeybinds.MoveSelectionForward) &&
+                    VerifyKeybindStrings(loadedKeybinds.MoveSelectionBack) &&
+                    VerifyKeybindStrings(loadedKeybinds.SetFinishFlag) &&
+                    VerifyKeybindStrings(loadedKeybinds.SetWhistleFlag) &&
+                    VerifyKeybindStrings(loadedKeybinds.SetClapFlag) &&
+                    VerifyKeybindStrings(loadedKeybinds.CopId0) &&
+                    VerifyKeybindStrings(loadedKeybinds.CopId1) &&
+                    VerifyKeybindStrings(loadedKeybinds.CopId2) &&
+                    VerifyKeybindStrings(loadedKeybinds.CopId3) &&
+                    VerifyKeybindStrings(loadedKeybinds.CopId4) &&
+                    VerifyKeybindStrings(loadedKeybinds.PrevCop) &&
+                    VerifyKeybindStrings(loadedKeybinds.NextCop) &&
+                    VerifyKeybindStrings(loadedKeybinds.AddBpmChange) &&
+                    VerifyKeybindStrings(loadedKeybinds.RemoveBpmChange) &&
+                    VerifyKeybindStrings(loadedKeybinds.AddLabel) &&
+                    VerifyKeybindStrings(loadedKeybinds.RemoveLabel) &&
+                    VerifyKeybindStrings(loadedKeybinds.AddMarker1) &&
+                    VerifyKeybindStrings(loadedKeybinds.AddMarker2) &&
+                    VerifyKeybindStrings(loadedKeybinds.AddMarker3) &&
+                    VerifyKeybindStrings(loadedKeybinds.SetBreakpoint) &&
+                    VerifyKeybindStrings(loadedKeybinds.RemoveBreakpoint))
+                {
+                    keybinds = loadedKeybinds;
+                }
+            }
+            catch (YamlException e)
+            {
+                Trace.WriteLine($"Could not parse keybind file: {e.Message}");
+            }
+        }
+        else
+        {
+            Trace.WriteLine("Keybind file not found.");
+        }
+
+        Keybinds = keybinds;
+        InputManager.Actions = [
+            new UndoAction(keybinds.Undo),
+            new RedoAction(keybinds.Redo),
+            new SaveFileAction(keybinds.SaveFile),
+            new OpenFileAction(keybinds.OpenFile),
+            new ResetPlaySpeedAction(keybinds.ResetPlaySpeed),
+            new ReloadConfigCommand(keybinds.ReloadConfig),
+            new ZoomInAction(keybinds.ZoomIn),
+            new ZoomOutAction(keybinds.ZoomOut),
+            new MoveForwardAction(keybinds.MoveForward),
+            new MoveBackAction(keybinds.MoveBack),
+            new PlayPauseAction(keybinds.PlayPause),
+            new PrevLabelAction(keybinds.PrevLabel),
+            new NextLabelAction(keybinds.NextLabel),
+            new PrevNoteSnapAction(keybinds.PrevNoteSnap),
+            new NextNoteSnapAction(keybinds.NextNoteSnap),
+            new PlaceTopLaneAction(keybinds.PlaceTopLane),
+            new PlaceBottomLaneAction(keybinds.PlaceBottomLane),
+            new PlaceCameraLaneAction(keybinds.PlaceCameraLane),
+            new PlaceCenterLaneAction(keybinds.PlaceCenterLane),
+            new SelectAllAction(keybinds.SelectAll),
+            new SelectLaneAction(keybinds.SelectTopLane, NoteLane.TOP),
+            new SelectLaneAction(keybinds.SelectBottomLane, NoteLane.BOTTOM),
+            new SelectLaneAction(keybinds.SelectCameraLane, NoteLane.CAMERA),
+            new SelectLaneAction(keybinds.SelectCenterLane, NoteLane.CENTER),
+            new CutAction(keybinds.Cut),
+            new CopyAction(keybinds.Copy),
+            new PasteAction(keybinds.Paste),
+            new ClearSelectionAction(keybinds.ClearSelection),
+            new DeleteSelectionAction(keybinds.DeleteSelection),
+            new MirrorSelectionAction(keybinds.MirrorSelection),
+            new MoveSelectionForwardAction(keybinds.MoveSelectionForward),
+            new MoveSelectionBackAction(keybinds.MoveSelectionBack),
+            new SetNoteFlagAction(keybinds.SetFinishFlag, 'f'),
+            new SetNoteFlagAction(keybinds.SetWhistleFlag, 'w'),
+            new SetNoteFlagAction(keybinds.SetClapFlag, 'c'),
+            new SetNoteFlagAction(keybinds.SetNoiszFlag, 'n'),
+            new CopId0Action(keybinds.CopId0),
+            new CopId1Action(keybinds.CopId1),
+            new CopId2Action(keybinds.CopId2),
+            new CopId3Action(keybinds.CopId3),
+            new CopId4Action(keybinds.CopId4),
+            new PrevCopAction(keybinds.PrevCop),
+            new NextCopAction(keybinds.NextCop),
+            new AddBpmChangeAction(keybinds.AddBpmChange),
+            new RemoveBpmChangeAction(keybinds.RemoveBpmChange),
+            new AddLabelAction(keybinds.AddLabel),
+            new RemoveLabelAction(keybinds.RemoveLabel),
+            new AddMarker1Action(keybinds.AddMarker1),
+            new AddMarker2Action(keybinds.AddMarker2),
+            new AddMarker3Action(keybinds.AddMarker3),
+            new SetBreakpointAction(keybinds.SetBreakpoint),
+            new RemoveBreakpointAction(keybinds.RemoveBreakpoint)
+        ];
+        
+        Trace.WriteLine("Loaded keybinds");
     }
 
     public static void LoadConfig()
@@ -357,5 +573,68 @@ public static class Config
         {
             Trace.WriteLine("Color theme file not found.");
         }
+    }
+
+    private static bool VerifyKeybindStrings(List<string> keybindStrings)
+    {
+        foreach (var str in keybindStrings)
+        {
+            if (str == "")
+            {
+                Trace.WriteLine("Invalid keybind \"\": keybind is empty");
+                return false;
+            }
+
+            var split = str.Split('+').ToList();
+            if (split.Count > 4)
+            {
+                Trace.WriteLine($"Invalid keybind \"{str}\": too many keys");
+                return false;
+            }
+
+            if (split.Distinct().Count() != split.Count)
+            {
+                Trace.WriteLine($"Invalid keybind \"{str}\": duplicate keys");
+                return false;
+            }
+
+            if (split.Count > 1)
+            {
+                for (var i = 0; i < split.Count - 1; ++i)
+                {
+                    if (split[i] != "ctrl" && split[i] != "shift" && split[i] != "alt")
+                    {
+                        Trace.WriteLine($"Invalid keybind \"{str}\": invalid modifier");
+                        return false;
+                    }
+                }
+            }
+
+            var validPrimaryKey = false;
+            // convert the first character to uppercase to match the avalonia enum
+            foreach (var enumValue in Enum.GetValues(typeof(Key)))
+            {
+                if (enumValue.ToString() == char.ToUpper(split[^1][0]) + split[^1][1..])
+                {
+                    validPrimaryKey = true;
+                    break;
+                }
+            }
+
+            if (!validPrimaryKey)
+            {
+                validPrimaryKey = 
+                    split[^1] is "leftMouse" or"rightMouse" or "middleMouse" or "scrollUp" or
+                        "scrollDown";
+            }
+
+            if (!validPrimaryKey)
+            {
+                Trace.WriteLine($"Invalid keybind \"{str}\": invalid primary key");
+                return false;
+            }
+        }       
+
+        return true;
     }
 }

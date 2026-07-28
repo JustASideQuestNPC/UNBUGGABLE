@@ -9,6 +9,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using UNBEATABLEChartEditor;
 using UNBEATABLEChartEditor.Audio;
+using UNBEATABLEChartEditor.Input;
 using UNBUGGABLE.Resources;
 using UNBUGGABLE.ViewModels;
 using UNBUGGABLE.Views;
@@ -32,7 +33,7 @@ public partial class App : Application
         set
         {
             _dialogIsOpen = value;
-            ChartBuilder.ResetKeyStates();
+            InputManager.ResetInputStates();
         }
     }
     
@@ -66,7 +67,7 @@ public partial class App : Application
     public override void OnFrameworkInitializationCompleted()
     {
         // load configs and apply UI settings
-        Config.LoadFiles(Resources);
+        Config.LoadAllConfigFiles(Resources);
         SfxEngine.Init(Config.Settings.MaxConcurrentSfx);
         UserData.LoadData();
         ApplyColorTheme(Config.CurrentTheme);
@@ -82,6 +83,7 @@ public partial class App : Application
                 DataContext = new MainWindowViewModel(),
             };
             desktop.MainWindow = MainWindow;
+            MainWindow.Closing += (sender, e) => MainWindowViewModel.OnWindowClosed(sender, e);
         }
 
         base.OnFrameworkInitializationCompleted();

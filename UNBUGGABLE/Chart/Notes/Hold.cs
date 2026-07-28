@@ -54,7 +54,9 @@ public class HoldNote : NoteBase
         }
         
         // overriding the flags hides the letter for a double note and does nothing to a hold note
-        RenderFlags(dc, x, startY, new NoteFlags(Flags.C, Flags.F, false));
+        RenderFlags(dc, x, startY, new NoteFlags(Flags.C, Flags.F, false, Flags.N));
+        
+        RenderDebugTime(dc, x, startY);
     }
 
     public override void RenderPreview(DrawingContext dc)
@@ -64,13 +66,16 @@ public class HoldNote : NoteBase
             return;
         }
         
+        var y = Flags.N ? TimeToNoiszPreviewY(Time) :
+            Lane == NoteLane.TOP ? GamePreview.TopLaneY : GamePreview.BottomLaneY;
+        
         if (Type == NoteType.HOLD)
         {
-            RenderHoldPreview(dc);
+            RenderHoldPreview(dc, y);
         }
         else
         {
-            RenderDoublePreview(dc);
+            RenderDoublePreview(dc, y);
         }
     }
 
@@ -103,33 +108,53 @@ public class HoldNote : NoteBase
         return null;
     }
     
-    private void RenderHoldPreview(DrawingContext dc)
+    private void RenderHoldPreview(DrawingContext dc, double y)
     {
         var startX = GamePreview.TimeToScreenCoords(Time < Chart.CurrentTime ?
                                                         Chart.CurrentTime : Time);
         
         var endX = GamePreview.TimeToScreenCoords(EndTime);
-        var y = Lane == NoteLane.TOP ? GamePreview.TopLaneY : GamePreview.BottomLaneY;
         
         dc.DrawLine(new Pen(_holdTailBrush, 20), new Point(startX, y), new Point(endX, y));
         dc.DrawEllipse(_holdBrush, new Pen(_outlineBrush, 6), new Point(startX, y), 30, 30);
     }
     
-    private void RenderDoublePreview(DrawingContext dc)
+    private void RenderDoublePreview(DrawingContext dc, double startY)
     {
         var startX = GamePreview.TimeToScreenCoords(Time < Chart.CurrentTime ?
                                                         Chart.CurrentTime : Time);
-        var startY = Lane == NoteLane.TOP ? GamePreview.TopLaneY : GamePreview.BottomLaneY;
-        var endY = Lane == NoteLane.TOP ? GamePreview.BottomLaneY : GamePreview.TopLaneY;
-        var noteY = Utils.Map(Math.Clamp(Chart.CurrentTime, Time, EndTime), Time, EndTime,
+        var endY = -startY;
+        var noteY = Utils.MapRanges(Math.Clamp(Chart.CurrentTime, Time, EndTime), Time, EndTime,
                               startY, endY);
+        
+        var fillBrush = _doubleBrush;
+        var outlineBrush = _outlineBrush;
+        if (Time < Chart.CurrentTime)
+        {
+            fillBrush = new SolidColorBrush(fillBrush.Color)
+            {
+                Opacity = Config.Settings.DoublePreviewAlpha
+            };
+            outlineBrush = new SolidColorBrush(outlineBrush.Color)
+            {
+                Opacity = Config.Settings.DoublePreviewAlpha
+            };
+        }
 
         if (Config.Settings.EnhancedPreview)
         {
             var endX = GamePreview.TimeToScreenCoords(EndTime);
             dc.DrawEllipse(_doubleTailBrush, null, new Point(endX, endY), 20, 20);
         }
-        dc.DrawEllipse(_doubleBrush, new Pen(_outlineBrush, 6), new Point(startX, noteY), 30, 30);
+        dc.DrawEllipse(fillBrush, new Pen(outlineBrush, 6), new Point(startX, noteY), 30, 30);
+    }
+    
+    private double TimeToNoiszPreviewY(double time)
+    {
+        var rangeStart = (Lane == NoteLane.TOP ? -GamePreview.TopLaneY : GamePreview.BottomLaneY);
+        var y = Math.Clamp((Chart.CurrentTime - time) / 1000 * (GamePreview.PixelsPerSecond / 4.0) +
+                           rangeStart, 0, rangeStart);
+        return (Lane == NoteLane.TOP ? -y : y);
     }
 
     public override string ToString()

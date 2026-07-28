@@ -8,6 +8,7 @@ using Avalonia;
 using Avalonia.Input;
 using UNBEATABLEChartEditor;
 using UNBEATABLEChartEditor.Dialogs;
+using UNBEATABLEChartEditor.Input;
 using UNBUGGABLE.Commands;
 using UNBUGGABLE.Resources;
 using UNBUGGABLE.Views;
@@ -32,21 +33,12 @@ public static class ChartBuilder
     // 0 for normal notes, 1-4 for cop notes
     public static int CopId { get; private set; } = 0;
     
-    // for handling modifiers and key binds that behave differently if the key is held down
-    private static bool _leftCtrlPressed = false;
-    private static bool _rightCtrlPressed = false;
-    public static bool CtrlPressed => _leftCtrlPressed || _rightCtrlPressed;
-    
-    private static bool _leftShiftPressed = false;
-    private static bool _rightShiftPressed = false;
-    public static bool ShiftPressed => _leftShiftPressed || _rightShiftPressed;
-    
     private static List<NoteBase> _clipboard = new();
     
     private static readonly List<string> NoteTypeNames = [
         "notes", "cop 1", "cop 2", "cop 3", "cop 4"];
 
-    public static void ResetKeyStates()
+    public static void ResetInputStates()
     {
         MousePosition = new Point(-1000, -1000);
         MouseDragStart = null;
@@ -55,340 +47,6 @@ public static class ChartBuilder
         TopLaneStartTime = -1000;
         BottomLaneStartTime = -1000;
         CenterLaneStartTime = -1000;
-        _leftCtrlPressed = false;
-        _rightCtrlPressed = false;
-        _leftShiftPressed = false;
-        _rightShiftPressed = false;
-    }
-
-    public static async Task OnKeyDown(Key k)
-    {
-        if (!Chart.SongLoaded || App.DialogIsOpen)
-        {
-            return;
-        }
-
-        switch (k)
-        {
-            // modifier keys
-            case Key.LeftCtrl:
-                _leftCtrlPressed = true;
-                break;
-            case Key.RightCtrl:
-                _rightCtrlPressed = true;
-                break;
-            case Key.LeftShift:
-                _leftShiftPressed = true;
-                break;
-            case Key.RightShift:
-                _rightShiftPressed = true;
-                break;
-
-            case Key.D2:
-                if (CtrlPressed)
-                {
-                    if (SelectedNotes.Count > 0)
-                    {
-                        ChartBuilderCommandInvoker.Execute(
-                            new SetNotesCopIdCommand([..SelectedNotes], 2));
-                    }
-                    else
-                    {
-                        CopId = (CopId == 2 ? 0 : 2);
-                        App.MainWindowViewModel.CurrentNoteTypeText = NoteTypeNames[CopId];
-                    }
-                }
-                break;
-
-            // 3 and 4 are also used to change note cop IDs (which is a non-hold keybind)
-            case Key.D3:
-                if (CtrlPressed)
-                {
-                    if (SelectedNotes.Count > 0)
-                    {
-                        ChartBuilderCommandInvoker.Execute(
-                            new SetNotesCopIdCommand([..SelectedNotes], 3));
-                    }
-                    else
-                    {
-                        CopId = (CopId == 3 ? 0 : 3);
-                        App.MainWindowViewModel.CurrentNoteTypeText = NoteTypeNames[CopId];
-                    }
-                }
-                else if (TopLaneStartTime.SoftEquals(-1000))
-                {
-                    Trace.WriteLine($"start top lane placement: {Chart.CurrentTime}");
-                    TopLaneStartTime = Chart.CurrentTime;
-                }
-
-                break;
-            case Key.D4:
-                if (CtrlPressed)
-                {
-                    if (SelectedNotes.Count > 0)
-                    {
-                        ChartBuilderCommandInvoker.Execute(
-                            new SetNotesCopIdCommand([..SelectedNotes], 4));
-                    }
-                    else
-                    {
-                        CopId = (CopId == 4 ? 0 : 4);
-                        App.MainWindowViewModel.CurrentNoteTypeText = NoteTypeNames[CopId];
-                    }
-                }
-                else if (BottomLaneStartTime.SoftEquals(-1000))
-                {
-                    Trace.WriteLine($"start bottom lane placement: {Chart.CurrentTime}");
-                    BottomLaneStartTime = Chart.CurrentTime;
-                }
-
-                break;
-
-            case Key.D6:
-                if (CenterLaneStartTime.SoftEquals(-1000))
-                {
-                    Trace.WriteLine($"start center lane placement: {Chart.CurrentTime}");
-                    CenterLaneStartTime = Chart.CurrentTime;
-                }
-
-                break;
-
-            // non-hold keybinds
-            // case Key.D0:
-            case Key.OemTilde: // not an official editor keybind
-            case Key.D0:
-                if (CtrlPressed)
-                {
-                    if (SelectedNotes.Count > 0)
-                    {
-                        ChartBuilderCommandInvoker.Execute(
-                            new SetNotesCopIdCommand([..SelectedNotes], 0));
-                    }
-                    else
-                    {
-                        CopId = 0;
-                        App.MainWindowViewModel.CurrentNoteTypeText = NoteTypeNames[CopId];
-                    }
-                }
-
-                break;
-            case Key.D1:
-                if (CtrlPressed)
-                {
-                    if (SelectedNotes.Count > 0)
-                    {
-                        ChartBuilderCommandInvoker.Execute(
-                            new SetNotesCopIdCommand([..SelectedNotes], 1));
-                    }
-                    else
-                    {
-                        CopId = (CopId == 1 ? 0 : 1);
-                        App.MainWindowViewModel.CurrentNoteTypeText = NoteTypeNames[CopId];
-                    }
-                }
-
-                break;
-            case Key.D5:
-                DoCameraSwapOperation();
-                break;
-            case Key.M:
-                if (CtrlPressed && SelectedNotes.Count > 0)
-                {
-                    ChartBuilderCommandInvoker.Execute(new MirrorNotesCommand([..SelectedNotes]));
-                }
-
-                break;
-            case Key.Back:
-            case Key.Delete:
-                if (SelectedNotes.Count > 0)
-                {
-                    ChartBuilderCommandInvoker.Execute(new DeleteNotesCommand([..SelectedNotes]));
-                    SelectedNotes.Clear();
-                }
-                break;
-            case Key.Escape:
-                if (SelectedNotes.Count > 0)
-                {
-                    ClearSelection();
-                }
-                else
-                {
-                    App.MainWindowViewModel.EditChartMetadataCommand.Execute(null);
-                }
-                break;
-            case Key.L:
-                await DoLabelOperation();
-                break;
-            case Key.Q:
-                DoMarkerOperation();
-                break;
-            case Key.B:
-                if (ShiftPressed)
-                {
-                    DeleteBreakpoint();
-                }
-                else
-                {
-                    SetBreakpoint();
-                }
-
-                break;
-            case Key.F9:
-                await DoBpmChangeOperation();
-                break;
-            case Key.Up:
-                if (SelectedNotes.Count > 0 && ShiftPressed)
-                {
-                    DoNoteMoveOperation(Chart.GetPreviousSnapTime() - Chart.CurrentTime);
-                }
-                else if (!Chart.Playing)
-                {
-                    Chart.MoveToPreviousSnap();
-                }
-                break;
-            case Key.Down:
-                if (SelectedNotes.Count > 0 && ShiftPressed)
-                {
-                    DoNoteMoveOperation(Chart.GetNextSnapTime() - Chart.CurrentTime);
-                }
-                else if (!Chart.Playing)
-                {
-                    Chart.MoveToNextSnap();
-                }
-                break;
-            case Key.Left:
-                Chart.DecreaseBeatSnap();
-                break;
-            case Key.Right:
-                Chart.IncreaseBeatSnap();
-                break;
-            case Key.PageUp:
-                Chart.MoveToPreviousLabel();
-                break;
-            case Key.PageDown:
-                Chart.MoveToNextLabel();
-                break;
-            case Key.OemPipe:
-            case Key.OemComma:
-                --CopId;
-                if (CopId < 0)
-                {
-                    CopId = 4;
-                }
-                App.MainWindowViewModel.CurrentNoteTypeText = NoteTypeNames[CopId];
-                break;
-            case Key.OemQuestion:
-            case Key.OemPeriod:
-                ++CopId;
-                if (CopId > 4)
-                {
-                    CopId = 0;
-                }
-                App.MainWindowViewModel.CurrentNoteTypeText = NoteTypeNames[CopId];
-                break;
-            case Key.E:
-            case Key.F:
-                DoSetFlagOperation('f');
-                break;
-            case Key.W:
-                DoSetFlagOperation('w');
-                break;
-            case Key.C:
-            case Key.R:
-                DoSetFlagOperation('c');
-                break;
-            case Key.Space:
-                Chart.PlayOrPauseSong();
-                break;
-            // default:
-            //     Trace.WriteLine($"Unhandled key: {k}");
-            //     break;
-        }
-    }
-
-    public static void OnKeyUp(Key k)
-    {
-        if (!Chart.SongLoaded || App.DialogIsOpen)
-        {
-            return;
-        }
-        
-        switch (k)
-        {
-            case Key.LeftCtrl:
-                _leftCtrlPressed = false;
-                break;
-            case Key.RightCtrl:
-                _rightCtrlPressed = false;
-                break;
-            case Key.LeftShift:
-                _leftShiftPressed = false;
-                break;
-            case Key.RightShift:
-                _rightShiftPressed = false;
-                break;
-            case Key.D3:
-                if (TopLaneStartTime.SoftNotEquals(-1000))
-                {
-                    Trace.WriteLine($"end top lane placement: {Chart.CurrentTime}");
-                    var start = Math.Min(TopLaneStartTime, Chart.CurrentTime);
-                    var end = Math.Max(TopLaneStartTime, Chart.CurrentTime);
-                    CheckForNoteOperation(NoteLane.TOP, start, end);
-                    TopLaneStartTime = -1000;
-                }
-                break;
-            case Key.D4:
-                if (BottomLaneStartTime.SoftNotEquals(-1000))
-                {
-                    Trace.WriteLine($"end bottom lane placement: {Chart.CurrentTime}");
-                    var start = Math.Min(BottomLaneStartTime, Chart.CurrentTime);
-                    var end = Math.Max(BottomLaneStartTime, Chart.CurrentTime);
-                    CheckForNoteOperation(NoteLane.BOTTOM, start, end);
-                    BottomLaneStartTime = -1000;
-                }
-                break;
-            case Key.D6:
-                if (CenterLaneStartTime.SoftNotEquals(-1000))
-                {
-                    Trace.WriteLine($"end center lane placement: {Chart.CurrentTime}");
-                    var start = Math.Min(CenterLaneStartTime, Chart.CurrentTime);
-                    var end = Math.Max(CenterLaneStartTime, Chart.CurrentTime);
-                    CheckForNoteOperation(NoteLane.CENTER, start, end);
-                    CenterLaneStartTime = -1000;
-                }
-                break;
-        }
-    }
-
-    public static void OnScroll(double scrollAmount)
-    {
-        if (!Chart.SongLoaded || App.DialogIsOpen)
-        {
-            return;
-        }
-        
-        if (scrollAmount > 0)
-        {
-            if (CtrlPressed)
-            {
-                NoteViewer.IncreaseZoom();
-            }
-            else if (!Chart.Playing)
-            {
-                Chart.MoveToPreviousSnap();
-            }
-        }
-        else
-        {
-            if (CtrlPressed)
-            {
-                NoteViewer.DecreaseZoom();
-            }
-            else if (!Chart.Playing)
-            {
-                Chart.MoveToNextSnap();
-            }
-        }
     }
 
     public static async Task OnMousePress(bool rightButton)
@@ -514,6 +172,11 @@ public static class ChartBuilder
     {
         SelectedNotes = Chart.Notes.ToList();
     }
+
+    public static void SelectLane(NoteLane lane)
+    {
+        SelectedNotes = Chart.Notes.Where(n => n.Lane == lane).ToList();
+    }
     
     public static void Cut()
     {
@@ -541,7 +204,7 @@ public static class ChartBuilder
             newNotes.Add(note.Clone(note.Time + timeOffset));
         }
         
-        ChartBuilderCommandInvoker.Execute(new AddNotesCommand(newNotes, true));
+        ChartBuilderCommandInvoker.Execute(new PasteNotesCommand(newNotes));
     }
     
     public static void ClearSelection()
@@ -549,26 +212,36 @@ public static class ChartBuilder
         SelectedNotes.Clear();
     }
 
-    public static void CheckExistingBreakpoint()
+    public static void DeleteSelection()
     {
-        if (!Config.Settings.EnableBreakpoints || !Config.PracticeModInstalled)
+        if (SelectedNotes.Count > 0)
         {
-            return;
+            ChartBuilderCommandInvoker.Execute(new DeleteNotesCommand([..SelectedNotes]));
+            SelectedNotes.Clear();
         }
-        
-        var lines = File.ReadAllLines(Config.PracticeModConfigPath).ToList();
-        var index = lines.FindIndex(
-            l => l.StartsWith($"{Chart.Metadata.SongName.ToLowerInvariant()}:"));
-        if (index != -1 && double.TryParse(lines[index].Split(':')[1], out var time))
+    }
+
+    public static void MirrorSelection()
+    {
+        if (SelectedNotes.Count > 0)
         {
-            BreakpointTime = time;
-            App.MainWindowViewModel.BreakpointTimeText = TimeSpan.FromMilliseconds(BreakpointTime)
-                                                                 .ToString(@"mm\:ss\.fff");
-            Trace.WriteLine($"Found existing breakpoint at {BreakpointTime}");
+            ChartBuilderCommandInvoker.Execute(new MirrorNotesCommand([..SelectedNotes]));
         }
-        else
+    }
+
+    public static void MoveSelectionForward()
+    {
+        if (SelectedNotes.Count > 0)
         {
-            DeleteBreakpoint(false);
+            DoNoteMoveOperation(Chart.GetNextSnapTime() - Chart.CurrentTime);
+        }
+    }
+
+    public static void MoveSelectionBack()
+    {
+        if (SelectedNotes.Count > 0)
+        {
+            DoNoteMoveOperation(Chart.GetPreviousSnapTime() - Chart.CurrentTime);
         }
     }
 
@@ -618,8 +291,234 @@ public static class ChartBuilder
     {
         ChartBuilderCommandInvoker.Execute(new RemoveLabelCommand(label));
     }
+
+    public static void StartTopLanePlacement()
+    {
+        if (TopLaneStartTime.SoftEquals(-1000))
+        {
+            Trace.WriteLine($"start top lane placement: {Chart.CurrentTime}");
+            TopLaneStartTime = Chart.CurrentTime;
+        }
+    }
+
+    public static void EndTopLanePlacement()
+    {
+        if (TopLaneStartTime.SoftNotEquals(-1000))
+        {
+            Trace.WriteLine($"end top lane placement: {Chart.CurrentTime}");
+            var start = Math.Min(TopLaneStartTime, Chart.CurrentTime);
+            var end = Math.Max(TopLaneStartTime, Chart.CurrentTime);
+            CheckForNoteOperation(NoteLane.TOP, start, end);
+            TopLaneStartTime = -1000;
+        }
+    }
+
+    public static void StartBottomLanePlacement()
+    {
+        if (BottomLaneStartTime.SoftEquals(-1000))
+        {
+            Trace.WriteLine($"start bottom lane placement: {Chart.CurrentTime}");
+            BottomLaneStartTime = Chart.CurrentTime;
+        }
+    }
+
+    public static void EndBottomLanePlacement()
+    {
+        if (BottomLaneStartTime.SoftNotEquals(-1000))
+        {
+            Trace.WriteLine($"end bottom lane placement: {Chart.CurrentTime}");
+            var start = Math.Min(BottomLaneStartTime, Chart.CurrentTime);
+            var end = Math.Max(BottomLaneStartTime, Chart.CurrentTime);
+            CheckForNoteOperation(NoteLane.BOTTOM, start, end);
+            BottomLaneStartTime = -1000;
+        }
+    }
+
+    public static void StartCenterLanePlacement()
+    {
+        if (CenterLaneStartTime.SoftEquals(-1000))
+        {
+            Trace.WriteLine($"start center lane placement: {Chart.CurrentTime}");
+            CenterLaneStartTime = Chart.CurrentTime;
+        }
+    }
+
+    public static void EndCenterLanePlacement()
+    {
+        if (CenterLaneStartTime.SoftNotEquals(-1000))
+        {
+            Trace.WriteLine($"end center lane placement: {Chart.CurrentTime}");
+            var start = Math.Min(CenterLaneStartTime, Chart.CurrentTime);
+            var end = Math.Max(CenterLaneStartTime, Chart.CurrentTime);
+            CheckForNoteOperation(NoteLane.CENTER, start, end);
+            CenterLaneStartTime = -1000;
+        }
+    }
     
-    public static void DeleteBreakpoint(bool showEventIndicator = true)
+    public static void PlaceCameraChange()
+    {
+        if (Chart.GetNote(Chart.CurrentTime, NoteLane.CAMERA) is { } note)
+        {
+            ChartBuilderCommandInvoker.Execute(new DeleteNotesCommand([note]));
+        }
+        else
+        {
+            ChartBuilderCommandInvoker.Execute(new AddNotesCommand([
+                new CameraChange
+                {
+                    Time = Chart.CurrentTime,
+                    Flags = new NoteFlags(
+                        false, false, InputManager.ShiftPressed)
+                }
+            ]));
+        }
+    }
+
+    public static void SetCopId(int id)
+    {
+        if (SelectedNotes.Count > 0)
+        {
+            ChartBuilderCommandInvoker.Execute(
+                new SetNotesCopIdCommand([..SelectedNotes], id));
+        }
+        else
+        {
+            CopId = id;
+            App.MainWindowViewModel.CurrentNoteTypeText = NoteTypeNames[id];
+        }
+    }
+
+    public static void PrevCop()
+    {
+        --CopId;
+        if (CopId < 0)
+        {
+            CopId = 4;
+        }
+        SetCopId(CopId);
+    }
+
+    public static void NextCop()
+    {
+        ++CopId;
+        if (CopId > 4)
+        {
+            CopId = 0;
+        }
+        SetCopId(CopId);
+    }
+
+    public static async Task AddBpmChange()
+    {
+        var time = Chart.CurrentTime;
+        var existingRegion = Chart.GetBpmRegion(time);
+        if (existingRegion != null)
+        {
+            await EditBpmRegion(existingRegion);
+        }
+        else
+        {
+            var bpm = await new NumberEntryDialog("add bpm change").ShowAsync();
+            if (bpm.HasValue)
+            {
+                Trace.WriteLine($"Add bpm region at {time} ms");
+                ChartBuilderCommandInvoker.Execute(new AddBpmRegionCommand(time, bpm.Value));
+            }
+        }
+    }
+
+    public static void RemoveBpmChange()
+    {
+        var time = Chart.CurrentTime;
+        var existingRegion = Chart.GetBpmRegion(time);
+        // the first bpm region can't be removed for obvious reasons
+        if (existingRegion != null && existingRegion != Chart.BpmRegions[0])
+        {
+            Trace.WriteLine($"Remove bpm region at {time} ms");
+            ChartBuilderCommandInvoker.Execute(new RemoveBpmRegionCommand(existingRegion));
+        }
+    }
+
+    public static async Task AddLabel()
+    {
+        var time = Chart.CurrentTime;
+        var existingLabel = Chart.GetLabel(time);
+        if (existingLabel != null)
+        {
+            await EditLabel(existingLabel);
+        }
+        else
+        {
+            var text = await new TextEntryDialog("add label").ShowAsync();
+            if (text.HasValue && text.Value != "")
+            {
+                ChartBuilderCommandInvoker.Execute(new AddLabelCommand(
+                                                       time + Chart.Metadata.ChartOffset,
+                                                       text.Value));
+            }
+        }
+    }
+
+    public static void RemoveLabel()
+    {
+        var time = Chart.CurrentTime;
+        var existingLabel = Chart.GetLabel(time);
+        if (existingLabel != null)
+        {
+            ChartBuilderCommandInvoker.Execute(new RemoveLabelCommand(existingLabel));
+        }
+    }
+    
+    public static void SetBreakpoint()
+    {
+        if (!Config.Settings.EnableBreakpoints)
+        {
+            App.MainWindowViewModel.ShowEventIndicator("Breakpoints are disabled.");
+            return;
+        }
+
+        if (!Config.PracticeModInstalled)
+        {
+            App.MainWindowViewModel.ShowEventIndicator("Install Practice Mod to use breakpoints.");
+            return;
+        }
+
+        if (Chart.Metadata.SongName == "")
+        {
+            App.MainWindowViewModel.ShowEventIndicator("Set song name to use breakpoints.");
+            return;
+        }
+
+        if (Chart.CurrentTime.SoftEquals(BreakpointTime))
+        {
+            RemoveBreakpoint();
+            return;
+        }
+        
+        BreakpointTime = Chart.CurrentTime;
+        App.MainWindowViewModel.ShowEventIndicator(
+            $@"Breakpoint set at {TimeSpan.FromMilliseconds(BreakpointTime):mm\:ss\.fff}");
+        App.MainWindowViewModel.BreakpointTimeText = TimeSpan.FromMilliseconds(BreakpointTime)
+                                                             .ToString(@"mm\:ss\.fff");
+        
+        // this loads the entire file into memory but the practice mode settings file is going to be
+        // small enough that i can get away without streaming it
+        var lines = File.ReadAllLines(Config.PracticeModConfigPath).ToList();
+        var index = lines.FindIndex(
+            l => l.StartsWith($"{Chart.Metadata.SongName.ToLowerInvariant()}:"));
+        if (index == -1)
+        {
+            lines.Add($"{Chart.Metadata.SongName.ToLowerInvariant()}:{Math.Floor(BreakpointTime)}");
+        }
+        else
+        {
+            lines[index] =
+                $"{Chart.Metadata.SongName.ToLowerInvariant()}:{Math.Floor(BreakpointTime)}";
+        }
+        File.WriteAllLines(Config.PracticeModConfigPath, lines);
+    }
+    
+    public static void RemoveBreakpoint(bool showEventIndicator = true)
     {
         BreakpointTime = -1000;
         if (showEventIndicator)
@@ -638,69 +537,86 @@ public static class ChartBuilder
         File.WriteAllLines(Config.PracticeModConfigPath, lines);
     }
 
-    private static async Task DoLabelOperation()
+    public static void AddMarker(int type)
     {
-        var time = Chart.CurrentTime;
-        var existingLabel = Chart.GetLabel(time);
-        if (CtrlPressed)
+        if (Chart.GetNote(Chart.CurrentTime, NoteLane.MARKER) is { } marker)
         {
-            if (existingLabel != null)
-            {
-                DeleteLabel(existingLabel);
-            }
+            Trace.WriteLine("Delete marker");
+            ChartBuilderCommandInvoker.Execute(new DeleteNotesCommand([marker]));
         }
         else
         {
-            if (existingLabel != null)
-            {
-                await EditLabel(existingLabel);
-            }
-            else
-            {
-                var text = await new TextEntryDialog("add label").ShowAsync();
-                if (text.HasValue && text.Value != "")
-                {
-                    ChartBuilderCommandInvoker.Execute(new AddLabelCommand(
-                                                           time + Chart.Metadata.ChartOffset,
-                                                           text.Value));
-                }
-            }
+            ChartBuilderCommandInvoker.Execute(new AddNotesCommand([
+                new MarkerDummyNote(Chart.CurrentTime, type)
+            ]));
         }
     }
 
-    private static async Task DoBpmChangeOperation()
+    public static void SetNoteFlags(char flag)
     {
-        var time = Chart.CurrentTime;
-        var existingRegion = Chart.GetBpmRegion(time);
-        if (CtrlPressed)
+        if (SelectedNotes.Count == 0)
         {
-            // the first bpm region can't be removed for obvious reasons
-            if (existingRegion != null && existingRegion != Chart.BpmRegions[0])
+            App.MainWindowViewModel.ShowEventIndicator("No notes selected to set flags");
+            return;
+        }
+        
+        // flag operations prioritize making the flag true for all notes
+        var newValue = false;
+        List<(NoteBase, bool)> notes = [];
+        foreach (var note in SelectedNotes)
+        {
+            if (flag == 'n' && (note.Type is not NoteType.SINGLE and not NoteType.SPIKE
+                    and not NoteType.HOLD and not NoteType.DOUBLE))
             {
-                Trace.WriteLine($"Remove bpm region at {time} ms");
-                ChartBuilderCommandInvoker.Execute(new RemoveBpmRegionCommand(existingRegion));
+                continue;
             }
+            
+            var currentValue = flag switch
+            {
+                'c' => note.Flags.C,
+                'f' => note.Flags.F,
+                'w' => note.Flags.W,
+                'n' => note.Flags.N,
+                _ => throw new ArgumentOutOfRangeException(nameof(flag), flag, null)
+            };
+            notes.Add((note, currentValue));
+            if (!currentValue)
+            {
+                newValue = true;
+            }
+        }
+        
+        ChartBuilderCommandInvoker.Execute(new SetFlagsCommand(flag, newValue, notes));
+    }
+
+    public static void CheckExistingBreakpoint()
+    {
+        if (!Config.Settings.EnableBreakpoints || !Config.PracticeModInstalled)
+        {
+            return;
+        }
+        
+        var lines = File.ReadAllLines(Config.PracticeModConfigPath).ToList();
+        var index = lines.FindIndex(
+            l => l.StartsWith($"{Chart.Metadata.SongName.ToLowerInvariant()}:"));
+        if (index != -1 && double.TryParse(lines[index].Split(':')[1], out var time))
+        {
+            BreakpointTime = time;
+            App.MainWindowViewModel.BreakpointTimeText = TimeSpan.FromMilliseconds(BreakpointTime)
+                                                                 .ToString(@"mm\:ss\.fff");
+            Trace.WriteLine($"Found existing breakpoint at {BreakpointTime}");
         }
         else
         {
-            if (existingRegion != null)
-            {
-                await EditBpmRegion(existingRegion);
-            }
-            else
-            {
-                var bpm = await new NumberEntryDialog("add bpm change").ShowAsync();
-                if (bpm.HasValue)
-                {
-                    Trace.WriteLine($"Add bpm region at {time} ms");
-                    ChartBuilderCommandInvoker.Execute(new AddBpmRegionCommand(time, bpm.Value));
-                }
-            }
+            RemoveBreakpoint(false);
         }
     }
 
     private static void CheckForNoteOperation(NoteLane lane, double start, double end)
     {
+        start = Math.Floor(start);
+        end = Math.Floor(end);
+        
         var oldNote = Chart.GetNote(start, lane);
         Trace.WriteLine(oldNote);
         // hold notes can also extend from the start of the note
@@ -733,7 +649,7 @@ public static class ChartBuilder
                         {
                             Lane = lane,
                             Time = start,
-                            Flags = new NoteFlags(false, false, ShiftPressed)
+                            Flags = new NoteFlags(false, false, InputManager.ShiftPressed)
                         };
                     }
                     else
@@ -743,13 +659,13 @@ public static class ChartBuilder
                             Lane = lane,
                             Time = start,
                             EndTime = end,
-                            Flags = new NoteFlags(false, false, ShiftPressed)
+                            Flags = new NoteFlags(false, false, InputManager.ShiftPressed)
                         };
                     }
                 }
                 else
                 {
-                    if (start.SoftNotEquals(end) && ShiftPressed && lane == NoteLane.TOP &&
+                    if (start.SoftNotEquals(end) && InputManager.ShiftPressed && lane == NoteLane.TOP &&
                         !Config.Settings.AllowTopLaneCopMashes)
                     {
                         App.MainWindowViewModel.ShowEventIndicator(
@@ -757,8 +673,9 @@ public static class ChartBuilder
                         return;
                     }
                     
-                    newNote = new CopNote((start.SoftEquals(end) ? NoteType.COP_SINGLE :
-                            ShiftPressed ? NoteType.COP_MASH : NoteType.COP_HOLD), CopId)
+                    newNote = new CopNote(start.SoftEquals(end) ? NoteType.COP_SINGLE : 
+                                          InputManager.ShiftPressed ? NoteType.COP_MASH :
+                                          NoteType.COP_HOLD, CopId)
                     {
                         Time = start,
                         EndTime = end,
@@ -790,7 +707,9 @@ public static class ChartBuilder
                 shouldReplace = true;
             }
 
-            if (!shouldReplace && !newNote.Instant && !oldNote.Instant)
+            // holding ctrl ignores always places a new note instead of trying to extend existing
+            // notes (this is mainly useful for chaining doubles)
+            if (!shouldReplace && !newNote.Instant && !oldNote.Instant && !InputManager.CtrlPressed)
             {
                 if ((newNote.Time.SoftEquals(oldNote.EndTime) ||
                      oldNote.Time.SoftEquals(newNote.EndTime)) && newNote.Type == oldNote.Type)
@@ -811,69 +730,7 @@ public static class ChartBuilder
             ChartBuilderCommandInvoker.Execute(new AddNotesCommand([newNote]));
         }
     }
-
-    private static void DoMarkerOperation()
-    {
-        if (Chart.GetNote(Chart.CurrentTime, NoteLane.MARKER) is { } marker)
-        {
-            Trace.WriteLine("Delete marker");
-            ChartBuilderCommandInvoker.Execute(new DeleteNotesCommand([marker]));
-        }
-        else
-        {
-            ChartBuilderCommandInvoker.Execute(new AddNotesCommand([
-                new MarkerDummyNote(Chart.CurrentTime,
-                                    ShiftPressed ? 1 : CtrlPressed ? 2 : 0)
-            ]));
-        }
-    }
     
-    private static void DoCameraSwapOperation()
-    {
-        if (Chart.GetNote(Chart.CurrentTime, NoteLane.CAMERA) is { } note)
-        {
-            ChartBuilderCommandInvoker.Execute(new DeleteNotesCommand([note]));
-        }
-        else
-        {
-            ChartBuilderCommandInvoker.Execute(new AddNotesCommand([new CameraChange
-            {
-                Time = Chart.CurrentTime,
-                Flags = new NoteFlags(false, false, ShiftPressed)
-            }]));
-        }
-    }
-
-    private static void DoSetFlagOperation(char flag)
-    {
-        if (SelectedNotes.Count == 0)
-        {
-            App.MainWindowViewModel.ShowEventIndicator("No notes selected to set flags");
-            return;
-        }
-        
-        // flag operations prioritize making the flag true for all notes
-        var newValue = false;
-        List<(NoteBase, bool)> notes = [];
-        foreach (var note in SelectedNotes)
-        {
-            var currentValue = flag switch
-            {
-                'c' => note.Flags.C,
-                'f' => note.Flags.F,
-                'w' => note.Flags.W,
-                _ => throw new ArgumentOutOfRangeException(nameof(flag), flag, null)
-            };
-            notes.Add((note, currentValue));
-            if (!currentValue)
-            {
-                newValue = true;
-            }
-        }
-        
-        ChartBuilderCommandInvoker.Execute(new SetFlagsCommand(flag, newValue, notes));
-    }
-
     private static void DoNoteMoveOperation(double delta)
     {
         if (delta == 0)
@@ -889,54 +746,5 @@ public static class ChartBuilder
         
         ChartBuilderCommandInvoker.Execute(new UpdateNotesCommand([..SelectedNotes], newNotes,
                                                                   true));
-    }
-    
-    private static void SetBreakpoint()
-    {
-        if (!Config.Settings.EnableBreakpoints)
-        {
-            App.MainWindowViewModel.ShowEventIndicator("Breakpoints are disabled.");
-            return;
-        }
-
-        if (!Config.PracticeModInstalled)
-        {
-            App.MainWindowViewModel.ShowEventIndicator("Install Practice Mod to use breakpoints.");
-            return;
-        }
-
-        if (Chart.Metadata.SongName == "")
-        {
-            App.MainWindowViewModel.ShowEventIndicator("Set song name to use breakpoints.");
-            return;
-        }
-
-        if (Chart.CurrentTime.SoftEquals(BreakpointTime))
-        {
-            DeleteBreakpoint();
-            return;
-        }
-        
-        BreakpointTime = Chart.CurrentTime;
-        App.MainWindowViewModel.ShowEventIndicator(
-            $@"Breakpoint set at {TimeSpan.FromMilliseconds(BreakpointTime):mm\:ss\.fff} seconds.");
-        App.MainWindowViewModel.BreakpointTimeText = TimeSpan.FromMilliseconds(BreakpointTime)
-                                                             .ToString(@"mm\:ss\.fff");
-        
-        // this loads the entire file into memory but the practice mode settings file is going to be
-        // small enough that i can get away without streaming it
-        var lines = File.ReadAllLines(Config.PracticeModConfigPath).ToList();
-        var index = lines.FindIndex(
-            l => l.StartsWith($"{Chart.Metadata.SongName.ToLowerInvariant()}:"));
-        if (index == -1)
-        {
-            lines.Add($"{Chart.Metadata.SongName.ToLowerInvariant()}:{Math.Floor(BreakpointTime)}");
-        }
-        else
-        {
-            lines[index] =
-                $"{Chart.Metadata.SongName.ToLowerInvariant()}:{Math.Floor(BreakpointTime)}";
-        }
-        File.WriteAllLines(Config.PracticeModConfigPath, lines);
     }
 }

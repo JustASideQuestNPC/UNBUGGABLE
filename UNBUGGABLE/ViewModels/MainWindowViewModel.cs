@@ -5,15 +5,19 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
+using AvaloniaDialogs.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using DialogHostAvalonia;
 using UNBEATABLEChartEditor;
 using UNBEATABLEChartEditor.Dialogs;
+using UNBUGGABLE.Commands;
 using UNBUGGABLE.Resources;
 using UNBUGGABLE.Views;
 
@@ -91,6 +95,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private ObservableCollection<PlacementPriorityListEntry> _activePriorityListEntries = [];
 
     private bool _skipListEvents = false;
+    private List<(NoteBase, int)> _initialNoteOrder = [];
     
     public int SongVolume
     {
@@ -175,6 +180,7 @@ public partial class MainWindowViewModel : ViewModelBase
             }
         };
         frameTimer.Start();
+        Trace.WriteLine($"started frame timer: runs every {frameTimer.Interval}");
 
         var tickTimer = new DispatcherTimer
         {
@@ -182,7 +188,23 @@ public partial class MainWindowViewModel : ViewModelBase
         };
         tickTimer.Tick += (sender, args) => Chart.PerTickUpdate();
         tickTimer.Start();
-        
+        Trace.WriteLine($"started tick timer: runs every {tickTimer.Interval}");
+
+        if (Config.Settings.AutosaveInterval > 0)
+        {
+            var autosaveTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(Config.Settings.AutosaveInterval)
+            };
+            autosaveTimer.Tick += async (sender, args) => await Chart.TryAutosave();
+            autosaveTimer.Start();
+            Trace.WriteLine($"started autosave timer: runs every {autosaveTimer.Interval}");
+        }
+        else
+        {
+            Trace.WriteLine("autosaves are disabled");
+        }
+
         ActivePriorityListEntries = [];
         ActivePriorityListEntries.CollectionChanged += OnPriorityListReorder;
     }
@@ -205,6 +227,7 @@ public partial class MainWindowViewModel : ViewModelBase
             return;
         }
 
+        _initialNoteOrder = notes.ToList();
         foreach (var (note, _) in notes)
         {
             ActivePriorityListEntries.Add(new PlacementPriorityListEntry
@@ -222,14 +245,64 @@ public partial class MainWindowViewModel : ViewModelBase
         ActivePriorityListEntries.Clear();
     }
 
+    private bool _forceClose = false;
+    public async Task OnWindowClosed(object? sender, WindowClosingEventArgs e)
+    {
+        if (Chart.SongLoaded && Chart.UnsavedChanges && !_forceClose)
+        {
+            e.Cancel = true;
+            if (!App.DialogIsOpen)
+            {
+                var dialog = new ThreefoldDialog
+                {
+                    Message =
+                        "Do you want to save the current chart? Unsaved changes will be lost.",
+                    PositiveText = "Save",
+                    NegativeText = "Discard",
+                    NeutralText = "Cancel",
+                };
+                var result = await dialog.ShowAsync();
+                if (result == ThreefoldDialog.ButtonType.Positive)
+                {
+                    if (Config.Settings.DefaultSaveToBeatFiles)
+                    {
+                        await SaveBeatFile();
+                    }
+                    else
+                    {
+                        await SaveStandardFile();
+                    }
+                }
+                
+                if (result != ThreefoldDialog.ButtonType.Neutral)
+                {
+                    _forceClose = true;
+                    e.Cancel = false;
+                    App.MainWindow.Close();
+                }
+            }
+        }
+    }
+
+    private bool _secondEvent = false;
     private void OnPriorityListReorder(object? sender, NotifyCollectionChangedEventArgs e)
     {
         if (_skipListEvents)
         {
             return;
         }
+
+        // reordering the list fires 2 events for some reason?
+        _secondEvent = !_secondEvent;
+        if (_secondEvent)
+        {
+            return;
+        }
         
-        Chart.SetNoteOrder(ActivePriorityListEntries.Select(x => x.Note!).ToList());
+        Console.WriteLine("Reordered priority list");
+        ChartBuilderCommandInvoker.Execute(
+            new ReorderNotesCommand(_initialNoteOrder,
+                                    ActivePriorityListEntries.Select(x => x.Note!).ToList()));
         
         List<string> orderedLaneNames = [];
         foreach (var entry in ActivePriorityListEntries)
@@ -243,6 +316,39 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task LoadFile()
     {
+        if (Chart.SongLoaded && Chart.UnsavedChanges)
+        {
+            if (!App.DialogIsOpen)
+            {
+                var dialog = new ThreefoldDialog
+                {
+                    Message =
+                        "Do you want to save the current chart? Unsaved changes will be lost.",
+                    PositiveText = "Save",
+                    NegativeText = "Discard",
+                    NeutralText = "Cancel",
+                };
+                var result = await dialog.ShowAsync();
+                
+                if (result == ThreefoldDialog.ButtonType.Neutral)
+                {
+                    return;
+                }
+                
+                if (result == ThreefoldDialog.ButtonType.Positive)
+                {
+                    if (Config.Settings.DefaultSaveToBeatFiles)
+                    {
+                        await SaveBeatFile();
+                    }
+                    else
+                    {
+                        await SaveStandardFile();
+                    }
+                }
+            }
+        }
+        
         if (App.TopLevel == null)
         {
             Trace.WriteLine("No top level window!");
@@ -326,7 +432,7 @@ public partial class MainWindowViewModel : ViewModelBase
                                         $"{Chart.ChartFileName}.beat.txt");
             Trace.WriteLine($"Saving to {fullPath}");
             await ChartBuilder.SaveToBeatPath(fullPath);
-            ShowEventIndicator($"Saved to {fullPath}");
+            ShowEventIndicator($"Saved to {Chart.ChartFileName}.beat.txt");
         }
     }
     
@@ -358,8 +464,8 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             var fullPath = file.Path.LocalPath;
             Trace.WriteLine($"Saving to {fullPath}");
-             await ChartBuilder.SaveToBeatPath(fullPath);
-             ShowEventIndicator($"Saved to {fullPath}");
+            await ChartBuilder.SaveToBeatPath(fullPath);
+            ShowEventIndicator($"Saved to {Chart.ChartFileName}.beat.txt");
         }
     }
     
@@ -381,7 +487,7 @@ public partial class MainWindowViewModel : ViewModelBase
                                         $"{Chart.ChartFileName}.txt");
             Trace.WriteLine($"Saving to {fullPath}");
             await ChartBuilder.SaveToStandardPath(fullPath);
-            ShowEventIndicator($"Saved to {fullPath}");
+            ShowEventIndicator($"Saved to {Chart.ChartFileName}.txt");
         }
     }
     
@@ -414,7 +520,7 @@ public partial class MainWindowViewModel : ViewModelBase
             var fullPath = file.Path.LocalPath;
             Trace.WriteLine($"Saving to {fullPath}");
             await ChartBuilder.SaveToStandardPath(fullPath);
-            ShowEventIndicator($"Saved to {fullPath}");
+            ShowEventIndicator($"Saved to {Chart.ChartFileName}.txt");
         }
     }
 
@@ -437,8 +543,11 @@ public partial class MainWindowViewModel : ViewModelBase
     private void ReloadConfig()
     {
         Config.LoadConfig();
+        Config.LoadKeybinds();
+        
         NoteViewer.UpdateNoteColumnPositions();
         Chart.RebuildSnapLineSets();
+        ShowEventIndicator("Reloaded config.");
     }
 
     [RelayCommand]
@@ -446,71 +555,5 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         PlaySpeed = 100;
         App.MainWindow.PlaySpeedSlider.Value = 100;
-    }
-
-    [RelayCommand]
-    private static void Undo()
-    {
-        if (!Chart.SongLoaded)
-        {
-            return;
-        }
-        
-        ChartBuilder.Undo();
-    }
-    
-    [RelayCommand]
-    private static void Redo()
-    {
-        if (!Chart.SongLoaded)
-        {
-            return;
-        }
-        
-        ChartBuilder.Redo();
-    }
-    
-    [RelayCommand]
-    private static void SelectAll()
-    {
-        if (!Chart.SongLoaded)
-        {
-            return;
-        }
-        
-        ChartBuilder.SelectAll();
-    }
-    
-    [RelayCommand]
-    private static void Cut()
-    {
-        if (!Chart.SongLoaded)
-        {
-            return;
-        }
-        
-        ChartBuilder.Cut();
-    }
-    
-    [RelayCommand]
-    private static void Copy()
-    {
-        if (!Chart.SongLoaded)
-        {
-            return;
-        }
-        
-        ChartBuilder.Copy();
-    }
-    
-    [RelayCommand]
-    private static void Paste()
-    {
-        if (!Chart.SongLoaded)
-        {
-            return;
-        }
-        
-        ChartBuilder.Paste();
     }
 }

@@ -7,9 +7,9 @@ using UNBUGGABLE.Resources;
 
 namespace UNBUGGABLE.Commands;
 
-public class AddNotesCommand(List<NoteBase> notes, bool isPaste = false) : ICommand
+public class AddNotesCommand(List<NoteBase> notes) : ICommand
 {
-    public string Name => isPaste ? "Paste Notes" : "Add Notes";
+    public string Name => "Add Notes";
     
     public void Execute()
     {
@@ -17,11 +17,6 @@ public class AddNotesCommand(List<NoteBase> notes, bool isPaste = false) : IComm
         foreach (var note in notes)
         {
             Chart.AddNote(note);
-        }
-
-        if (isPaste && Config.Settings.AutoSelectPastedNotes)
-        {
-            ChartBuilder.SelectedNotes = [..notes];
         }
     }
     
@@ -32,6 +27,75 @@ public class AddNotesCommand(List<NoteBase> notes, bool isPaste = false) : IComm
         foreach (var note in notes)
         {
             Chart.RemoveNote(note);
+        }
+    }
+}
+
+public class PasteNotesCommand : ICommand
+{
+    public string Name => "Paste Notes";
+
+    private List<NoteBase> _addedNotes;
+    private List<NoteBase> _removedNotes = [];
+    
+    public PasteNotesCommand(List<NoteBase> notes)
+    {
+        if (Config.Settings.PasteOverwrite)
+        {
+            _addedNotes = notes;
+            foreach (var note in notes)
+            {
+                var existingNote = Chart.GetNote(note.Time, note.Lane);
+                if (existingNote != null)
+                {
+                    _removedNotes.Add(existingNote);
+                }
+            }
+        }
+        else
+        {
+            _addedNotes = [];
+            foreach (var note in notes)
+            {
+                var existingNote = Chart.GetNote(note.Time, note.Lane);
+                if (existingNote == null)
+                {
+                    _addedNotes.Add(note);
+                }
+            }
+        }
+    }
+    
+    public void Execute()
+    {
+        ChartBuilder.ClearSelection();
+        foreach (var note in _removedNotes)
+        {
+            Chart.RemoveNote(note);
+        }
+
+        foreach (var note in _addedNotes)
+        {
+            Chart.AddNote(note);
+        }
+        
+        if (Config.Settings.AutoSelectPastedNotes)
+        {
+            ChartBuilder.SelectedNotes = [.._addedNotes];
+        }
+    }
+
+    public void Undo()
+    {
+        ChartBuilder.ClearSelection();
+        foreach (var note in _addedNotes)
+        {
+            Chart.RemoveNote(note);
+        }
+        
+        foreach (var note in _removedNotes)
+        {
+            Chart.AddNote(note);
         }
     }
 }
@@ -148,6 +212,11 @@ public class SetFlagsCommand(char flag, bool newValue, List<(NoteBase, bool)> no
     {
         foreach (var note in notes)
         {
+            if (flag == 'n' && (note.Item1.Type is not NoteType.SINGLE and not NoteType.SPIKE
+                    and not NoteType.HOLD and not NoteType.DOUBLE))
+            {
+                continue;
+            }
             switch (flag)
             {
                 case 'c':
@@ -159,6 +228,9 @@ public class SetFlagsCommand(char flag, bool newValue, List<(NoteBase, bool)> no
                 case 'w':
                     note.Item1.Flags.W = newValue;
                     break;
+                case 'n':
+                    note.Item1.Flags.N = newValue;
+                    break;
             }
         }
     }
@@ -167,6 +239,11 @@ public class SetFlagsCommand(char flag, bool newValue, List<(NoteBase, bool)> no
     {
         foreach (var note in notes)
         {
+            if (flag == 'n' && (note.Item1.Type is not NoteType.SINGLE and not NoteType.SPIKE
+                    and not NoteType.HOLD and not NoteType.DOUBLE))
+            {
+                continue;
+            }
             switch (flag)
             {
                 case 'c':
@@ -177,6 +254,9 @@ public class SetFlagsCommand(char flag, bool newValue, List<(NoteBase, bool)> no
                     break;
                 case 'w':
                     note.Item1.Flags.W = note.Item2;
+                    break;
+                case 'n':
+                    note.Item1.Flags.N = note.Item2;
                     break;
             }
         }   
@@ -263,4 +343,38 @@ public class SetNotesCopIdCommand : ICommand
         
         return newNote;
     }
+}
+
+public class ReorderNotesCommand(List<(NoteBase, int)> indexedOldOrder, List<NoteBase> newOrder) :
+    ICommand
+{
+    public string Name => "Reorder Notes";
+    
+    private readonly List<NoteBase> _oldOrder = indexedOldOrder.Select(i => i.Item1).ToList();
+    private readonly List<(NoteBase, int)> _indexedNewOrder =
+        newOrder.Select((note, i) => (note, i)).ToList();
+
+    // prevents a crash caused by modifying the ui during an event
+    private bool _isFirstRun = true;
+    
+    public void Execute()
+    {
+        Chart.SetNoteOrder(newOrder);
+        Trace.WriteLine(string.Join(',', _indexedNewOrder.Select(n => n.Item1.Lane)));
+        if (!_isFirstRun)
+        {
+            App.MainWindowViewModel.UpdatePriorityListEntries(_indexedNewOrder);
+        }
+        else
+        {
+            _isFirstRun = false;
+        }
+    }
+    
+    public void Undo()
+    {
+        Chart.SetNoteOrder(_oldOrder);
+        App.MainWindowViewModel.UpdatePriorityListEntries(indexedOldOrder);
+        Trace.WriteLine(string.Join(',', indexedOldOrder.Select(n => n.Item1.Lane)));
+    }   
 }

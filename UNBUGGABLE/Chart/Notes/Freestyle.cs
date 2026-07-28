@@ -41,6 +41,8 @@ public class FreestyleNote : NoteBase
         }
         
         RenderFlags(dc, x, y);
+        
+        RenderDebugTime(dc, x, y);
     }
 
     public override void RenderPreview(DrawingContext dc)

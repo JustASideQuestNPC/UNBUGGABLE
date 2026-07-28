@@ -1,0 +1,153 @@
+﻿# Every action here can have as many keybinds as you want. To add a new keybind, add another bullet
+# point under the entry.
+# "ctrl", "shift", and "alt" (in any order) can be used as modifiers. Each keybind can only have one
+# main key/mouse button bound to it (don't expect that to change any time soon, sorry).
+#
+# For mouse buttons, use either "leftMouse", "rightMouse", "middleMouse", "scrollUp", or 
+# "scrollDown" (some actions can't be used with the scroll wheel). For keyboard keys, the best way
+# to find them is to enable debug mode in config.yaml, then open the editor and press whatever key
+# you want. Whatever shows up next to "last pressed key" is what you need to use. NOTE: Because my
+# UI library is weird, the first letter in the name will be uppercase; in this file it should be
+# lowercase (i.e., "pageUp" instead of "PageUp").
+#
+# There are a few limitations with the keybinds:
+# - Actions can't share a keybind (technically they can and the editor will run, but it won't work
+#   like you want it to).
+# - What key is used to place notes on each lane can be rebound, but you always hold shift to place
+#   spikes and doubles.
+# - Mouse-specific actions can't be rebound - left click always selects things, right click always
+#   deletes things.
+
+# general
+undo:
+  - "ctrl+z"
+redo:
+  - "ctrl+y"
+saveFile:
+  - "ctrl+s"
+openFile:
+  - "ctrl+o"
+resetPlaySpeed:
+  - "r"
+reloadConfig: [] # use [] to unbind a key
+
+# navigation
+playPause:
+  - "space"
+# moveForward and moveBack generally ignore modifier keys (ctrl/shift/alt)
+moveForward:
+  - "scrollDown"
+  - "down"
+moveBack:
+  - "scrollUp"
+  - "up"
+zoomIn:
+  - "ctrl+scrollUp"
+  - "ctrl+oemPlus" # ctrl++
+zoomOut:
+  - "ctrl+scrollDown"
+  - "ctrl+oemMinus" # ctrl+-
+prevLabel:
+  - "pageUp"
+nextLabel:
+  - "pageDown"
+prevNoteSnap:
+  - "left"
+nextNoteSnap:
+  - "right"
+
+# placement
+# DO NOT BIND THE SCROLL WHEEL TO ANY OF THESE!!! (you won't be able to place notes if you do)
+placeTopLane:
+  - "d3"
+placeBottomLane:
+  - "d4"
+placeCameraLane:
+  - "d5"
+placeCenterLane:
+  - "d6"
+  
+
+# selection
+selectAll:
+  - "ctrl+a"
+selectAllTopLane:
+  - "alt+d3"
+selectAllBottomLane:
+  - "alt+d4"
+selectAllCameraLane:
+  - "alt+d5"
+selectAllCenterLane:
+  - "alt+d6"
+selectAllMarkers:
+  - "alt+q"
+cut:
+  - "ctrl+x"
+copy:
+  - "ctrl+c"
+paste:
+  - "ctrl+v"
+clearSelection:
+  - "escape"
+deleteSelection:
+  - "back"
+  - "delete"
+mirrorSelection:
+  - "ctrl+m"
+moveSelectionForward:
+  - "shift+down"
+moveSelectionBack:
+  - "shift+up"
+setFinishFlag:
+  - "e"
+  - "f"
+setWhistleFlag:
+  - "w"
+setClapFlag:
+  - "c"
+  - "r"
+setNoiszSpawn:
+  - "n"
+
+# cops
+copId0:
+  - "ctrl+d0"
+  - "ctrl+oem3" # ctrl+`
+copId1:
+  - "ctrl+d1"
+copId2:
+  - "ctrl+d2"
+copId3:
+  - "ctrl+d3"
+copId4:
+  - "ctrl+d4"
+prevCop:
+  - "oemComma" # ,
+  - "oemPipe" # \
+nextCop:
+  - "oemPeriod" # .
+  - "oemQuestion" # /
+
+# misc
+addBpmChange: # also edits bpm changes
+  - "f9"
+removeBpmChange:
+  - "ctrl+f9"
+addLabel: # also edits labels
+  - "l"
+removeLabel:
+  - "ctrl+l"
+addMarker1:
+  - "q"
+addMarker2:
+  - "shift+q"
+addMarker3:
+  - "ctrl+q"
+setBreakpoint:
+  - "b"
+removeBreakpoint:
+  - "ctrl+b"
+# Reloads the entire chart file - if your audio gets super desynced out of nowhere, save your work
+# and then use this. It'll probably fix it.
+emergencyReload:
+  - "ctrl+alt+r"

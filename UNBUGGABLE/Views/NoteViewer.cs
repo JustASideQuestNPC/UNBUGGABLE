@@ -7,6 +7,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using UNBEATABLEChartEditor;
+using UNBEATABLEChartEditor.Input;
 using UNBUGGABLE.Resources;
 
 namespace UNBUGGABLE.Views;
@@ -50,6 +51,8 @@ public class NoteViewer : Control
 
     private readonly Typeface _numberTypeface =
         new((FontFamily)App.Current.Resources["RobotoMonoBold"]);
+    private readonly Typeface _beatLineTypeface =
+        new((FontFamily)App.Current.Resources["RobotoMono"]);
     
     private readonly FormattedText _topLaneText;
     private readonly FormattedText _centerLaneText;
@@ -113,17 +116,23 @@ public class NoteViewer : Control
         };
         
         _textOutlinePen = new Pen((SolidColorBrush)App.Current.Resources["TextDark"], 2);
+
+        var topLaneKeybind = Utils.GetReadableKeybindString(Config.Keybinds.PlaceTopLane[0]);
+        var bottomLaneKeybind = Utils.GetReadableKeybindString(Config.Keybinds.PlaceBottomLane[0]);
+        var centerLaneKeybind = Utils.GetReadableKeybindString(Config.Keybinds.PlaceCenterLane[0]);
+        var cameraLaneKeybind = Utils.GetReadableKeybindString(Config.Keybinds.PlaceCameraLane[0]);
         
         // brush color doesn't matter because it's ignored by DrawOutlinedText
-        _topLaneText = new FormattedText("3", CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
-                                         _numberTypeface, 40, Brushes.White);
-        _centerLaneText = new FormattedText("6", CultureInfo.CurrentCulture,
+        _topLaneText = new FormattedText(topLaneKeybind, CultureInfo.CurrentCulture,
+                                         FlowDirection.LeftToRight, _numberTypeface, 40,
+                                         Brushes.White);
+        _centerLaneText = new FormattedText(centerLaneKeybind, CultureInfo.CurrentCulture,
                                             FlowDirection.LeftToRight, _numberTypeface, 40,
                                             Brushes.White);
-        _bottomLaneText = new FormattedText("4", CultureInfo.CurrentCulture,
+        _bottomLaneText = new FormattedText(bottomLaneKeybind, CultureInfo.CurrentCulture,
                                             FlowDirection.LeftToRight, _numberTypeface, 40,
                                             Brushes.White);
-        _cameraLaneText = new FormattedText("5", CultureInfo.CurrentCulture,
+        _cameraLaneText = new FormattedText(cameraLaneKeybind, CultureInfo.CurrentCulture,
                                             FlowDirection.LeftToRight, _numberTypeface, 40,
                                             Brushes.White);
         
@@ -286,13 +295,10 @@ public class NoteViewer : Control
                             new Point(ViewerWidth, adjustedTime * scaledPixelsPerMs));
             }
             
-            foreach (var beatTime in Chart.GetBeatTimesInRange(visibleRangeStart,
+            foreach (var beatLine in Chart.GetBeatTimesInRange(visibleRangeStart,
                                                                       visibleRangeEnd))
             {
-                var adjustedTime = beatTime - visibleRangeStart;
-                dc.DrawLine(new Pen(_fullBeatLineBrush, 3),
-                            new Point(150, adjustedTime * scaledPixelsPerMs),
-                            new Point(ViewerWidth, adjustedTime * scaledPixelsPerMs));
+                RenderFullBeatSnapLine(dc, beatLine, visibleRangeStart, scaledPixelsPerMs);
             }
         }
         
@@ -426,6 +432,22 @@ public class NoteViewer : Control
         return false;
     }
 
+    private void RenderFullBeatSnapLine(DrawingContext dc, (double, int) snapLine,
+        double visibleRangeStart, double scaledPixelsPerMs)
+    {
+        var time = snapLine.Item1;
+        var index = snapLine.Item2;
+        
+        var y = (time - visibleRangeStart) * scaledPixelsPerMs;
+        dc.DrawLine(new Pen(_fullBeatLineBrush, 3), new Point(150, y), new Point(ViewerWidth, y));
+        
+        var beatNumberText = new FormattedText(index.ToString(), CultureInfo.CurrentCulture,
+                                               FlowDirection.RightToLeft, _beatLineTypeface, 16,
+                                               _fullBeatLineBrush);
+        dc.DrawText(beatNumberText, new Point(ViewerWidth - beatNumberText.Width - 10,
+                                              y - beatNumberText.Height - 2));
+    }
+
     private void RenderBpmChange(DrawingContext dc, BpmRegion bpmRegion)
     {
         var y = TimeToScreenCoords(bpmRegion.StartTime == Chart.Metadata.ChartOffset ? 0 :
@@ -532,7 +554,7 @@ public class NoteViewer : Control
                 };
             }
             
-            return new CopNote(ChartBuilder.ShiftPressed ? NoteType.COP_MASH : NoteType.COP_HOLD,
+            return new CopNote(InputManager.ShiftPressed ? NoteType.COP_MASH : NoteType.COP_HOLD,
                                ChartBuilder.CopId)
             {
                 Time = start,
@@ -545,7 +567,7 @@ public class NoteViewer : Control
             return new SingleNote
             {
                 Time = start,
-                Flags = new NoteFlags(false, false, ChartBuilder.ShiftPressed)
+                Flags = new NoteFlags(false, false, InputManager.ShiftPressed)
             };
         }
         
@@ -553,7 +575,7 @@ public class NoteViewer : Control
         {
             Time = start,
             EndTime = end,
-            Flags = new NoteFlags(false, false, ChartBuilder.ShiftPressed)
+            Flags = new NoteFlags(false, false, InputManager.ShiftPressed)
         };
     }
 }

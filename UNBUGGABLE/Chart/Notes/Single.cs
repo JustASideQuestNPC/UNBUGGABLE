@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Media;
 using UNBUGGABLE.Resources;
@@ -51,13 +52,16 @@ public class SingleNote : NoteBase
             return;
         }
         
+        var y = Flags.N ? TimeToNoiszPreviewY(Time) :
+            Lane == NoteLane.TOP ? GamePreview.TopLaneY : GamePreview.BottomLaneY;
+        
         if (Type == NoteType.SINGLE)
         {
-            RenderSinglePreview(dc);
+            RenderSinglePreview(dc, y);
         }
         else
         {
-            RenderSpikePreview(dc);
+            RenderSpikePreview(dc, y);
         }
     }
 
@@ -65,8 +69,10 @@ public class SingleNote : NoteBase
     {
         var shouldPlay = Type switch
         {
-            NoteType.SINGLE => Time > rangeStart && Time <= rangeEnd && Config.Settings.HitSounds.Single,
-            NoteType.SPIKE => Time > rangeStart && Time <= rangeEnd && Config.Settings.HitSounds.Spike,
+            NoteType.SINGLE => Time > rangeStart && Time <= rangeEnd &&
+                               Config.Settings.HitSounds.Single,
+            NoteType.SPIKE => Time > rangeStart && Time <= rangeEnd &&
+                              Config.Settings.HitSounds.Spike,
             _ => false
         };
 
@@ -76,18 +82,6 @@ public class SingleNote : NoteBase
         }
 
         return null;
-    }
-
-    public override bool MouseOver()
-    {
-        if (Type == NoteType.SINGLE)
-        {
-            return base.MouseOver();
-        }
-        
-        var x = NoteViewer.GetNoteX(Lane);
-        var y = NoteViewer.TimeToScreenCoords(Time);
-        return Utils.PointInPolygon(SpikeVertices, new Point(x, y), ChartBuilder.MousePosition);
     }
     
     private void RenderSingle(DrawingContext dc, bool selected)
@@ -107,15 +101,13 @@ public class SingleNote : NoteBase
         }
         
         RenderFlags(dc, x, y);
+        RenderDebugTime(dc, x, y);
     }
 
-    private void RenderSinglePreview(DrawingContext dc)
+    private void RenderSinglePreview(DrawingContext dc, double y)
     {
         dc.DrawEllipse(_singleBrush, new Pen(_outlineBrush, 6),
-                       new Point(GamePreview.TimeToScreenCoords(Time),
-                                 Lane == NoteLane.TOP ? GamePreview.TopLaneY :
-                                     GamePreview.BottomLaneY),
-                       30, 30);
+                       new Point(GamePreview.TimeToScreenCoords(Time), y), 30, 30);
     }
     
     private void RenderSpike(DrawingContext dc, bool selected)
@@ -144,12 +136,12 @@ public class SingleNote : NoteBase
             dc.DrawGeometry(null, new Pen(_selectedBrush, 4), shape);
         }
         
-        RenderFlags(dc, x, y, new NoteFlags(Flags.C, Flags.F, false));
+        RenderFlags(dc, x, y, new NoteFlags(Flags.C, Flags.F, false, Flags.N));
+        RenderDebugTime(dc, x, y);
     }
 
-    private void RenderSpikePreview(DrawingContext dc)
+    private void RenderSpikePreview(DrawingContext dc, double y)
     {
-        var y = Lane == NoteLane.TOP ? GamePreview.TopLaneY : GamePreview.BottomLaneY;
         var shape = _spikePreviewShape.Clone();
         var offset = (Lane == NoteLane.TOP) ? 7 : -7;
         var transform = new TransformGroup();
@@ -162,6 +154,14 @@ public class SingleNote : NoteBase
         shape.Transform = transform;
         
         dc.DrawGeometry(_spikeBrush, new Pen(_outlineBrush, 6), shape);
+    }
+    
+    private double TimeToNoiszPreviewY(double time)
+    {
+        var rangeStart = (Lane == NoteLane.TOP ? -GamePreview.TopLaneY : GamePreview.BottomLaneY);
+        var y = Math.Clamp((Chart.CurrentTime - time) / 1000 * (GamePreview.PixelsPerSecond / 4.0) +
+                           rangeStart, 0, rangeStart);
+        return (Lane == NoteLane.TOP ? -y : y);
     }
     
     public override string ToString()

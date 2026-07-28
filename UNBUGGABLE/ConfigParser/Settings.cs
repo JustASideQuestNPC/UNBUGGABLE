@@ -26,28 +26,49 @@ public class HitSounds {
     public required bool Marker2;
     public required bool Marker3;
 
-    public string GetSettingsString()
+    public string GetFormattedString()
     {
         return $"""
                 
-                    single: {Single}
-                    spike: {Spike}
-                    freestyle: {Freestyle}
-                    hold start: {HoldStart}
-                    hold end: {HoldEnd}
-                    double start: {DoubleStart}
-                    double end: {DoubleEnd}
-                    mash start: {MashStart}
-                    mash end: {MashEnd}
-                    cop single: {CopSingle}
-                    cop hold start: {CopHoldStart}
-                    cop hold end: {CopHoldEnd}
-                    cop mash start: {CopMashStart}
-                    cop mash end: {CopMashEnd}
-                    camera change: {CameraChange}
-                    marker 1: {Marker1}
-                    marker 2: {Marker2}
-                    marker 3: {Marker3}
+                    - single: {Single}
+                    - spike: {Spike}
+                    - freestyle: {Freestyle}
+                    - hold start: {HoldStart}
+                    - hold end: {HoldEnd}
+                    - double start: {DoubleStart}
+                    - double end: {DoubleEnd}
+                    - mash start: {MashStart}
+                    - mash end: {MashEnd}
+                    - cop single: {CopSingle}
+                    - cop hold start: {CopHoldStart}
+                    - cop hold end: {CopHoldEnd}
+                    - cop mash start: {CopMashStart}
+                    - cop mash end: {CopMashEnd}
+                    - camera change: {CameraChange}
+                    - marker 1: {Marker1}
+                    - marker 2: {Marker2}
+                    - marker 3: {Marker3}
+                """;
+    }
+}
+
+public class DebugToggles
+{
+    public required bool Enabled;
+    public required bool CommandStacks;
+    public required bool InputData;
+    public required bool MediaPlayer;
+    
+    [YamlMember(Alias = "noteTimestamps", ApplyNamingConventions = false)]
+    public required bool NoteTimeStamps;
+    
+    public string GetFormattedString()
+    {
+        return $"""
+                    - command stacks: {CommandStacks}
+                    - input data: {InputData}
+                    - media player: {MediaPlayer}
+                    - note timestamps: {NoteTimeStamps}
                 """;
     }
 }
@@ -77,7 +98,8 @@ public class Settings
     [YamlMember(Alias = "showFreestyleSubNotesWhilePlacing", ApplyNamingConventions = false)]
     public required bool ShowSubFreestylesInNoteViewer;
 
-    public required bool DebugMode;
+    [YamlMember(Alias = "pasteOverwritesExistingNotes", ApplyNamingConventions = false)]
+    public required bool PasteOverwrite;
 
     public required List<int> BeatSnaps;
     public required double MinZoom;
@@ -95,6 +117,12 @@ public class Settings
     [YamlMember(Alias = "maxConcurrentHitSounds", ApplyNamingConventions = false)]
     public required int MaxConcurrentSfx;
     public required HitSounds HitSounds;
+    
+    [YamlMember(Alias = "debug", ApplyNamingConventions = false)]
+    public required DebugToggles DebugToggles;
+
+    public required long AutosaveInterval;
+    public required double DoublePreviewAlpha;
 
     public void PrintSettings()
     {
@@ -110,6 +138,9 @@ public class Settings
                          auto select pasted notes: {AutoSelectPastedNotes}
                          allow top lane cop mashes: {AllowTopLaneCopMashes}
                          show sub freestyles while placing: {ShowSubFreestylesInNoteViewer}
+                         negative mash conversion: {NegativeMashConversion}
+                         double preview alpha: {DoublePreviewAlpha}
+                         autosave interval: {AutosaveInterval} seconds
                          beat snaps: [{string.Join(", ", BeatSnaps)}]
                          min zoom: {MinZoom}
                          max zoom: {MaxZoom}
@@ -119,8 +150,9 @@ public class Settings
                          hard chart offset: {HardChartOffset}
                          hit sound tick rate: {HitSoundTickRate}
                          max concurrent hit sounds: {MaxConcurrentSfx}
-                         hit sounds: {HitSounds.GetSettingsString()}
-                         debug mode: {DebugMode}
+                         hit sounds: {HitSounds.GetFormattedString()}
+                         debug mode: {DebugToggles.Enabled}
+                         {DebugToggles.GetFormattedString()}
                          """);
     }
 }
