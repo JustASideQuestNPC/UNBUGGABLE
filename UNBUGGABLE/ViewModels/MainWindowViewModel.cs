@@ -94,7 +94,7 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private ObservableCollection<PlacementPriorityListEntry> _activePriorityListEntries = [];
 
-    private bool _skipListEvents = false;
+    private bool _updatingPriorityList = false;
     private List<(NoteBase, int)> _initialNoteOrder = [];
     
     public int SongVolume
@@ -220,7 +220,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public void UpdatePriorityListEntries(List<(NoteBase, int)> notes)
     {
-        _skipListEvents = true;
+        _updatingPriorityList = true;
         ActivePriorityListEntries.Clear();
         if (notes.Count == 0)
         {
@@ -237,7 +237,7 @@ public partial class MainWindowViewModel : ViewModelBase
         }
 
         PlacementPriorityListEnabled = (ActivePriorityListEntries.Count > 1);
-        _skipListEvents = false;
+        _updatingPriorityList = false;
     }
     
     public void ClearPriorityListEntries()
@@ -284,18 +284,19 @@ public partial class MainWindowViewModel : ViewModelBase
         }
     }
 
-    private bool _secondEvent = false;
+    // private bool _skipEvent = false;
     private void OnPriorityListReorder(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        if (_skipListEvents)
+        if (_updatingPriorityList)
         {
             return;
         }
 
-        // reordering the list fires 2 events for some reason?
-        _secondEvent = !_secondEvent;
-        if (_secondEvent)
+        // reordering the list fires 2 events for some reason? and which one needs to skipped isn't
+        // consistent?? why???
+        if (ActivePriorityListEntries.Count != _initialNoteOrder.Count)
         {
+            Trace.WriteLine("skipping priority list reorder event");
             return;
         }
         

@@ -28,12 +28,11 @@ enableBreakpoints: true
 # (unless a marker there already exists).
 useLane2AsMarkers: true
 
-# If true, loading a chart file will convert all notes that are in lane 2 into UNBUGGABLE markers
-# (unless a marker there already exists).
-saveMarkersAsLane2Notes: false
-
 # If true, all markers are saved in a chart file as a lane 2 note. Markers are always saved in the
 # UNBUGGABLE section of a .beat.txt file, regardless of this setting.
+saveMarkersAsLane2Notes: false
+
+# If true, you can set a difficulty name for every difficulty slot, not just Star.
 alwaysEnableCustomDifficultyName: false
 
 # If true, pasting notes will automatically select those notes (this is useful for pasting and then
@@ -132,6 +131,6 @@ hitSounds:
 debug:
   enabled: false
   commandStacks: true
-  inputData: true
-  mediaPlayer: true
-  noteTimestamps: true
+  inputData: false
+  mediaPlayer: false
+  noteTimestamps: false
