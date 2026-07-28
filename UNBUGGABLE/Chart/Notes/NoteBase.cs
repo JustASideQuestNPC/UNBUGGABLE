@@ -338,7 +338,7 @@ public abstract partial class NoteBase
         }
         chunks.Add(GetFlagString());
 
-        var paramString = Instant ? "" : $"{EndTime + Chart.Metadata.ChartOffset}";
+        var paramString = Instant ? "" : $"{EndTime + Chart.Metadata.ChartOffset}:";
         if (Flags.N)
         {
             paramString += "1:0:0:0:";

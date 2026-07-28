@@ -152,8 +152,9 @@ public class HoldNote : NoteBase
     private double TimeToNoiszPreviewY(double time)
     {
         var rangeStart = (Lane == NoteLane.TOP ? -GamePreview.TopLaneY : GamePreview.BottomLaneY);
-        var y = Math.Clamp((Chart.CurrentTimeRaw - time) / 1000 * (GamePreview.PixelsPerSecond / 4.0) +
-                           rangeStart, 0, rangeStart);
+        var y = Math.Clamp(
+            (Chart.CurrentTimeRaw - time) / 1000 * (GamePreview.PixelsPerSecond / 4.0) +
+            rangeStart, 0, rangeStart);
         return (Lane == NoteLane.TOP ? -y : y);
     }
 
