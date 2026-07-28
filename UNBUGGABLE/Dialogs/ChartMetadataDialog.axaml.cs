@@ -104,7 +104,7 @@ public partial class ChartMetadataDialog : BaseDialog<Chart.MetadataContainer>
             DifficultySlot = _difficultySlot,
             DifficultyName = DifficultyNameBox.Text,
             DifficultyLevel = (int)DifficultyLevelBox.Value,
-            ChartOffset = double.Parse(OffsetBox.Text)
+            ChartOffset = long.Parse(OffsetBox.Text)
             
         };
         Close(metadata);
@@ -117,7 +117,7 @@ public partial class ChartMetadataDialog : BaseDialog<Chart.MetadataContainer>
 
     private void OffsetBoxLostFocus(object? sender, RoutedEventArgs e)
     {
-        if (string.IsNullOrEmpty(OffsetBox.Text) || !double.TryParse(OffsetBox.Text, out _))
+        if (string.IsNullOrEmpty(OffsetBox.Text) || !long.TryParse(OffsetBox.Text, out _))
         {
             OffsetBox.Text = _initialOffset.ToString();
         }

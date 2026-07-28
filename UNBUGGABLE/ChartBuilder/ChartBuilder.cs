@@ -22,13 +22,13 @@ public static class ChartBuilder
     public static double MouseDragStartTime { get; private set; } = -1000;
     public static bool RightMouseDrag { get; private set; } = false;
     
-    public static double TopLaneStartTime { get; private set; } = -1000;
-    public static double BottomLaneStartTime { get; private set; } = -1000;
-    public static double CenterLaneStartTime { get; private set; } = -1000;
+    public static long TopLaneStartTime { get; private set; } = -1000;
+    public static long BottomLaneStartTime { get; private set; } = -1000;
+    public static long CenterLaneStartTime { get; private set; } = -1000;
     
     public static List<NoteBase> SelectedNotes = new();
     
-    public static double BreakpointTime { get; private set; } = -1000;
+    public static long BreakpointTime { get; private set; } = -1000;
     
     // 0 for normal notes, 1-4 for cop notes
     public static int CopId { get; private set; } = 0;
@@ -114,23 +114,31 @@ public static class ChartBuilder
     public static async Task<bool> TryCreateChartFromAudio(string path)
     {
         var result = await Chart.TryCreateChartFromAudio(path);
-        if (result)
+        if (result.Item1)
         {
             ChartBuilderCommandInvoker.Reset();
         }
-
-        return result;
+        else
+        {
+            await new MessageDialog($"Audio loading failed: {result.Item2}").ShowAsync();
+        }
+        
+        return result.Item1;
     }
     
     public static async Task<bool> TryLoadChartFile(string path)
     {
         var result = await Chart.TryLoadChartFile(path);
-        if (result)
+        if (result.Item1)
         {
             ChartBuilderCommandInvoker.Reset();
         }
-
-        return result;
+        else
+        {
+            await new MessageDialog($"Chart loading failed: {result.Item2}").ShowAsync();
+        }
+        
+        return result.Item1;
     }
 
     public static async void TryAutoLoadChartFile()
@@ -294,7 +302,7 @@ public static class ChartBuilder
 
     public static void StartTopLanePlacement()
     {
-        if (TopLaneStartTime.SoftEquals(-1000))
+        if (TopLaneStartTime == -1000)
         {
             Trace.WriteLine($"start top lane placement: {Chart.CurrentTime}");
             TopLaneStartTime = Chart.CurrentTime;
@@ -303,7 +311,7 @@ public static class ChartBuilder
 
     public static void EndTopLanePlacement()
     {
-        if (TopLaneStartTime.SoftNotEquals(-1000))
+        if (TopLaneStartTime != -1000)
         {
             Trace.WriteLine($"end top lane placement: {Chart.CurrentTime}");
             var start = Math.Min(TopLaneStartTime, Chart.CurrentTime);
@@ -315,7 +323,7 @@ public static class ChartBuilder
 
     public static void StartBottomLanePlacement()
     {
-        if (BottomLaneStartTime.SoftEquals(-1000))
+        if (BottomLaneStartTime == -1000)
         {
             Trace.WriteLine($"start bottom lane placement: {Chart.CurrentTime}");
             BottomLaneStartTime = Chart.CurrentTime;
@@ -324,7 +332,7 @@ public static class ChartBuilder
 
     public static void EndBottomLanePlacement()
     {
-        if (BottomLaneStartTime.SoftNotEquals(-1000))
+        if (BottomLaneStartTime != -1000)
         {
             Trace.WriteLine($"end bottom lane placement: {Chart.CurrentTime}");
             var start = Math.Min(BottomLaneStartTime, Chart.CurrentTime);
@@ -336,7 +344,7 @@ public static class ChartBuilder
 
     public static void StartCenterLanePlacement()
     {
-        if (CenterLaneStartTime.SoftEquals(-1000))
+        if (CenterLaneStartTime == -1000)
         {
             Trace.WriteLine($"start center lane placement: {Chart.CurrentTime}");
             CenterLaneStartTime = Chart.CurrentTime;
@@ -345,7 +353,7 @@ public static class ChartBuilder
 
     public static void EndCenterLanePlacement()
     {
-        if (CenterLaneStartTime.SoftNotEquals(-1000))
+        if (CenterLaneStartTime != -1000)
         {
             Trace.WriteLine($"end center lane placement: {Chart.CurrentTime}");
             var start = Math.Min(CenterLaneStartTime, Chart.CurrentTime);
@@ -489,7 +497,7 @@ public static class ChartBuilder
             return;
         }
 
-        if (Chart.CurrentTime.SoftEquals(BreakpointTime))
+        if (Chart.CurrentTime == BreakpointTime)
         {
             RemoveBreakpoint();
             return;
@@ -508,12 +516,12 @@ public static class ChartBuilder
             l => l.StartsWith($"{Chart.Metadata.SongName.ToLowerInvariant()}:"));
         if (index == -1)
         {
-            lines.Add($"{Chart.Metadata.SongName.ToLowerInvariant()}:{Math.Floor(BreakpointTime)}");
+            lines.Add($"{Chart.Metadata.SongName.ToLowerInvariant()}:{BreakpointTime}");
         }
         else
         {
             lines[index] =
-                $"{Chart.Metadata.SongName.ToLowerInvariant()}:{Math.Floor(BreakpointTime)}";
+                $"{Chart.Metadata.SongName.ToLowerInvariant()}:{BreakpointTime}";
         }
         File.WriteAllLines(Config.PracticeModConfigPath, lines);
     }
@@ -599,7 +607,7 @@ public static class ChartBuilder
         var lines = File.ReadAllLines(Config.PracticeModConfigPath).ToList();
         var index = lines.FindIndex(
             l => l.StartsWith($"{Chart.Metadata.SongName.ToLowerInvariant()}:"));
-        if (index != -1 && double.TryParse(lines[index].Split(':')[1], out var time))
+        if (index != -1 && long.TryParse(lines[index].Split(':')[1], out var time))
         {
             BreakpointTime = time;
             App.MainWindowViewModel.BreakpointTimeText = TimeSpan.FromMilliseconds(BreakpointTime)
@@ -612,15 +620,12 @@ public static class ChartBuilder
         }
     }
 
-    private static void CheckForNoteOperation(NoteLane lane, double start, double end)
+    private static void CheckForNoteOperation(NoteLane lane, long start, long end)
     {
-        start = Math.Floor(start);
-        end = Math.Floor(end);
-        
         var oldNote = Chart.GetNote(start, lane);
         Trace.WriteLine(oldNote);
         // hold notes can also extend from the start of the note
-        if (oldNote == null && end.SoftNotEquals(start))
+        if (oldNote == null && end != start)
         {
             oldNote = Chart.GetNote(end, lane) ?? Chart.GetNoteFromEnd(start, lane);
         }
@@ -628,7 +633,7 @@ public static class ChartBuilder
         
         if (oldNote != null)
         {
-            if (start.SoftEquals(end))
+            if (start == end)
             {
                 ChartBuilderCommandInvoker.Execute(new DeleteNotesCommand([oldNote]));
                 return;
@@ -643,7 +648,7 @@ public static class ChartBuilder
             {
                 if (CopId == 0)
                 {
-                    if (start.SoftEquals(end))
+                    if (start == end)
                     {
                         newNote = new SingleNote
                         {
@@ -665,7 +670,7 @@ public static class ChartBuilder
                 }
                 else
                 {
-                    if (start.SoftNotEquals(end) && InputManager.ShiftPressed && lane == NoteLane.TOP &&
+                    if (start != end && InputManager.ShiftPressed && lane == NoteLane.TOP &&
                         !Config.Settings.AllowTopLaneCopMashes)
                     {
                         App.MainWindowViewModel.ShowEventIndicator(
@@ -673,7 +678,7 @@ public static class ChartBuilder
                         return;
                     }
                     
-                    newNote = new CopNote(start.SoftEquals(end) ? NoteType.COP_SINGLE : 
+                    newNote = new CopNote(start == end ? NoteType.COP_SINGLE : 
                                           InputManager.ShiftPressed ? NoteType.COP_MASH :
                                           NoteType.COP_HOLD, CopId)
                     {
@@ -685,7 +690,7 @@ public static class ChartBuilder
                 break;
             }
             default: // case NoteLane.CENTER
-                newNote = (start.SoftEquals(end) ?
+                newNote = (start == end ?
                     new FreestyleNote
                     {
                         Time = start
@@ -702,17 +707,17 @@ public static class ChartBuilder
         var shouldReplace = false;
         if (oldNote != null)
         {
-            if (newNote.Time.SoftEquals(oldNote.Time))
+            if (newNote.Time == oldNote.Time)
             {
                 shouldReplace = true;
             }
 
-            // holding ctrl ignores always places a new note instead of trying to extend existing
-            // notes (this is mainly useful for chaining doubles)
+            // holding ctrl always places a new note instead of trying to extend existing notes
+            // (this is mainly useful for chaining doubles)
             if (!shouldReplace && !newNote.Instant && !oldNote.Instant && !InputManager.CtrlPressed)
             {
-                if ((newNote.Time.SoftEquals(oldNote.EndTime) ||
-                     oldNote.Time.SoftEquals(newNote.EndTime)) && newNote.Type == oldNote.Type)
+                if ((newNote.Time == oldNote.EndTime ||
+                     oldNote.Time == newNote.EndTime) && newNote.Type == oldNote.Type)
                 {
                     newNote.Time = Math.Min(newNote.Time, oldNote.Time);
                     newNote.EndTime = Math.Max(newNote.EndTime, oldNote.EndTime);
@@ -723,6 +728,12 @@ public static class ChartBuilder
 
         if (shouldReplace)
         {
+            if (Config.Settings.PreserveNoiszFlag && newNote is SingleNote or HoldNote &&
+                oldNote is SingleNote or HoldNote)
+            {
+                newNote.Flags.N = oldNote.Flags.N;
+            }
+            
             ChartBuilderCommandInvoker.Execute(new UpdateNotesCommand([oldNote], [newNote]));
         }
         else
@@ -731,7 +742,7 @@ public static class ChartBuilder
         }
     }
     
-    private static void DoNoteMoveOperation(double delta)
+    private static void DoNoteMoveOperation(long delta)
     {
         if (delta == 0)
         {

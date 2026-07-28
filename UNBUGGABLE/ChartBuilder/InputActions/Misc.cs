@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using UNBEATABLEChartEditor;
 using UNBEATABLEChartEditor.Input;
+using UNBUGGABLE.Resources;
 
 namespace UNBUGGABLE.Keybinds;
 
@@ -73,5 +75,21 @@ public class RemoveBreakpointAction(List<string> keybinds) : InputActionBase(key
     public override async Task OnPress()
     {
         ChartBuilder.RemoveBreakpoint();
+    }
+}
+
+public class EmergencyReloadAction(List<string> keybinds) : InputActionBase(keybinds)
+{
+    public override async Task OnPress()
+    {
+        if (Config.Settings.DefaultSaveToBeatFiles)
+        {
+            await ChartBuilder.SaveToBeatPath(UserData.LastOpenedChartFile);
+        }
+        else
+        {
+            await ChartBuilder.SaveToStandardPath(UserData.LastOpenedChartFile);
+        }
+        await ChartBuilder.TryLoadChartFile(UserData.LastOpenedChartFile);
     }
 }

@@ -94,6 +94,7 @@ public class Settings
     public required bool AlwaysEnableCustomDifficultyName;
     public required bool AutoSelectPastedNotes;
     public required bool AllowTopLaneCopMashes;
+    public required bool PreserveNoiszFlag;
 
     [YamlMember(Alias = "showFreestyleSubNotesWhilePlacing", ApplyNamingConventions = false)]
     public required bool ShowSubFreestylesInNoteViewer;
@@ -107,7 +108,7 @@ public class Settings
     public required double ZoomIncrement;
     public required List<string> LaneOrder;
     public required double HitSoundOffset;
-    public required double HardChartOffset;
+    public required long HardChartOffset;
     public required double HitSoundTickRate;
     public required double CurrentTimePosition;
     

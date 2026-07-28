@@ -30,7 +30,7 @@ public class MarkerDummyNote : NoteBase
     
     private SolidColorBrush _fillBrush;
 
-    public MarkerDummyNote(double time, int colorId)
+    public MarkerDummyNote(long time, int colorId)
     {
         Time = time;
         ColorId = colorId;
@@ -73,7 +73,7 @@ public class MarkerDummyNote : NoteBase
     {
         if (Config.Settings.SaveMarkersInLane2 || isStandardFile)
         {
-            return $"128,192,{Math.Floor(Time + Chart.Metadata.ChartOffset)}," +
+            return $"128,192,{Time + Chart.Metadata.ChartOffset}," +
                    $"{(isFirstNote ? 1 : 5)},{GetFlagString()},0:0:0:0:";
         }
 

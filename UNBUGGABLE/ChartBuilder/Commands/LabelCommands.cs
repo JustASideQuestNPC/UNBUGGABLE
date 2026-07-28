@@ -1,6 +1,6 @@
 ﻿namespace UNBUGGABLE.Commands;
 
-public class AddLabelCommand(double time, string text) : ICommand
+public class AddLabelCommand(long time, string text) : ICommand
 {
     public string Name => "Add Label";
     

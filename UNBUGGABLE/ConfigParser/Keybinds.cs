@@ -62,4 +62,5 @@ public class Keybinds
     public required List<string> AddMarker3;
     public required List<string> SetBreakpoint;
     public required List<string> RemoveBreakpoint;
+    public required List<string> EmergencyReload;
 }

@@ -54,11 +54,6 @@ public class NoteViewer : Control
     private readonly Typeface _beatLineTypeface =
         new((FontFamily)App.Current.Resources["RobotoMono"]);
     
-    private readonly FormattedText _topLaneText;
-    private readonly FormattedText _centerLaneText;
-    private readonly FormattedText _bottomLaneText;
-    private readonly FormattedText _cameraLaneText;
-    
     private readonly Geometry _breakpointShape = new PolylineGeometry([
         new Point(-12, -10),
         new Point(  0,  0),
@@ -116,25 +111,6 @@ public class NoteViewer : Control
         };
         
         _textOutlinePen = new Pen((SolidColorBrush)App.Current.Resources["TextDark"], 2);
-
-        var topLaneKeybind = Utils.GetReadableKeybindString(Config.Keybinds.PlaceTopLane[0]);
-        var bottomLaneKeybind = Utils.GetReadableKeybindString(Config.Keybinds.PlaceBottomLane[0]);
-        var centerLaneKeybind = Utils.GetReadableKeybindString(Config.Keybinds.PlaceCenterLane[0]);
-        var cameraLaneKeybind = Utils.GetReadableKeybindString(Config.Keybinds.PlaceCameraLane[0]);
-        
-        // brush color doesn't matter because it's ignored by DrawOutlinedText
-        _topLaneText = new FormattedText(topLaneKeybind, CultureInfo.CurrentCulture,
-                                         FlowDirection.LeftToRight, _numberTypeface, 40,
-                                         Brushes.White);
-        _centerLaneText = new FormattedText(centerLaneKeybind, CultureInfo.CurrentCulture,
-                                            FlowDirection.LeftToRight, _numberTypeface, 40,
-                                            Brushes.White);
-        _bottomLaneText = new FormattedText(bottomLaneKeybind, CultureInfo.CurrentCulture,
-                                            FlowDirection.LeftToRight, _numberTypeface, 40,
-                                            Brushes.White);
-        _cameraLaneText = new FormattedText(cameraLaneKeybind, CultureInfo.CurrentCulture,
-                                            FlowDirection.LeftToRight, _numberTypeface, 40,
-                                            Brushes.White);
         
         UpdateNoteColumnPositions();
     }
@@ -170,7 +146,7 @@ public class NoteViewer : Control
     public static double TimeToScreenCoords(double time)
     {
         var scaledPixelsPerMs = PixelsPerSecond * CurrentZoom / 1000;
-        var visibleRangeStart = Chart.CurrentTime - Config.Settings.CurrentTimePosition /
+        var visibleRangeStart = Chart.CurrentTimeRaw - Config.Settings.CurrentTimePosition /
                                 scaledPixelsPerMs;
         return (time - visibleRangeStart) * scaledPixelsPerMs;
     }
@@ -182,7 +158,7 @@ public class NoteViewer : Control
     public static double ScreenCoordsToTime(double y)
     {
         var scaledPixelsPerMs = PixelsPerSecond * CurrentZoom / 1000;
-        var visibleRangeStart = Chart.CurrentTime - Config.Settings.CurrentTimePosition /
+        var visibleRangeStart = Chart.CurrentTimeRaw - Config.Settings.CurrentTimePosition /
                                 scaledPixelsPerMs;
         return visibleRangeStart + y / scaledPixelsPerMs;
     }
@@ -279,10 +255,10 @@ public class NoteViewer : Control
         if (Chart.SongLoaded)
         {
             var scaledPixelsPerMs = PixelsPerSecond * CurrentZoom / 1000;
-            var visibleRangeStart = Chart.CurrentTime - Config.Settings.CurrentTimePosition /
+            var visibleRangeStart = Chart.CurrentTimeRaw - Config.Settings.CurrentTimePosition /
                                     scaledPixelsPerMs;
             var visibleRangeEnd =
-                Chart.CurrentTime + (ViewerHeight - Config.Settings.CurrentTimePosition) /
+                Chart.CurrentTimeRaw + (ViewerHeight - Config.Settings.CurrentTimePosition) /
                 scaledPixelsPerMs;
             
             // Trace.WriteLine($"Visible range: {visibleRangeStart} - {visibleRangeEnd}");
@@ -318,24 +294,42 @@ public class NoteViewer : Control
         }
         
         // lane labels
-        dc.DrawOutlinedText(_topLaneText, new Point(_topLaneX - _topLaneText.Width / 2,
-                                                    Config.Settings.CurrentTimePosition - 2 -
-                                                    _topLaneText.Height / 2),
+        var topLaneKeybind = Utils.GetReadableKeybindString(Config.Keybinds.PlaceTopLane[0]);
+        var bottomLaneKeybind = Utils.GetReadableKeybindString(Config.Keybinds.PlaceBottomLane[0]);
+        var centerLaneKeybind = Utils.GetReadableKeybindString(Config.Keybinds.PlaceCenterLane[0]);
+        var cameraLaneKeybind = Utils.GetReadableKeybindString(Config.Keybinds.PlaceCameraLane[0]);
+        
+        // brush color doesn't matter because it's ignored by DrawOutlinedText
+        var topLaneText = new FormattedText(topLaneKeybind, CultureInfo.CurrentCulture,
+                                            FlowDirection.LeftToRight, _numberTypeface, 40,
+                                            Brushes.White);
+        var centerLaneText = new FormattedText(centerLaneKeybind, CultureInfo.CurrentCulture,
+                                               FlowDirection.LeftToRight, _numberTypeface, 40,
+                                               Brushes.White);
+        var bottomLaneText = new FormattedText(bottomLaneKeybind, CultureInfo.CurrentCulture,
+                                               FlowDirection.LeftToRight, _numberTypeface, 40,
+                                               Brushes.White);
+        var cameraLaneText = new FormattedText(cameraLaneKeybind, CultureInfo.CurrentCulture,
+                                               FlowDirection.LeftToRight, _numberTypeface, 40,
+                                               Brushes.White);
+        dc.DrawOutlinedText(topLaneText, new Point(_topLaneX - topLaneText.Width / 2,
+                                                   Config.Settings.CurrentTimePosition - 2 -
+                                                   topLaneText.Height / 2),
                             _laneNumberFillBrush, _textOutlinePen);
-        dc.DrawOutlinedText(_centerLaneText, new Point(_centerLaneX - _centerLaneText.Width / 2,
-                                                       Config.Settings.CurrentTimePosition - 2 -
-                                                       _centerLaneText.Height / 2),
+        dc.DrawOutlinedText(centerLaneText, new Point(_centerLaneX - centerLaneText.Width / 2,
+                                                      Config.Settings.CurrentTimePosition - 2 -
+                                                      centerLaneText.Height / 2),
                             _laneNumberFillBrush, _textOutlinePen);
-        dc.DrawOutlinedText(_bottomLaneText, new Point(_bottomLaneX - _bottomLaneText.Width / 2,
-                                                       Config.Settings.CurrentTimePosition - 2 -
-                                                       _bottomLaneText.Height / 2),
+        dc.DrawOutlinedText(bottomLaneText, new Point(_bottomLaneX - bottomLaneText.Width / 2,
+                                                      Config.Settings.CurrentTimePosition - 2 -
+                                                      bottomLaneText.Height / 2),
                             _laneNumberFillBrush, _textOutlinePen);
-        dc.DrawOutlinedText(_cameraLaneText, new Point(_cameraLaneX - _cameraLaneText.Width / 2,
-                                                       Config.Settings.CurrentTimePosition - 2 -
-                                                       _cameraLaneText.Height / 2),
+        dc.DrawOutlinedText(cameraLaneText, new Point(_cameraLaneX - cameraLaneText.Width / 2,
+                                                      Config.Settings.CurrentTimePosition - 2 -
+                                                      cameraLaneText.Height / 2),
                             _laneNumberFillBrush, _textOutlinePen);
 
-        if (ChartBuilder.BreakpointTime.SoftNotEquals(-1000))
+        if (ChartBuilder.BreakpointTime != -1000)
         {
             RenderBreakpoint(dc);
         }
@@ -502,9 +496,9 @@ public class NoteViewer : Control
     {
         NoteBase? topNote = null, centerNote = null, bottomNote = null;
         // cop id doesn't change the center lane
-        if (ChartBuilder.CenterLaneStartTime.SoftNotEquals(-1000))
+        if (ChartBuilder.CenterLaneStartTime != -1000)
         {
-            if (ChartBuilder.CenterLaneStartTime.SoftEquals(Chart.CurrentTime))
+            if (ChartBuilder.CenterLaneStartTime == Chart.CurrentTime)
             {
                 centerNote = new FreestyleNote
                 {
@@ -521,7 +515,7 @@ public class NoteViewer : Control
             }
         }
 
-        if (ChartBuilder.TopLaneStartTime.SoftNotEquals(-1000))
+        if (ChartBuilder.TopLaneStartTime != -1000)
         {
             topNote = MakeNotePlaceholder(
                 Math.Min(ChartBuilder.TopLaneStartTime, Chart.CurrentTime),
@@ -529,7 +523,7 @@ public class NoteViewer : Control
             topNote.Lane = NoteLane.TOP;
         }
             
-        if (ChartBuilder.BottomLaneStartTime.SoftNotEquals(-1000))
+        if (ChartBuilder.BottomLaneStartTime != -1000)
         {
             bottomNote = MakeNotePlaceholder(
                 Math.Min(ChartBuilder.BottomLaneStartTime, Chart.CurrentTime),
@@ -542,11 +536,11 @@ public class NoteViewer : Control
         centerNote?.Render(dc, false);
     }
 
-    private NoteBase MakeNotePlaceholder(double start, double end)
+    private NoteBase MakeNotePlaceholder(long start, long end)
     {
         if (ChartBuilder.CopId != 0)
         {
-            if (start.SoftEquals(end))
+            if (start == end)
             {
                 return new CopNote(NoteType.COP_SINGLE, ChartBuilder.CopId)
                 {
@@ -562,7 +556,7 @@ public class NoteViewer : Control
             };
         }
         
-        if (start.SoftEquals(end))
+        if (start == end)
         {
             return new SingleNote
             {

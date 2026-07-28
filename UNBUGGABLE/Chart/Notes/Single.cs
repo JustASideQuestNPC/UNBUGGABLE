@@ -47,7 +47,7 @@ public class SingleNote : NoteBase
 
     public override void RenderPreview(DrawingContext dc)
     {
-        if (Time < Chart.CurrentTime || Time > Chart.CurrentTime + 1000)
+        if (Time < Chart.CurrentTimeRaw || Time > Chart.CurrentTimeRaw + 1000)
         {
             return;
         }
@@ -159,7 +159,7 @@ public class SingleNote : NoteBase
     private double TimeToNoiszPreviewY(double time)
     {
         var rangeStart = (Lane == NoteLane.TOP ? -GamePreview.TopLaneY : GamePreview.BottomLaneY);
-        var y = Math.Clamp((Chart.CurrentTime - time) / 1000 * (GamePreview.PixelsPerSecond / 4.0) +
+        var y = Math.Clamp((Chart.CurrentTimeRaw - time) / 1000 * (GamePreview.PixelsPerSecond / 4.0) +
                            rangeStart, 0, rangeStart);
         return (Lane == NoteLane.TOP ? -y : y);
     }

@@ -61,7 +61,7 @@ public class HoldNote : NoteBase
 
     public override void RenderPreview(DrawingContext dc)
     {
-        if (EndTime < Chart.CurrentTime || Time > Chart.CurrentTime + 1000)
+        if (EndTime < Chart.CurrentTimeRaw || Time > Chart.CurrentTimeRaw + 1000)
         {
             return;
         }
@@ -110,8 +110,8 @@ public class HoldNote : NoteBase
     
     private void RenderHoldPreview(DrawingContext dc, double y)
     {
-        var startX = GamePreview.TimeToScreenCoords(Time < Chart.CurrentTime ?
-                                                        Chart.CurrentTime : Time);
+        var startX = GamePreview.TimeToScreenCoords(Time < Chart.CurrentTimeRaw ?
+                                                        Chart.CurrentTimeRaw : Time);
         
         var endX = GamePreview.TimeToScreenCoords(EndTime);
         
@@ -121,15 +121,15 @@ public class HoldNote : NoteBase
     
     private void RenderDoublePreview(DrawingContext dc, double startY)
     {
-        var startX = GamePreview.TimeToScreenCoords(Time < Chart.CurrentTime ?
-                                                        Chart.CurrentTime : Time);
+        var startX = GamePreview.TimeToScreenCoords(Time < Chart.CurrentTimeRaw ?
+                                                        Chart.CurrentTimeRaw : Time);
         var endY = -startY;
-        var noteY = Utils.MapRanges(Math.Clamp(Chart.CurrentTime, Time, EndTime), Time, EndTime,
+        var noteY = Utils.MapRanges(Math.Clamp(Chart.CurrentTimeRaw, Time, EndTime), Time, EndTime,
                               startY, endY);
         
         var fillBrush = _doubleBrush;
         var outlineBrush = _outlineBrush;
-        if (Time < Chart.CurrentTime)
+        if (Time < Chart.CurrentTimeRaw)
         {
             fillBrush = new SolidColorBrush(fillBrush.Color)
             {
@@ -152,8 +152,9 @@ public class HoldNote : NoteBase
     private double TimeToNoiszPreviewY(double time)
     {
         var rangeStart = (Lane == NoteLane.TOP ? -GamePreview.TopLaneY : GamePreview.BottomLaneY);
-        var y = Math.Clamp((Chart.CurrentTime - time) / 1000 * (GamePreview.PixelsPerSecond / 4.0) +
-                           rangeStart, 0, rangeStart);
+        var y = Math.Clamp(
+            (Chart.CurrentTimeRaw - time) / 1000 * (GamePreview.PixelsPerSecond / 4.0) +
+            rangeStart, 0, rangeStart);
         return (Lane == NoteLane.TOP ? -y : y);
     }
 

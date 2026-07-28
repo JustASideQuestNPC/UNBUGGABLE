@@ -70,6 +70,7 @@ public static class Config
         AlwaysEnableCustomDifficultyName = false,
         AutoSelectPastedNotes = true,
         AllowTopLaneCopMashes = false,
+        PreserveNoiszFlag = true,
         ShowSubFreestylesInNoteViewer = true,
         BeatSnaps = [1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 20, 5, 9, 11, 13],
         MinZoom = 0.5,
@@ -297,7 +298,8 @@ public static class Config
             AddMarker2 = ["shift+q"],
             AddMarker3 = ["ctrl+q"],
             SetBreakpoint = ["b"],
-            RemoveBreakpoint = ["ctrl+b"]
+            RemoveBreakpoint = ["ctrl+b"],
+            EmergencyReload = ["ctrl+alt+r"]
         };
 
         var path = Path.Combine(Environment.CurrentDirectory, KeybindFileName);
@@ -326,6 +328,10 @@ public static class Config
                     VerifyKeybindStrings(loadedKeybinds.PlaceCameraLane) &&
                     VerifyKeybindStrings(loadedKeybinds.PlaceCenterLane) &&
                     VerifyKeybindStrings(loadedKeybinds.SelectAll) &&
+                    VerifyKeybindStrings(loadedKeybinds.SelectTopLane) &&
+                    VerifyKeybindStrings(loadedKeybinds.SelectBottomLane) &&
+                    VerifyKeybindStrings(loadedKeybinds.SelectCameraLane) &&
+                    VerifyKeybindStrings(loadedKeybinds.SelectCenterLane) &&
                     VerifyKeybindStrings(loadedKeybinds.Cut) &&
                     VerifyKeybindStrings(loadedKeybinds.Copy) &&
                     VerifyKeybindStrings(loadedKeybinds.Paste) &&
@@ -352,7 +358,8 @@ public static class Config
                     VerifyKeybindStrings(loadedKeybinds.AddMarker2) &&
                     VerifyKeybindStrings(loadedKeybinds.AddMarker3) &&
                     VerifyKeybindStrings(loadedKeybinds.SetBreakpoint) &&
-                    VerifyKeybindStrings(loadedKeybinds.RemoveBreakpoint))
+                    VerifyKeybindStrings(loadedKeybinds.RemoveBreakpoint) &&
+                    VerifyKeybindStrings(loadedKeybinds.EmergencyReload))
                 {
                     keybinds = loadedKeybinds;
                 }
@@ -420,7 +427,8 @@ public static class Config
             new AddMarker2Action(keybinds.AddMarker2),
             new AddMarker3Action(keybinds.AddMarker3),
             new SetBreakpointAction(keybinds.SetBreakpoint),
-            new RemoveBreakpointAction(keybinds.RemoveBreakpoint)
+            new RemoveBreakpointAction(keybinds.RemoveBreakpoint),
+            new EmergencyReloadAction(keybinds.EmergencyReload)
         ];
         
         Trace.WriteLine("Loaded keybinds");

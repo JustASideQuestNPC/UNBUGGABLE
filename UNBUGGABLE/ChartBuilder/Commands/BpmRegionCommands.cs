@@ -1,6 +1,6 @@
 ﻿namespace UNBUGGABLE.Commands;
 
-public class AddBpmRegionCommand(double time, double bpm) : ICommand
+public class AddBpmRegionCommand(long time, double bpm) : ICommand
 {
     public string Name => "Add BPM Region";
     

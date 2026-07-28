@@ -58,7 +58,7 @@ public abstract partial class NoteBase
     [GeneratedRegex(@"\d\d\d,192,-?\d+,\d+,\d+,(\d+:){4,5}")]
     private static partial Regex HitObjectRegex();
     
-    public double Time { get; set; }
+    public long Time { get; set; }
 
     /// <summary>
     /// If true, the note has no duration and is a single, spike, freestyle, or camera note. If
@@ -71,8 +71,8 @@ public abstract partial class NoteBase
     /// <summary>
     /// What time the note ends at after being hit. Only used by holds, doubles, and mash notes.
     /// </summary>
-    public double EndTime { get; set; } = 0;
-    public double Duration => Instant ? 0 : EndTime - Time;
+    public long EndTime { get; set; } = 0;
+    public long Duration => Instant ? 0 : EndTime - Time;
     
     public abstract NoteType Type { get; }
     public virtual NoteLane Lane { get; set; }
@@ -110,20 +110,20 @@ public abstract partial class NoteBase
         
         var d = hitObjectString.Split(',');
         var laneNumber = int.Parse(d[0]);
-        var noteTime = double.Parse(d[2]) - Chart.Metadata.ChartOffset;
+        var noteTime = long.Parse(d[2]) - Chart.Metadata.ChartOffset;
         var instantNumber = int.Parse(d[3]);
         
         var noteFlagNumber = int.Parse(d[4]);
         
         var hitObjectParams = d[5].Split(":");
-        var param1 = int.Parse(hitObjectParams[0]);
+        var param1 = long.Parse(hitObjectParams[0]);
         var param2 = int.Parse(hitObjectParams[1]);
         var param3 = int.Parse(hitObjectParams[2]);
 
         var lane = NoteLane.CENTER;
         bool instant;
         NoteFlags flags;
-        double endTime = 0;
+        long endTime = 0;
         
         if ((laneNumber is 213 or 298 or 384 or 469) ||
             (laneNumber == 128 && Config.Settings.Lane2Markers))
@@ -302,7 +302,7 @@ public abstract partial class NoteBase
         return new Rect(x - 40, y - 12, 80, 24).ContainsPoint(ChartBuilder.MousePosition);
     }
 
-    public NoteBase Clone(double? newTime = null)
+    public NoteBase Clone(long? newTime = null)
     {
         var clone = (NoteBase)MemberwiseClone();
         if (newTime != null)
@@ -326,7 +326,7 @@ public abstract partial class NoteBase
                 _ => throw new ArgumentOutOfRangeException()
             },
             "192",
-            Math.Floor(Time + Chart.Metadata.ChartOffset).ToString()
+            (Time + Chart.Metadata.ChartOffset).ToString()
         ];
         if (Instant)
         {
@@ -338,7 +338,7 @@ public abstract partial class NoteBase
         }
         chunks.Add(GetFlagString());
 
-        var paramString = Instant ? "" : $"{Math.Floor(EndTime + Chart.Metadata.ChartOffset)}:";
+        var paramString = Instant ? "" : $"{EndTime + Chart.Metadata.ChartOffset}:";
         if (Flags.N)
         {
             paramString += "1:0:0:0:";
@@ -381,8 +381,7 @@ public abstract partial class NoteBase
             return;
         }
         
-        var timeString = Instant ? $"{Math.Round(Time, 2)}" :
-                $"{Math.Round(Time, 2)}-{Math.Round(EndTime, 2)}";
+        var timeString = Instant ? $"{Time}" : $"{Time}-{EndTime}";
         var color = (SolidColorBrush)App.Current.Resources["TextPrimary"];
         var outline = new Pen((SolidColorBrush)App.Current.Resources["TextDark"], 1);
         var text = new FormattedText(timeString, CultureInfo.CurrentCulture,

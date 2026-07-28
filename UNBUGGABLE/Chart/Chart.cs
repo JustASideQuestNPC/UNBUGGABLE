@@ -51,9 +51,9 @@ public static partial class Chart
     /// <summary>
     /// A large named label.
     /// </summary>
-    public class Label(double time, string text)
+    public class Label(long time, string text)
     {
-        public double Time => time;
+        public long Time => time;
         public string Text => text;
     }
     
@@ -69,7 +69,7 @@ public static partial class Chart
         // doesn't break the game, so have fun :)
         public string DifficultyName = "Beginner";
         public int DifficultyLevel = 0;
-        public double ChartOffset = 0;
+        public long ChartOffset = 0;
     }
     
     public static ChartDebugInfo DebugInfo => new()
@@ -118,8 +118,7 @@ public static partial class Chart
             // least once (or were loaded from a chart file and the metadata hasn't changed)
             _canAutosave = false;
 
-            if (_bpmRegions.Count != 0 && _bpmRegions[0].StartTime
-                                                        .SoftNotEquals(_metadata.ChartOffset))
+            if (_bpmRegions.Count != 0 && _bpmRegions[0].StartTime != _metadata.ChartOffset)
             {
                 _bpmRegions[0].StartTime = _metadata.ChartOffset;
 
@@ -147,23 +146,23 @@ public static partial class Chart
     public static string ChartFolderName { get; private set; } = "";
     public static string ChartFileName { get; private set; } = "";
     
-    public static double Length => _mediaPlayer.Media.Duration - AdjustedOffset;
+    public static long Length => _mediaPlayer.Media.Duration - AdjustedOffset;
 
-    public static double AdjustedOffset => Metadata.ChartOffset + Config.Settings.HardChartOffset;
+    public static long AdjustedOffset => Metadata.ChartOffset + Config.Settings.HardChartOffset;
 
     public static bool UnsavedChanges { get; private set; } = false;
 
-    private static double _currentTime = 0;
-    public static double CurrentTime
+    private static double _currentTimeRaw = 0;
+    public static double CurrentTimeRaw
     {
-        get => _currentTime;
+        get => _currentTimeRaw;
         private set
         {
-            _currentTime = value;
+            _currentTimeRaw = value;
             
             foreach (var region in _bpmRegions)
             {
-                if (CurrentTime >= region.StartTime && CurrentTime <= region.EndTime)
+                if (CurrentTimeRaw >= region.StartTime && CurrentTimeRaw <= region.EndTime)
                 {
                     App.MainWindowViewModel.SongBpmText = region.Bpm.ToString("0.00");
                 }
@@ -176,6 +175,7 @@ public static partial class Chart
             }
         }
     }
+    public static long CurrentTime => (long)Math.Floor(CurrentTimeRaw);
 
     private static bool _songLoaded = false;
     public static bool SongLoaded
@@ -264,8 +264,8 @@ public static partial class Chart
     
     // timestamps for where every line appears for every snap setting, updated whenever bpm regions
     // change
-    private static readonly Dictionary<int, List<double>> SnapLineSets = new();
-    private static List<double> _currentSnapLineSet = [];
+    private static readonly Dictionary<int, List<long>> SnapLineSets = new();
+    private static List<long> _currentSnapLineSet = [];
     private static int _currentSnapLineSetIndex = 0;
     
     // for debugging
@@ -273,14 +273,14 @@ public static partial class Chart
     
     private static bool _canAutosave = false;
     
-    [GeneratedRegex(@"\d+,\d+.\d+,\d+,\d+,\d+,\d+,\d+,\d+")]
+    [GeneratedRegex(@"[0-9]+,[0-9]+.[0-9]+,[0-9]+,[0-9]+,[0-9]+,[0-9]+,[0-9]+,[0-9]+")]
     private static partial Regex TimingPointRegex();
 
     [GeneratedRegex(@".*\[(.+)\].*")]
     private static partial Regex DifficultySlotRegex();
 
     // cursed regex because chart tags allow double quotes in a string so i can't just use json
-    [GeneratedRegex("""{"Level":(\d+),"FlavorText":"(.*)","SongLength":(?:\d+?(?:\.\d+)),"CoverArt":"(.*)"}""")]
+    [GeneratedRegex("""{"Level":([0-9]+),"FlavorText":"(.*)","SongLength":(?:[+-]?([0-9]*[.])?[0-9]+),"CoverArt":"(.*)"}""")]
     private static partial Regex TagRegex();
 
     /// <summary>
@@ -392,7 +392,7 @@ public static partial class Chart
         if (_currentSnapLineSetIndex < _currentSnapLineSet.Count - 1)
         {
             ++_currentSnapLineSetIndex;
-            CurrentTime = _currentSnapLineSet[_currentSnapLineSetIndex];
+            CurrentTimeRaw = _currentSnapLineSet[_currentSnapLineSetIndex];
         }
     }
 
@@ -401,34 +401,35 @@ public static partial class Chart
         if (_currentSnapLineSetIndex > 0)
         {
             --_currentSnapLineSetIndex;
-            CurrentTime = _currentSnapLineSet[_currentSnapLineSetIndex];
+            CurrentTimeRaw = _currentSnapLineSet[_currentSnapLineSetIndex];
         }
     }
 
-    public static double GetPreviousSnapTime() => _currentSnapLineSetIndex > 0 ?
-        _currentSnapLineSet[_currentSnapLineSetIndex - 1] : _currentSnapLineSet[0];
-    
-    public static double GetNextSnapTime() =>
+    public static long GetPreviousSnapTime() => _currentSnapLineSetIndex > 0
+        ? _currentSnapLineSet[_currentSnapLineSetIndex - 1]
+        : _currentSnapLineSet[0];
+
+    public static long GetNextSnapTime() =>
         _currentSnapLineSetIndex < _currentSnapLineSet.Count - 1 ?
         _currentSnapLineSet[_currentSnapLineSetIndex + 1] : _currentSnapLineSet[^1];
 
     public static void MoveToNextLabel()
     {
-        if (CurrentTime >= Length)
+        if (CurrentTimeRaw >= Length)
         {
             return;
         }
         
         var nextLabel = _labels.FirstOrDefault(
-            l => l.Time > _currentTime && Math.Abs(l.Time - CurrentTime) > 1000);
+            l => l.Time > _currentTimeRaw && Math.Abs(l.Time - CurrentTimeRaw) > 1000);
         if (nextLabel != null)
         {
-            CurrentTime = nextLabel.Time;
+            CurrentTimeRaw = nextLabel.Time;
         }
         else
         {
             var lastNote = NonMarkerNotes[^1];
-            CurrentTime = (lastNote.Instant ? lastNote.Time : lastNote.EndTime);
+            CurrentTimeRaw = (lastNote.Instant ? lastNote.Time : lastNote.EndTime);
         }
         
         SetTimeToNearestSnap();
@@ -436,20 +437,20 @@ public static partial class Chart
     
     public static void MoveToPreviousLabel()
     {
-        if (CurrentTime <= 0)
+        if (CurrentTimeRaw <= 0)
         {
             return;
         }
         
         var previousLabel = _labels.LastOrDefault(
-            l => l.Time < _currentTime && Math.Abs(l.Time - CurrentTime) > 1000);
+            l => l.Time < _currentTimeRaw && Math.Abs(l.Time - CurrentTimeRaw) > 1000);
         if (previousLabel != null)
         {
-            CurrentTime = previousLabel.Time;
+            CurrentTimeRaw = previousLabel.Time;
         }
         else
         {
-            CurrentTime = 0;
+            CurrentTimeRaw = 0;
         }
         
         SetTimeToNearestSnap();
@@ -462,24 +463,24 @@ public static partial class Chart
     {
         if (SongLoaded && Playing)
         {
-            var prevTime = CurrentTime;
-            CurrentTime += (_stopwatch.ElapsedMilliseconds - _lastStopwatchTime) * PlaySpeed / 100;
-            if (CurrentTime + AdjustedOffset >= 0 && !_mediaPlayer.IsPlaying)
+            var prevTime = CurrentTimeRaw;
+            CurrentTimeRaw += (_stopwatch.ElapsedMilliseconds - _lastStopwatchTime) * PlaySpeed / 100;
+            if (CurrentTimeRaw + AdjustedOffset >= 0 && !_mediaPlayer.IsPlaying)
             {
-                _mediaPlayer.SeekTo(TimeSpan.FromMilliseconds(CurrentTime + AdjustedOffset));
+                _mediaPlayer.SeekTo(TimeSpan.FromMilliseconds(CurrentTimeRaw + AdjustedOffset));
                 _mediaPlayer.Play();
                 // CurrentTime = AdjustedOffset;
             }
-            else if (CurrentTime > Length)
+            else if (CurrentTimeRaw > Length)
             {
                 Playing = false;
-                CurrentTime = Length;
+                CurrentTimeRaw = Length;
             }
             
             foreach (var note in Notes)
             {
                 if (note.ShouldPlayHitSound(prevTime - Config.Settings.HitSoundOffset,
-                                            CurrentTime - Config.Settings.HitSoundOffset)
+                                            CurrentTimeRaw - Config.Settings.HitSoundOffset)
                     is { } offset)
                 {
                     if (_hitSound != null)
@@ -514,29 +515,24 @@ public static partial class Chart
     /// <summary>
     /// Attempts to load a .wav or .mp3 file and create a new chart with empty metadata.
     /// </summary>
-    /// <returns>Whether the audio file could be loaded.</returns>
-    public static async Task<bool> TryCreateChartFromAudio(string path)
+    /// <returns>
+    /// Whether the audio file could be loaded, followed by an error message (or an empty string if
+    /// there was no error).
+    /// </returns>
+    public static async Task<(bool, string)> TryCreateChartFromAudio(string path)
     {
         SongLoaded = false;
 
-        if (!(await TryLoadAudioFile(path)))
+        var result = await TryLoadAudioFile(path);
+        if (!result.Item1)
         {
-            return false;
+            ClearChart();
+            return (false, result.Item2);
         }
         
         Trace.WriteLine("Creating chart from audio file...");
         
         App.MainWindow.PlaySpeedSlider.Value = PlaySpeed;
-        
-        // Metadata.SongName = "";
-        // Metadata.ArtistName = "";
-        // Metadata.CoverArtistName  = "";
-        // Metadata.DifficultySlot = DifficultySlot.BEGINNER;
-        // Metadata.DifficultyLevel = 0;
-        // Metadata.DifficultyName = "Beginner";
-        // Metadata.FlavorText = "";
-        // Metadata.CharterName = "";
-        // Metadata.ChartOffset = 0;
         
         Metadata = new MetadataContainer();
         _notes = [];
@@ -550,7 +546,7 @@ public static partial class Chart
         SetTimeToNearestSnap();
 
         NoteViewer.SetZoom(1.0);
-        CurrentTime = 0;
+        CurrentTimeRaw = 0;
         ChartFileName = "";
         ChartFolderName = Path.GetFileName(Path.GetDirectoryName(path));
             
@@ -561,15 +557,18 @@ public static partial class Chart
         SongLoaded = true;
         UnsavedChanges = false;
         UserData.LastOpenedChartFile = ""; 
-        return true;
+        return (true, "");
     }
 
     /// <summary>
     /// Tries to load a chart file (either a standard .txt file from the official editor or an
     /// UNBUGGABLE .beat.txt file) and set up notes, markers, BPM changes, etc.
     /// </summary>
-    /// <returns>Whether all data could be loaded.</returns>
-    public static async Task<bool> TryLoadChartFile(string path)
+    /// <returns>
+    /// Whether all data could be loaded, followed by an error message (or an empty string if there
+    /// was no error).
+    /// </returns>
+    public static async Task<(bool, string)> TryLoadChartFile(string path)
     {
         SongLoaded = false;
         _canAutosave = false;
@@ -577,7 +576,7 @@ public static partial class Chart
         if (!File.Exists(path))
         {
             Trace.WriteLine("File not found.");
-            return false;
+            return (false, "File not found.");
         }
         
         var dirName = Path.GetFullPath(path);
@@ -595,23 +594,24 @@ public static partial class Chart
         {
             var line = chartData[i].Trim();
             var temp = 0;
+            var errorMessage = "";
             switch (line)
             {
                 case "[General]":
                     Trace.WriteLine("Parsing general data...");
-                    temp = TryParseGeneralChartData(chartData, i, folderPath, out audioPath);
+                    temp = TryParseGeneralChartData(chartData, i, folderPath, out audioPath, out errorMessage);
                     break;
                 case "[Editor]":
                     Trace.WriteLine("Parsing official editor data...");
-                    temp = TryParseOfficialEditorData(chartData, i);
+                    temp = TryParseOfficialEditorData(chartData, i, out errorMessage);
                     break;
                 case "[UNBUGGABLE]":
                     Trace.WriteLine("Parsing UNBUGGABLE data...");
-                    temp = TryParseUnbuggableData(chartData, i, out lastEditorState);
+                    temp = TryParseUnbuggableData(chartData, i, out lastEditorState, out errorMessage);
                     break;
                 case "[Metadata]":
                     Trace.WriteLine("Parsing metadata...");
-                    temp = TryParseMetadata(chartData, i);
+                    temp = TryParseMetadata(chartData, i, out errorMessage);
                     // see??? do you see how easy it would be to make the official editor save star
                     // charts correctly??? why would you not do this???
                     Metadata.DifficultySlot =
@@ -628,24 +628,25 @@ public static partial class Chart
                 // there are also [Difficulty] and [Events] sections here but they do nothing
                 case "[TimingPoints]":
                     Trace.WriteLine("Parsing timing points...");
-                    temp = TryParseTimingPoints(chartData, i);
+                    temp = TryParseTimingPoints(chartData, i, out errorMessage);
                     break;
                 case "[HitObjects]":
                     Trace.WriteLine("Parsing hit objects (notes)...");
-                    temp = TryParseHitObjects(chartData, i);
+                    temp = TryParseHitObjects(chartData, i, out errorMessage);
                     break;
             }
             
             if (temp == -1)
             {
                 _mediaPlayer.Media = null; // disables the editor
-                return false;
+                return (false, errorMessage);
             }
 
             i += temp;
         }
 
-        if (await TryLoadAudioFile(audioPath))
+        var result = await TryLoadAudioFile(audioPath);
+        if (result.Item1)
         {
             RebuildSnapLineSets();
             SetBeatSnapIndex(0);
@@ -664,7 +665,7 @@ public static partial class Chart
 
                 if (time >= 0 && time <= Length)
                 {
-                    CurrentTime = time;
+                    CurrentTimeRaw = time;
                 }
 
                 Trace.WriteLine(
@@ -686,7 +687,7 @@ public static partial class Chart
             // clear the editor state from the last file that was open
             else
             {
-                CurrentTime = 0;
+                CurrentTimeRaw = 0;
                 SetBeatSnapIndex(0);
                 NoteViewer.SetZoom(1);
             }
@@ -694,10 +695,11 @@ public static partial class Chart
             ChartBuilder.CheckExistingBreakpoint();
             SetTimeToNearestSnap();
             _canAutosave = true;
-            return true;
+            return (true, "");
         }
         
-        return false;
+        ClearChart();
+        return (false, result.Item2);
     }
 
     /// <summary>
@@ -804,7 +806,7 @@ public static partial class Chart
     /// <param name="time">The time of the marker, in milliseconds.</param>
     /// <param name="type">From 0-2, determines the color of the marker. The default types are
     ///     green, yellow, and purple, in that order.</param>
-    public static void TryAddMarker(double time, int type)
+    public static void TryAddMarker(long time, int type)
     {
         if (GetNotesAtTime(time).Find(note => note.Item1 is MarkerDummyNote)
                                 .Item1 is not MarkerDummyNote)
@@ -817,12 +819,12 @@ public static partial class Chart
     /// Returns a list of every non-marker note that exists at a timestamp (in milliseconds). List
     /// elements are formatted as <c>(note, index in the main note list)</c>.
     /// </summary>
-    public static List<(NoteBase, int)> GetNotesAtTime(double time)
+    public static List<(NoteBase, int)> GetNotesAtTime(long time)
     {
         List<(NoteBase, int)> notes = [];
         foreach (NoteBase note in NonMarkerNotes)
         {
-            if (note.Time.SoftEquals(time))
+            if (note.Time == time)
             {
                 notes.Add((note, NonMarkerNotes.IndexOf(note)));
             }
@@ -837,15 +839,15 @@ public static partial class Chart
     /// <summary>
     /// Returns the note in a specific lane at a specific time, or null if that note does not exist.
     /// </summary>
-    public static NoteBase? GetNote(double time, NoteLane lane)
-        => _notes.FirstOrDefault(n => n.Time.SoftEquals(time) && n.Lane == lane);
+    public static NoteBase? GetNote(long time, NoteLane lane)
+        => _notes.FirstOrDefault(n => n.Time == time && n.Lane == lane);
     
     /// <summary>
     /// Returns the (non-instant) note in a specific lane that <i>ends</i> at a specific time, or
     /// null if that note does not exist.
     /// </summary>
-    public static NoteBase? GetNoteFromEnd(double time, NoteLane lane) =>
-        _notes.FirstOrDefault(n => !n.Instant && n.EndTime.SoftEquals(time) && n.Lane == lane);
+    public static NoteBase? GetNoteFromEnd(long time, NoteLane lane) =>
+        _notes.FirstOrDefault(n => !n.Instant && n.EndTime == time && n.Lane == lane);
 
     public static NoteBase? GetPreviousNote(NoteBase note)
     {
@@ -881,17 +883,17 @@ public static partial class Chart
     /// </summary>
     public static void AddNote(NoteBase note)
     {
-        if (_notes.Count == 0 || _notes[^1].Time <= Math.Round(note.Time))
+        if (_notes.Count == 0 || _notes[^1].Time <= note.Time)
         {
             _notes.Add(note);
         }
-        else if (_notes[0].Time > Math.Round(note.Time))
+        else if (_notes[0].Time > note.Time)
         {
             _notes.Insert(0, note);
         }
         else
         {
-            var i = _notes.FindIndex(x => x.Time > Math.Round(note.Time));
+            var i = _notes.FindIndex(x => x.Time > note.Time);
             _notes.Insert(i, note);
         }
         
@@ -939,8 +941,8 @@ public static partial class Chart
     /// <summary>
     /// Returns the label at a specific time, or null if it doesn't exist.
     /// </summary>
-    public static Label? GetLabel(double time) =>
-        _labels.FirstOrDefault(x => x.Time.SoftEquals(time));
+    public static Label? GetLabel(long time) =>
+        _labels.FirstOrDefault(x => x.Time == time);
     
     public static void AddLabel(Label label)
     {
@@ -969,11 +971,11 @@ public static partial class Chart
     /// <summary>
     /// Returns the BPM region that starts at a specific time, or null if it doesn't exist.
     /// </summary>
-    public static BpmRegion? GetBpmRegion(double time)
+    public static BpmRegion? GetBpmRegion(long time)
     {
         foreach (var region in _bpmRegions)
         {
-            if (region.StartTime.SoftEquals(time))
+            if (region.StartTime == time)
             {
                 return region;
             }
@@ -1064,7 +1066,7 @@ public static partial class Chart
         var sortedSnapValues = Config.Settings.BeatSnaps.OrderByDescending(x => x).ToList();
         foreach (var snapValue in sortedSnapValues)
         {
-            List<double> snapLineSet = [0];
+            List<long> snapLineSet = [0];
             double time = 0;
             var bpmRegion = _bpmRegions[0];
             while (bpmRegion != null)
@@ -1086,7 +1088,7 @@ public static partial class Chart
                     bpmRegion = bpmRegion.Next;
                 }
                 time = nextTime;
-                snapLineSet.Add(time);
+                snapLineSet.Add((long)Math.Floor(time));
             }
             
             // Trace.WriteLine(
@@ -1096,6 +1098,32 @@ public static partial class Chart
         
         _currentSnapLineSet = SnapLineSets[BeatSnap];
         SetTimeToNearestSnap();
+    }
+
+    private static void ClearChart()
+    {
+        Metadata = new MetadataContainer();
+        _notes = [];
+        _labels = [];
+        ChartBuilder.ClearSelection();
+        ChartBuilder.RemoveBreakpoint(false);
+            
+        _bpmRegions = [];
+        _beatSnapIndex = 0;
+        _currentSnapLineSet = [];
+        SnapLineSets.Clear();
+
+        NoteViewer.SetZoom(1.0);
+        CurrentTimeRaw = 0;
+        ChartFileName = "";
+        ChartFolderName = "";
+            
+        App.MainWindowViewModel.SongBpmText = "";
+        App.MainWindowViewModel.PlaySpeed = 100;
+        App.MainWindowViewModel.CanSave = false;
+
+        SongLoaded = false;
+        UnsavedChanges = false;
     }
 
     public static async Task TryAutosave()
@@ -1127,13 +1155,13 @@ public static partial class Chart
 
     private static void PlaySong()
     {
-        if (CurrentTime + AdjustedOffset >= Length)
+        if (CurrentTimeRaw + AdjustedOffset >= Length)
         {
             return;
         }
         
         Playing = true;
-        if (CurrentTime + AdjustedOffset >= 0)
+        if (CurrentTimeRaw + AdjustedOffset >= 0)
         {
             if (_mediaPlayer.Media.State == VLCState.Ended)
             {
@@ -1143,7 +1171,7 @@ public static partial class Chart
             {
                 _mediaPlayer.Play();
             }
-            _mediaPlayer.SeekTo(TimeSpan.FromMilliseconds(CurrentTime + AdjustedOffset));
+            _mediaPlayer.SeekTo(TimeSpan.FromMilliseconds(CurrentTimeRaw + AdjustedOffset));
         }
     }
     
@@ -1193,14 +1221,14 @@ public static partial class Chart
                     .Replace("[", "_").Replace("]", "_");
     }
     
-    private static async Task<bool> TryLoadAudioFile(string path)
+    private static async Task<(bool, string)> TryLoadAudioFile(string path)
     {
         try
         {
             if (!File.Exists(path))
             {
-                Trace.WriteLine("Could not load audio file: File not found or invalid format.");
-                return false;
+                Trace.WriteLine("Could not load audio file: File not found.");
+                return (false, "Could not load audio file: File not found.");
             }
             
             var media = new Media(_libVlc, path);
@@ -1215,10 +1243,10 @@ public static partial class Chart
         catch (Exception e)
         {
             Trace.WriteLine($"Could not load audio file: {e.Message}");
-            return false;
+            return (false, $"Could not load audio file: {e.Message}");
         }
         
-        return true;
+        return (true, "");
     }
     
     private static void SetTimeToNearestSnap()
@@ -1228,29 +1256,31 @@ public static partial class Chart
         {
             var currentSnap = _currentSnapLineSet[i];
             var nextSnap = _currentSnapLineSet[i + 1];
-            if (CurrentTime >= currentSnap && CurrentTime <= nextSnap)
+            if (CurrentTimeRaw >= currentSnap && CurrentTimeRaw <= nextSnap)
             {
-                if (Math.Abs(CurrentTime - currentSnap) < Math.Abs(CurrentTime - nextSnap))
+                if (Math.Abs(CurrentTimeRaw - currentSnap) < Math.Abs(CurrentTimeRaw - nextSnap))
                 {
-                    CurrentTime = currentSnap;
+                    CurrentTimeRaw = currentSnap;
                     _currentSnapLineSetIndex = i;
                 }
                 else
                 {
-                    CurrentTime = nextSnap;
+                    CurrentTimeRaw = nextSnap;
                     _currentSnapLineSetIndex = i + 1;
                 }
                 return;
             }
         }
         
-        CurrentTime = _currentSnapLineSet[^1];
+        CurrentTimeRaw = _currentSnapLineSet[^1];
         _currentSnapLineSetIndex = _currentSnapLineSet.Count - 1;
     }
 
     private static int TryParseGeneralChartData(string[] lines, int index, string folderPath,
-        out string? audioPath)
+        out string? audioPath, out string errorMessage)
     {
+        errorMessage = "";
+        
         if (lines[index + 1].StartsWith("AudioFilename:"))
         {
             AudioFileName = lines[index + 1]["AudioFilename: ".Length..].Trim();
@@ -1260,11 +1290,15 @@ public static partial class Chart
         }
 
         audioPath = null;
+        errorMessage = "No audio file path";
         return -1;
     }
 
-    private static int TryParseOfficialEditorData(string[] lines, int index)
+    private static int TryParseOfficialEditorData(string[] lines, int index,
+        out string errorMessage)
     {
+        errorMessage = "";
+        
         // technically theres a "Bookmarks" line above this one, but it just stores the timestamp of
         // every label without the text
         if (lines[index + 2].StartsWith("BookmarksPlus:"))
@@ -1278,16 +1312,19 @@ public static partial class Chart
                 {
                     break;
                 }
-                if (double.TryParse(split[0], out var time))
+                if (long.TryParse(split[0], out var time))
                 {
                     // Trace.WriteLine($"Adding label at {time} with text \"{split[1]}\"");
                     _labels.Add(new Label(time, split[1]));
                 }
                 else
                 {
+                    errorMessage = $"Invalid label \"{label}\"";
+                    Trace.WriteLine(errorMessage);
                     return -1;
                 }
             }
+            
             return 3;
         }
 
@@ -1296,9 +1333,10 @@ public static partial class Chart
     }
     
     private static int TryParseUnbuggableData(string[] lines, int index,
-        out (double, int, double)? lastEditorState)
+        out (double, int, double)? lastEditorState, out string errorMessage)
     {
         lastEditorState = null;
+        errorMessage = "";
 
         var i = 1;
         if (lines[index + i].StartsWith("LastEditorState:"))
@@ -1332,7 +1370,7 @@ public static partial class Chart
                     if (double.TryParse(split[0], out var time))
                     {
                         // Trace.WriteLine($"Adding marker at {time} with type {split[1]}");
-                        TryAddMarker(time, int.Parse(split[1]));
+                        TryAddMarker((long)Math.Floor(time), int.Parse(split[1]));
                     }
                     else
                     {
@@ -1345,8 +1383,10 @@ public static partial class Chart
         return i;
     }
     
-    private static int TryParseMetadata(string[] lines, int index)
+    private static int TryParseMetadata(string[] lines, int index, out string errorMessage)
     {
+        errorMessage = "";
+        
         var hasTitle = false;
         var hasArtist = false;
         var hasCharterName = false;
@@ -1390,6 +1430,7 @@ public static partial class Chart
                 try
                 {
                     var match = TagRegex().Match(line);
+                    Console.WriteLine(match.Success);
                     if (match.Success)
                     {
                         Metadata.DifficultyLevel = int.Parse(match.Groups[1].Value);
@@ -1408,6 +1449,7 @@ public static partial class Chart
                 catch (Exception e)
                 {
                     Trace.WriteLine($"Could not parse tags: {e.Message}");
+                    errorMessage = $"Could not parse tags: {e.Message}";
                 }
             }
             // i have no idea what the difference between Title/Artist and
@@ -1421,45 +1463,46 @@ public static partial class Chart
         if (!hasTitle || !hasArtist || !hasCharterName || !hasDifficulty || !hasLevelTag ||
             !hasFlavorTextTag || !hasCoverArtTag)
         {
-            var errorMessage = new StringBuilder(
-                "Chart is missing one or more required metadata fields (or their values were  +" +
+            var errorMessageBuilder = new StringBuilder(
+                "Chart is missing one or more required metadata fields (or their values were " +
                 "invalid): ");
             if (!hasTitle)
             {
-                errorMessage.Append("Title, ");
+                errorMessageBuilder.Append("Title, ");
             }
 
             if (!hasArtist)
             {
-                errorMessage.Append("Artist, ");
+                errorMessageBuilder.Append("Artist, ");
             }
 
             if (!hasCharterName)
             {
-                errorMessage.Append("Charter Name, ");
+                errorMessageBuilder.Append("Charter Name, ");
             }
 
             if (!hasDifficulty)
             {
-                errorMessage.Append("Difficulty name (uses the Version field), ");
+                errorMessageBuilder.Append("Difficulty name (uses the Version field), ");
             }
 
             if (!hasLevelTag)
             {
-                errorMessage.Append("Difficulty level (in the Tags object), ");
+                errorMessageBuilder.Append("Difficulty level (in the Tags object), ");
             }
             
             if (!hasFlavorTextTag)
             {
-                errorMessage.Append("Flavor text (in the Tags object), ");
+                errorMessageBuilder.Append("Flavor text (in the Tags object), ");
             }
 
             if (!hasCoverArtTag)
             {
-                errorMessage.Append("Cover artist (in the Tags object), ");
+                errorMessageBuilder.Append("Cover artist (in the Tags object), ");
             }
 
-            Trace.WriteLine(errorMessage.ToString());
+            errorMessage = errorMessageBuilder.ToString();
+            Trace.WriteLine(errorMessageBuilder.ToString());
             return -1;
         }
         
@@ -1473,8 +1516,10 @@ public static partial class Chart
         return i;
     }
     
-    private static int TryParseTimingPoints(string[] lines, int index)
+    private static int TryParseTimingPoints(string[] lines, int index, out string errorMessage)
     {
+        errorMessage = "";
+        
         var i = 1;
         _bpmRegions = [];
         for (; index + i < lines.Length; i++)
@@ -1485,16 +1530,17 @@ public static partial class Chart
                 // timing points have 8 numbers, but most of them are osu!-specific and UNBEATABLE
                 // only uses the first two
                 var numbers = line.Split(',').ToList();
-                double regionStart;
+                long regionStart;
                 double msPerBeat;
                 try
                 {
-                    regionStart = double.Parse(numbers[0]);
+                    regionStart = long.Parse(numbers[0]);
                     msPerBeat = double.Parse(numbers[1]);
                 }
                 catch (Exception e)
                 {
-                    Trace.WriteLine($"Could not parse timing point: {e.Message}");
+                    errorMessage = $"Could not parse timing point: {e.Message}";
+                    Trace.WriteLine(errorMessage);
                     return -1;
                 }
                 
@@ -1524,7 +1570,8 @@ public static partial class Chart
 
         if (_bpmRegions.Count == 0)
         {
-            Trace.WriteLine("Could not parse timing points: Chart has no timing points.");
+            errorMessage = "Chart has no timing points.";
+            Trace.WriteLine(errorMessage);
             return -1;
         }
         
@@ -1532,8 +1579,10 @@ public static partial class Chart
         return i;
     }
 
-    private static int TryParseHitObjects(string[] lines, int index)
+    private static int TryParseHitObjects(string[] lines, int index, out string errorMessage)
     {
+        errorMessage = "";
+        
         var i = 1;
         for (; index + i < lines.Length; ++i)
         {
@@ -1543,14 +1592,16 @@ public static partial class Chart
                 break;
             }
             
-            var note = NoteBase.FromHitObjectString(lines[index + i].Trim(), out var errorMessage);
+            var note = NoteBase.FromHitObjectString(lines[index + i].Trim(),
+                                                    out var noteErrorMessage);
             if (note != null)
             {
                 AddNote(note);
             }
-            else if (errorMessage != "marker")
+            else if (noteErrorMessage != "marker")
             {
-                Trace.WriteLine($"Could not parse note: {errorMessage}");
+                errorMessage = $"Could not parse note: {noteErrorMessage}";
+                Trace.WriteLine(errorMessage);
                 return -1;
             }
         }
@@ -1577,9 +1628,8 @@ public static partial class Chart
         List<string> bookmarksPlus = [];
         foreach (var label in _labels)
         {
-            var time = Math.Floor(label.Time);
-            bookmarks.Add(time.ToString(CultureInfo.InvariantCulture));
-            bookmarksPlus.Add($"{time}`{label.Text}");
+            bookmarks.Add(label.Time.ToString());
+            bookmarksPlus.Add($"{label.Time}`{label.Text}");
         }
         await writer.WriteLineAsync($"Bookmarks: {string.Join(",", bookmarks)}");
         await writer.WriteLineAsync($"BookmarksPlus: {string.Join(",", bookmarksPlus)}");
