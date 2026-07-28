@@ -515,29 +515,24 @@ public static partial class Chart
     /// <summary>
     /// Attempts to load a .wav or .mp3 file and create a new chart with empty metadata.
     /// </summary>
-    /// <returns>Whether the audio file could be loaded.</returns>
-    public static async Task<bool> TryCreateChartFromAudio(string path)
+    /// <returns>
+    /// Whether the audio file could be loaded, followed by an error message (or an empty string if
+    /// there was no error).
+    /// </returns>
+    public static async Task<(bool, string)> TryCreateChartFromAudio(string path)
     {
         SongLoaded = false;
 
-        if (!(await TryLoadAudioFile(path)))
+        var result = await TryLoadAudioFile(path);
+        if (!result.Item1)
         {
-            return false;
+            ClearChart();
+            return (false, result.Item2);
         }
         
         Trace.WriteLine("Creating chart from audio file...");
         
         App.MainWindow.PlaySpeedSlider.Value = PlaySpeed;
-        
-        // Metadata.SongName = "";
-        // Metadata.ArtistName = "";
-        // Metadata.CoverArtistName  = "";
-        // Metadata.DifficultySlot = DifficultySlot.BEGINNER;
-        // Metadata.DifficultyLevel = 0;
-        // Metadata.DifficultyName = "Beginner";
-        // Metadata.FlavorText = "";
-        // Metadata.CharterName = "";
-        // Metadata.ChartOffset = 0;
         
         Metadata = new MetadataContainer();
         _notes = [];
@@ -562,15 +557,18 @@ public static partial class Chart
         SongLoaded = true;
         UnsavedChanges = false;
         UserData.LastOpenedChartFile = ""; 
-        return true;
+        return (true, "");
     }
 
     /// <summary>
     /// Tries to load a chart file (either a standard .txt file from the official editor or an
     /// UNBUGGABLE .beat.txt file) and set up notes, markers, BPM changes, etc.
     /// </summary>
-    /// <returns>Whether all data could be loaded.</returns>
-    public static async Task<bool> TryLoadChartFile(string path)
+    /// <returns>
+    /// Whether all data could be loaded, followed by an error message (or an empty string if there
+    /// was no error).
+    /// </returns>
+    public static async Task<(bool, string)> TryLoadChartFile(string path)
     {
         SongLoaded = false;
         _canAutosave = false;
@@ -578,7 +576,7 @@ public static partial class Chart
         if (!File.Exists(path))
         {
             Trace.WriteLine("File not found.");
-            return false;
+            return (false, "File not found.");
         }
         
         var dirName = Path.GetFullPath(path);
@@ -596,23 +594,24 @@ public static partial class Chart
         {
             var line = chartData[i].Trim();
             var temp = 0;
+            var errorMessage = "";
             switch (line)
             {
                 case "[General]":
                     Trace.WriteLine("Parsing general data...");
-                    temp = TryParseGeneralChartData(chartData, i, folderPath, out audioPath);
+                    temp = TryParseGeneralChartData(chartData, i, folderPath, out audioPath, out errorMessage);
                     break;
                 case "[Editor]":
                     Trace.WriteLine("Parsing official editor data...");
-                    temp = TryParseOfficialEditorData(chartData, i);
+                    temp = TryParseOfficialEditorData(chartData, i, out errorMessage);
                     break;
                 case "[UNBUGGABLE]":
                     Trace.WriteLine("Parsing UNBUGGABLE data...");
-                    temp = TryParseUnbuggableData(chartData, i, out lastEditorState);
+                    temp = TryParseUnbuggableData(chartData, i, out lastEditorState, out errorMessage);
                     break;
                 case "[Metadata]":
                     Trace.WriteLine("Parsing metadata...");
-                    temp = TryParseMetadata(chartData, i);
+                    temp = TryParseMetadata(chartData, i, out errorMessage);
                     // see??? do you see how easy it would be to make the official editor save star
                     // charts correctly??? why would you not do this???
                     Metadata.DifficultySlot =
@@ -629,24 +628,25 @@ public static partial class Chart
                 // there are also [Difficulty] and [Events] sections here but they do nothing
                 case "[TimingPoints]":
                     Trace.WriteLine("Parsing timing points...");
-                    temp = TryParseTimingPoints(chartData, i);
+                    temp = TryParseTimingPoints(chartData, i, out errorMessage);
                     break;
                 case "[HitObjects]":
                     Trace.WriteLine("Parsing hit objects (notes)...");
-                    temp = TryParseHitObjects(chartData, i);
+                    temp = TryParseHitObjects(chartData, i, out errorMessage);
                     break;
             }
             
             if (temp == -1)
             {
                 _mediaPlayer.Media = null; // disables the editor
-                return false;
+                return (false, errorMessage);
             }
 
             i += temp;
         }
 
-        if (await TryLoadAudioFile(audioPath))
+        var result = await TryLoadAudioFile(audioPath);
+        if (result.Item1)
         {
             RebuildSnapLineSets();
             SetBeatSnapIndex(0);
@@ -695,10 +695,11 @@ public static partial class Chart
             ChartBuilder.CheckExistingBreakpoint();
             SetTimeToNearestSnap();
             _canAutosave = true;
-            return true;
+            return (true, "");
         }
         
-        return false;
+        ClearChart();
+        return (false, result.Item2);
     }
 
     /// <summary>
@@ -1099,6 +1100,32 @@ public static partial class Chart
         SetTimeToNearestSnap();
     }
 
+    private static void ClearChart()
+    {
+        Metadata = new MetadataContainer();
+        _notes = [];
+        _labels = [];
+        ChartBuilder.ClearSelection();
+        ChartBuilder.RemoveBreakpoint(false);
+            
+        _bpmRegions = [];
+        _beatSnapIndex = 0;
+        _currentSnapLineSet = [];
+        SnapLineSets.Clear();
+
+        NoteViewer.SetZoom(1.0);
+        CurrentTimeRaw = 0;
+        ChartFileName = "";
+        ChartFolderName = "";
+            
+        App.MainWindowViewModel.SongBpmText = "";
+        App.MainWindowViewModel.PlaySpeed = 100;
+        App.MainWindowViewModel.CanSave = false;
+
+        SongLoaded = false;
+        UnsavedChanges = false;
+    }
+
     public static async Task TryAutosave()
     {
         Trace.WriteLine("Attempting to autosave chart...");
@@ -1194,14 +1221,14 @@ public static partial class Chart
                     .Replace("[", "_").Replace("]", "_");
     }
     
-    private static async Task<bool> TryLoadAudioFile(string path)
+    private static async Task<(bool, string)> TryLoadAudioFile(string path)
     {
         try
         {
             if (!File.Exists(path))
             {
-                Trace.WriteLine("Could not load audio file: File not found or invalid format.");
-                return false;
+                Trace.WriteLine("Could not load audio file: File not found.");
+                return (false, "Could not load audio file: File not found.");
             }
             
             var media = new Media(_libVlc, path);
@@ -1216,10 +1243,10 @@ public static partial class Chart
         catch (Exception e)
         {
             Trace.WriteLine($"Could not load audio file: {e.Message}");
-            return false;
+            return (false, $"Could not load audio file: {e.Message}");
         }
         
-        return true;
+        return (true, "");
     }
     
     private static void SetTimeToNearestSnap()
@@ -1250,8 +1277,10 @@ public static partial class Chart
     }
 
     private static int TryParseGeneralChartData(string[] lines, int index, string folderPath,
-        out string? audioPath)
+        out string? audioPath, out string errorMessage)
     {
+        errorMessage = "";
+        
         if (lines[index + 1].StartsWith("AudioFilename:"))
         {
             AudioFileName = lines[index + 1]["AudioFilename: ".Length..].Trim();
@@ -1261,11 +1290,15 @@ public static partial class Chart
         }
 
         audioPath = null;
+        errorMessage = "No audio file path";
         return -1;
     }
 
-    private static int TryParseOfficialEditorData(string[] lines, int index)
+    private static int TryParseOfficialEditorData(string[] lines, int index,
+        out string errorMessage)
     {
+        errorMessage = "";
+        
         // technically theres a "Bookmarks" line above this one, but it just stores the timestamp of
         // every label without the text
         if (lines[index + 2].StartsWith("BookmarksPlus:"))
@@ -1286,9 +1319,12 @@ public static partial class Chart
                 }
                 else
                 {
+                    errorMessage = $"Invalid label \"{label}\"";
+                    Trace.WriteLine(errorMessage);
                     return -1;
                 }
             }
+            
             return 3;
         }
 
@@ -1297,9 +1333,10 @@ public static partial class Chart
     }
     
     private static int TryParseUnbuggableData(string[] lines, int index,
-        out (double, int, double)? lastEditorState)
+        out (double, int, double)? lastEditorState, out string errorMessage)
     {
         lastEditorState = null;
+        errorMessage = "";
 
         var i = 1;
         if (lines[index + i].StartsWith("LastEditorState:"))
@@ -1346,8 +1383,10 @@ public static partial class Chart
         return i;
     }
     
-    private static int TryParseMetadata(string[] lines, int index)
+    private static int TryParseMetadata(string[] lines, int index, out string errorMessage)
     {
+        errorMessage = "";
+        
         var hasTitle = false;
         var hasArtist = false;
         var hasCharterName = false;
@@ -1409,6 +1448,7 @@ public static partial class Chart
                 catch (Exception e)
                 {
                     Trace.WriteLine($"Could not parse tags: {e.Message}");
+                    errorMessage = $"Could not parse tags: {e.Message}";
                 }
             }
             // i have no idea what the difference between Title/Artist and
@@ -1422,45 +1462,46 @@ public static partial class Chart
         if (!hasTitle || !hasArtist || !hasCharterName || !hasDifficulty || !hasLevelTag ||
             !hasFlavorTextTag || !hasCoverArtTag)
         {
-            var errorMessage = new StringBuilder(
+            var errorMessageBuilder = new StringBuilder(
                 "Chart is missing one or more required metadata fields (or their values were  +" +
                 "invalid): ");
             if (!hasTitle)
             {
-                errorMessage.Append("Title, ");
+                errorMessageBuilder.Append("Title, ");
             }
 
             if (!hasArtist)
             {
-                errorMessage.Append("Artist, ");
+                errorMessageBuilder.Append("Artist, ");
             }
 
             if (!hasCharterName)
             {
-                errorMessage.Append("Charter Name, ");
+                errorMessageBuilder.Append("Charter Name, ");
             }
 
             if (!hasDifficulty)
             {
-                errorMessage.Append("Difficulty name (uses the Version field), ");
+                errorMessageBuilder.Append("Difficulty name (uses the Version field), ");
             }
 
             if (!hasLevelTag)
             {
-                errorMessage.Append("Difficulty level (in the Tags object), ");
+                errorMessageBuilder.Append("Difficulty level (in the Tags object), ");
             }
             
             if (!hasFlavorTextTag)
             {
-                errorMessage.Append("Flavor text (in the Tags object), ");
+                errorMessageBuilder.Append("Flavor text (in the Tags object), ");
             }
 
             if (!hasCoverArtTag)
             {
-                errorMessage.Append("Cover artist (in the Tags object), ");
+                errorMessageBuilder.Append("Cover artist (in the Tags object), ");
             }
 
-            Trace.WriteLine(errorMessage.ToString());
+            errorMessage = errorMessageBuilder.ToString();
+            Trace.WriteLine(errorMessageBuilder.ToString());
             return -1;
         }
         
@@ -1474,8 +1515,10 @@ public static partial class Chart
         return i;
     }
     
-    private static int TryParseTimingPoints(string[] lines, int index)
+    private static int TryParseTimingPoints(string[] lines, int index, out string errorMessage)
     {
+        errorMessage = "";
+        
         var i = 1;
         _bpmRegions = [];
         for (; index + i < lines.Length; i++)
@@ -1495,7 +1538,8 @@ public static partial class Chart
                 }
                 catch (Exception e)
                 {
-                    Trace.WriteLine($"Could not parse timing point: {e.Message}");
+                    errorMessage = $"Could not parse timing point: {e.Message}";
+                    Trace.WriteLine(errorMessage);
                     return -1;
                 }
                 
@@ -1525,7 +1569,8 @@ public static partial class Chart
 
         if (_bpmRegions.Count == 0)
         {
-            Trace.WriteLine("Could not parse timing points: Chart has no timing points.");
+            errorMessage = "Chart has no timing points.";
+            Trace.WriteLine(errorMessage);
             return -1;
         }
         
@@ -1533,8 +1578,10 @@ public static partial class Chart
         return i;
     }
 
-    private static int TryParseHitObjects(string[] lines, int index)
+    private static int TryParseHitObjects(string[] lines, int index, out string errorMessage)
     {
+        errorMessage = "";
+        
         var i = 1;
         for (; index + i < lines.Length; ++i)
         {
@@ -1544,14 +1591,16 @@ public static partial class Chart
                 break;
             }
             
-            var note = NoteBase.FromHitObjectString(lines[index + i].Trim(), out var errorMessage);
+            var note = NoteBase.FromHitObjectString(lines[index + i].Trim(),
+                                                    out var noteErrorMessage);
             if (note != null)
             {
                 AddNote(note);
             }
-            else if (errorMessage != "marker")
+            else if (noteErrorMessage != "marker")
             {
-                Trace.WriteLine($"Could not parse note: {errorMessage}");
+                errorMessage = $"Could not parse note: {noteErrorMessage}";
+                Trace.WriteLine(errorMessage);
                 return -1;
             }
         }

@@ -114,23 +114,31 @@ public static class ChartBuilder
     public static async Task<bool> TryCreateChartFromAudio(string path)
     {
         var result = await Chart.TryCreateChartFromAudio(path);
-        if (result)
+        if (result.Item1)
         {
             ChartBuilderCommandInvoker.Reset();
         }
-
-        return result;
+        else
+        {
+            await new MessageDialog($"Audio loading failed: {result.Item2}").ShowAsync();
+        }
+        
+        return result.Item1;
     }
     
     public static async Task<bool> TryLoadChartFile(string path)
     {
         var result = await Chart.TryLoadChartFile(path);
-        if (result)
+        if (result.Item1)
         {
             ChartBuilderCommandInvoker.Reset();
         }
-
-        return result;
+        else
+        {
+            await new MessageDialog($"Chart loading failed: {result.Item2}").ShowAsync();
+        }
+        
+        return result.Item1;
     }
 
     public static async void TryAutoLoadChartFile()
