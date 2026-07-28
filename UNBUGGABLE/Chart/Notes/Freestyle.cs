@@ -47,13 +47,13 @@ public class FreestyleNote : NoteBase
 
     public override void RenderPreview(DrawingContext dc)
     {
-        if (Time < Chart.CurrentTime || Time > Chart.CurrentTime + 1000)
+        if (Time < Chart.CurrentTimeRaw || Time > Chart.CurrentTimeRaw + 1000)
         {
             return;
         } 
         
-        var x = GamePreview.TimeToScreenCoords(Time < Chart.CurrentTime ?
-                                                   Chart.CurrentTime : Time);
+        var x = GamePreview.TimeToScreenCoords(Time < Chart.CurrentTimeRaw ?
+                                                   Chart.CurrentTimeRaw : Time);
         
         if (Config.Settings.NegativeMashConversion && Flags.F)
         {
@@ -69,10 +69,10 @@ public class FreestyleNote : NoteBase
                         && !(Config.Settings.NegativeMashConversion && parentNote.Flags.F);
         if (isSubNote)
         {
-            if (parentNote?.Time < Chart.CurrentTime)
+            if (parentNote?.Time < Chart.CurrentTimeRaw)
             {
                 dc.DrawEllipse(_fillBrush, new Pen(_outlineBrush, 6), new Point(
-                                   GamePreview.TimeToScreenCoords(Chart.CurrentTime), 0), 30, 30);
+                                   GamePreview.TimeToScreenCoords(Chart.CurrentTimeRaw), 0), 30, 30);
             }
             dc.DrawEllipse(_fillBrush, new Pen(_outlineBrush, 6), new Point(x, 0), 15, 15);
         }
@@ -100,7 +100,7 @@ public class FreestyleNote : NoteBase
             List<string> chunks = [
                 "469",
                 "192",
-                Math.Floor(Time + Chart.Metadata.ChartOffset).ToString(),
+                (Time + Chart.Metadata.ChartOffset).ToString(),
                 isFirstNote ? "132" : "128",
                 GetFlagString(),
                 "0:0:0:0:0:"

@@ -51,9 +51,9 @@ public static partial class Chart
     /// <summary>
     /// A large named label.
     /// </summary>
-    public class Label(double time, string text)
+    public class Label(long time, string text)
     {
-        public double Time => time;
+        public long Time => time;
         public string Text => text;
     }
     
@@ -69,7 +69,7 @@ public static partial class Chart
         // doesn't break the game, so have fun :)
         public string DifficultyName = "Beginner";
         public int DifficultyLevel = 0;
-        public double ChartOffset = 0;
+        public long ChartOffset = 0;
     }
     
     public static ChartDebugInfo DebugInfo => new()
@@ -118,8 +118,7 @@ public static partial class Chart
             // least once (or were loaded from a chart file and the metadata hasn't changed)
             _canAutosave = false;
 
-            if (_bpmRegions.Count != 0 && _bpmRegions[0].StartTime
-                                                        .SoftNotEquals(_metadata.ChartOffset))
+            if (_bpmRegions.Count != 0 && _bpmRegions[0].StartTime != _metadata.ChartOffset)
             {
                 _bpmRegions[0].StartTime = _metadata.ChartOffset;
 
@@ -147,23 +146,23 @@ public static partial class Chart
     public static string ChartFolderName { get; private set; } = "";
     public static string ChartFileName { get; private set; } = "";
     
-    public static double Length => _mediaPlayer.Media.Duration - AdjustedOffset;
+    public static long Length => _mediaPlayer.Media.Duration - AdjustedOffset;
 
-    public static double AdjustedOffset => Metadata.ChartOffset + Config.Settings.HardChartOffset;
+    public static long AdjustedOffset => Metadata.ChartOffset + Config.Settings.HardChartOffset;
 
     public static bool UnsavedChanges { get; private set; } = false;
 
-    private static double _currentTime = 0;
-    public static double CurrentTime
+    private static double _currentTimeRaw = 0;
+    public static double CurrentTimeRaw
     {
-        get => _currentTime;
+        get => _currentTimeRaw;
         private set
         {
-            _currentTime = value;
+            _currentTimeRaw = value;
             
             foreach (var region in _bpmRegions)
             {
-                if (CurrentTime >= region.StartTime && CurrentTime <= region.EndTime)
+                if (CurrentTimeRaw >= region.StartTime && CurrentTimeRaw <= region.EndTime)
                 {
                     App.MainWindowViewModel.SongBpmText = region.Bpm.ToString("0.00");
                 }
@@ -176,6 +175,7 @@ public static partial class Chart
             }
         }
     }
+    public static long CurrentTime => (long)Math.Floor(CurrentTimeRaw);
 
     private static bool _songLoaded = false;
     public static bool SongLoaded
@@ -264,8 +264,8 @@ public static partial class Chart
     
     // timestamps for where every line appears for every snap setting, updated whenever bpm regions
     // change
-    private static readonly Dictionary<int, List<double>> SnapLineSets = new();
-    private static List<double> _currentSnapLineSet = [];
+    private static readonly Dictionary<int, List<long>> SnapLineSets = new();
+    private static List<long> _currentSnapLineSet = [];
     private static int _currentSnapLineSetIndex = 0;
     
     // for debugging
@@ -392,7 +392,7 @@ public static partial class Chart
         if (_currentSnapLineSetIndex < _currentSnapLineSet.Count - 1)
         {
             ++_currentSnapLineSetIndex;
-            CurrentTime = _currentSnapLineSet[_currentSnapLineSetIndex];
+            CurrentTimeRaw = _currentSnapLineSet[_currentSnapLineSetIndex];
         }
     }
 
@@ -401,34 +401,35 @@ public static partial class Chart
         if (_currentSnapLineSetIndex > 0)
         {
             --_currentSnapLineSetIndex;
-            CurrentTime = _currentSnapLineSet[_currentSnapLineSetIndex];
+            CurrentTimeRaw = _currentSnapLineSet[_currentSnapLineSetIndex];
         }
     }
 
-    public static double GetPreviousSnapTime() => _currentSnapLineSetIndex > 0 ?
-        _currentSnapLineSet[_currentSnapLineSetIndex - 1] : _currentSnapLineSet[0];
-    
-    public static double GetNextSnapTime() =>
+    public static long GetPreviousSnapTime() => _currentSnapLineSetIndex > 0
+        ? _currentSnapLineSet[_currentSnapLineSetIndex - 1]
+        : _currentSnapLineSet[0];
+
+    public static long GetNextSnapTime() =>
         _currentSnapLineSetIndex < _currentSnapLineSet.Count - 1 ?
         _currentSnapLineSet[_currentSnapLineSetIndex + 1] : _currentSnapLineSet[^1];
 
     public static void MoveToNextLabel()
     {
-        if (CurrentTime >= Length)
+        if (CurrentTimeRaw >= Length)
         {
             return;
         }
         
         var nextLabel = _labels.FirstOrDefault(
-            l => l.Time > _currentTime && Math.Abs(l.Time - CurrentTime) > 1000);
+            l => l.Time > _currentTimeRaw && Math.Abs(l.Time - CurrentTimeRaw) > 1000);
         if (nextLabel != null)
         {
-            CurrentTime = nextLabel.Time;
+            CurrentTimeRaw = nextLabel.Time;
         }
         else
         {
             var lastNote = NonMarkerNotes[^1];
-            CurrentTime = (lastNote.Instant ? lastNote.Time : lastNote.EndTime);
+            CurrentTimeRaw = (lastNote.Instant ? lastNote.Time : lastNote.EndTime);
         }
         
         SetTimeToNearestSnap();
@@ -436,20 +437,20 @@ public static partial class Chart
     
     public static void MoveToPreviousLabel()
     {
-        if (CurrentTime <= 0)
+        if (CurrentTimeRaw <= 0)
         {
             return;
         }
         
         var previousLabel = _labels.LastOrDefault(
-            l => l.Time < _currentTime && Math.Abs(l.Time - CurrentTime) > 1000);
+            l => l.Time < _currentTimeRaw && Math.Abs(l.Time - CurrentTimeRaw) > 1000);
         if (previousLabel != null)
         {
-            CurrentTime = previousLabel.Time;
+            CurrentTimeRaw = previousLabel.Time;
         }
         else
         {
-            CurrentTime = 0;
+            CurrentTimeRaw = 0;
         }
         
         SetTimeToNearestSnap();
@@ -462,24 +463,24 @@ public static partial class Chart
     {
         if (SongLoaded && Playing)
         {
-            var prevTime = CurrentTime;
-            CurrentTime += (_stopwatch.ElapsedMilliseconds - _lastStopwatchTime) * PlaySpeed / 100;
-            if (CurrentTime + AdjustedOffset >= 0 && !_mediaPlayer.IsPlaying)
+            var prevTime = CurrentTimeRaw;
+            CurrentTimeRaw += (_stopwatch.ElapsedMilliseconds - _lastStopwatchTime) * PlaySpeed / 100;
+            if (CurrentTimeRaw + AdjustedOffset >= 0 && !_mediaPlayer.IsPlaying)
             {
-                _mediaPlayer.SeekTo(TimeSpan.FromMilliseconds(CurrentTime + AdjustedOffset));
+                _mediaPlayer.SeekTo(TimeSpan.FromMilliseconds(CurrentTimeRaw + AdjustedOffset));
                 _mediaPlayer.Play();
                 // CurrentTime = AdjustedOffset;
             }
-            else if (CurrentTime > Length)
+            else if (CurrentTimeRaw > Length)
             {
                 Playing = false;
-                CurrentTime = Length;
+                CurrentTimeRaw = Length;
             }
             
             foreach (var note in Notes)
             {
                 if (note.ShouldPlayHitSound(prevTime - Config.Settings.HitSoundOffset,
-                                            CurrentTime - Config.Settings.HitSoundOffset)
+                                            CurrentTimeRaw - Config.Settings.HitSoundOffset)
                     is { } offset)
                 {
                     if (_hitSound != null)
@@ -550,7 +551,7 @@ public static partial class Chart
         SetTimeToNearestSnap();
 
         NoteViewer.SetZoom(1.0);
-        CurrentTime = 0;
+        CurrentTimeRaw = 0;
         ChartFileName = "";
         ChartFolderName = Path.GetFileName(Path.GetDirectoryName(path));
             
@@ -664,7 +665,7 @@ public static partial class Chart
 
                 if (time >= 0 && time <= Length)
                 {
-                    CurrentTime = time;
+                    CurrentTimeRaw = time;
                 }
 
                 Trace.WriteLine(
@@ -686,7 +687,7 @@ public static partial class Chart
             // clear the editor state from the last file that was open
             else
             {
-                CurrentTime = 0;
+                CurrentTimeRaw = 0;
                 SetBeatSnapIndex(0);
                 NoteViewer.SetZoom(1);
             }
@@ -804,7 +805,7 @@ public static partial class Chart
     /// <param name="time">The time of the marker, in milliseconds.</param>
     /// <param name="type">From 0-2, determines the color of the marker. The default types are
     ///     green, yellow, and purple, in that order.</param>
-    public static void TryAddMarker(double time, int type)
+    public static void TryAddMarker(long time, int type)
     {
         if (GetNotesAtTime(time).Find(note => note.Item1 is MarkerDummyNote)
                                 .Item1 is not MarkerDummyNote)
@@ -817,12 +818,12 @@ public static partial class Chart
     /// Returns a list of every non-marker note that exists at a timestamp (in milliseconds). List
     /// elements are formatted as <c>(note, index in the main note list)</c>.
     /// </summary>
-    public static List<(NoteBase, int)> GetNotesAtTime(double time)
+    public static List<(NoteBase, int)> GetNotesAtTime(long time)
     {
         List<(NoteBase, int)> notes = [];
         foreach (NoteBase note in NonMarkerNotes)
         {
-            if (note.Time.SoftEquals(time))
+            if (note.Time == time)
             {
                 notes.Add((note, NonMarkerNotes.IndexOf(note)));
             }
@@ -837,15 +838,15 @@ public static partial class Chart
     /// <summary>
     /// Returns the note in a specific lane at a specific time, or null if that note does not exist.
     /// </summary>
-    public static NoteBase? GetNote(double time, NoteLane lane)
-        => _notes.FirstOrDefault(n => n.Time.SoftEquals(time) && n.Lane == lane);
+    public static NoteBase? GetNote(long time, NoteLane lane)
+        => _notes.FirstOrDefault(n => n.Time == time && n.Lane == lane);
     
     /// <summary>
     /// Returns the (non-instant) note in a specific lane that <i>ends</i> at a specific time, or
     /// null if that note does not exist.
     /// </summary>
-    public static NoteBase? GetNoteFromEnd(double time, NoteLane lane) =>
-        _notes.FirstOrDefault(n => !n.Instant && n.EndTime.SoftEquals(time) && n.Lane == lane);
+    public static NoteBase? GetNoteFromEnd(long time, NoteLane lane) =>
+        _notes.FirstOrDefault(n => !n.Instant && n.EndTime == time && n.Lane == lane);
 
     public static NoteBase? GetPreviousNote(NoteBase note)
     {
@@ -881,17 +882,17 @@ public static partial class Chart
     /// </summary>
     public static void AddNote(NoteBase note)
     {
-        if (_notes.Count == 0 || _notes[^1].Time <= Math.Round(note.Time))
+        if (_notes.Count == 0 || _notes[^1].Time <= note.Time)
         {
             _notes.Add(note);
         }
-        else if (_notes[0].Time > Math.Round(note.Time))
+        else if (_notes[0].Time > note.Time)
         {
             _notes.Insert(0, note);
         }
         else
         {
-            var i = _notes.FindIndex(x => x.Time > Math.Round(note.Time));
+            var i = _notes.FindIndex(x => x.Time > note.Time);
             _notes.Insert(i, note);
         }
         
@@ -939,8 +940,8 @@ public static partial class Chart
     /// <summary>
     /// Returns the label at a specific time, or null if it doesn't exist.
     /// </summary>
-    public static Label? GetLabel(double time) =>
-        _labels.FirstOrDefault(x => x.Time.SoftEquals(time));
+    public static Label? GetLabel(long time) =>
+        _labels.FirstOrDefault(x => x.Time == time);
     
     public static void AddLabel(Label label)
     {
@@ -969,11 +970,11 @@ public static partial class Chart
     /// <summary>
     /// Returns the BPM region that starts at a specific time, or null if it doesn't exist.
     /// </summary>
-    public static BpmRegion? GetBpmRegion(double time)
+    public static BpmRegion? GetBpmRegion(long time)
     {
         foreach (var region in _bpmRegions)
         {
-            if (region.StartTime.SoftEquals(time))
+            if (region.StartTime == time)
             {
                 return region;
             }
@@ -1064,7 +1065,7 @@ public static partial class Chart
         var sortedSnapValues = Config.Settings.BeatSnaps.OrderByDescending(x => x).ToList();
         foreach (var snapValue in sortedSnapValues)
         {
-            List<double> snapLineSet = [0];
+            List<long> snapLineSet = [0];
             double time = 0;
             var bpmRegion = _bpmRegions[0];
             while (bpmRegion != null)
@@ -1086,7 +1087,7 @@ public static partial class Chart
                     bpmRegion = bpmRegion.Next;
                 }
                 time = nextTime;
-                snapLineSet.Add(time);
+                snapLineSet.Add((long)Math.Floor(time));
             }
             
             // Trace.WriteLine(
@@ -1127,13 +1128,13 @@ public static partial class Chart
 
     private static void PlaySong()
     {
-        if (CurrentTime + AdjustedOffset >= Length)
+        if (CurrentTimeRaw + AdjustedOffset >= Length)
         {
             return;
         }
         
         Playing = true;
-        if (CurrentTime + AdjustedOffset >= 0)
+        if (CurrentTimeRaw + AdjustedOffset >= 0)
         {
             if (_mediaPlayer.Media.State == VLCState.Ended)
             {
@@ -1143,7 +1144,7 @@ public static partial class Chart
             {
                 _mediaPlayer.Play();
             }
-            _mediaPlayer.SeekTo(TimeSpan.FromMilliseconds(CurrentTime + AdjustedOffset));
+            _mediaPlayer.SeekTo(TimeSpan.FromMilliseconds(CurrentTimeRaw + AdjustedOffset));
         }
     }
     
@@ -1228,23 +1229,23 @@ public static partial class Chart
         {
             var currentSnap = _currentSnapLineSet[i];
             var nextSnap = _currentSnapLineSet[i + 1];
-            if (CurrentTime >= currentSnap && CurrentTime <= nextSnap)
+            if (CurrentTimeRaw >= currentSnap && CurrentTimeRaw <= nextSnap)
             {
-                if (Math.Abs(CurrentTime - currentSnap) < Math.Abs(CurrentTime - nextSnap))
+                if (Math.Abs(CurrentTimeRaw - currentSnap) < Math.Abs(CurrentTimeRaw - nextSnap))
                 {
-                    CurrentTime = currentSnap;
+                    CurrentTimeRaw = currentSnap;
                     _currentSnapLineSetIndex = i;
                 }
                 else
                 {
-                    CurrentTime = nextSnap;
+                    CurrentTimeRaw = nextSnap;
                     _currentSnapLineSetIndex = i + 1;
                 }
                 return;
             }
         }
         
-        CurrentTime = _currentSnapLineSet[^1];
+        CurrentTimeRaw = _currentSnapLineSet[^1];
         _currentSnapLineSetIndex = _currentSnapLineSet.Count - 1;
     }
 
@@ -1278,7 +1279,7 @@ public static partial class Chart
                 {
                     break;
                 }
-                if (double.TryParse(split[0], out var time))
+                if (long.TryParse(split[0], out var time))
                 {
                     // Trace.WriteLine($"Adding label at {time} with text \"{split[1]}\"");
                     _labels.Add(new Label(time, split[1]));
@@ -1332,7 +1333,7 @@ public static partial class Chart
                     if (double.TryParse(split[0], out var time))
                     {
                         // Trace.WriteLine($"Adding marker at {time} with type {split[1]}");
-                        TryAddMarker(time, int.Parse(split[1]));
+                        TryAddMarker((long)Math.Floor(time), int.Parse(split[1]));
                     }
                     else
                     {
@@ -1485,11 +1486,11 @@ public static partial class Chart
                 // timing points have 8 numbers, but most of them are osu!-specific and UNBEATABLE
                 // only uses the first two
                 var numbers = line.Split(',').ToList();
-                double regionStart;
+                long regionStart;
                 double msPerBeat;
                 try
                 {
-                    regionStart = double.Parse(numbers[0]);
+                    regionStart = long.Parse(numbers[0]);
                     msPerBeat = double.Parse(numbers[1]);
                 }
                 catch (Exception e)
@@ -1577,9 +1578,8 @@ public static partial class Chart
         List<string> bookmarksPlus = [];
         foreach (var label in _labels)
         {
-            var time = Math.Floor(label.Time);
-            bookmarks.Add(time.ToString(CultureInfo.InvariantCulture));
-            bookmarksPlus.Add($"{time}`{label.Text}");
+            bookmarks.Add(label.Time.ToString());
+            bookmarksPlus.Add($"{label.Time}`{label.Text}");
         }
         await writer.WriteLineAsync($"Bookmarks: {string.Join(",", bookmarks)}");
         await writer.WriteLineAsync($"BookmarksPlus: {string.Join(",", bookmarksPlus)}");

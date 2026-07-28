@@ -209,7 +209,7 @@ public class CopNote : NoteBase
                 _ => throw new ArgumentOutOfRangeException()
             },
             "192",
-            Math.Floor(Time + Chart.Metadata.ChartOffset).ToString(),
+            (Time + Chart.Metadata.ChartOffset).ToString(),
         ];
         
         if (Instant)
@@ -234,7 +234,7 @@ public class CopNote : NoteBase
         }
         chunks.Add(flagNumber.ToString());
 
-        chunks.Add((Instant ? "3:" : $"{Math.Floor(EndTime + Chart.Metadata.ChartOffset)}:3:") +
+        chunks.Add((Instant ? "3:" : $"{EndTime + Chart.Metadata.ChartOffset}:3:") +
                    (Type == NoteType.COP_MASH ? "0:0:0:" : "1:0:0:"));
 
         return string.Join(",", chunks);
@@ -242,7 +242,7 @@ public class CopNote : NoteBase
 
     private void RenderSinglePreview(DrawingContext dc, double x)
     {
-        if (Time < Chart.CurrentTime || Time > Chart.CurrentTime + 1000)
+        if (Time < Chart.CurrentTimeRaw || Time > Chart.CurrentTimeRaw + 1000)
         {
             return;
         }
@@ -254,12 +254,12 @@ public class CopNote : NoteBase
     
     private void RenderHoldPreview(DrawingContext dc, double x)
     {
-        if (EndTime < Chart.CurrentTime || Time > Chart.CurrentTime + 1000)
+        if (EndTime < Chart.CurrentTimeRaw || Time > Chart.CurrentTimeRaw + 1000)
         {
             return;
         }
         
-        var startY = TimeToPreviewCoords(Time < Chart.CurrentTime ? Chart.CurrentTime : Time);
+        var startY = TimeToPreviewCoords(Time < Chart.CurrentTimeRaw ? Chart.CurrentTimeRaw : Time);
         var endY = TimeToPreviewCoords(EndTime);
         
         dc.DrawLine(new Pen(_fillBrush, 6), new Point(x - 30, startY), new Point(x + 30, startY));
@@ -269,12 +269,12 @@ public class CopNote : NoteBase
     
     private void RenderMashPreview(DrawingContext dc, double x)
     {
-        if (EndTime < Chart.CurrentTime || Time > Chart.CurrentTime + 1000)
+        if (EndTime < Chart.CurrentTimeRaw || Time > Chart.CurrentTimeRaw + 1000)
         {
             return;
         }
         
-        var startY = TimeToPreviewCoords(Time < Chart.CurrentTime ? Chart.CurrentTime : Time);
+        var startY = TimeToPreviewCoords(Time < Chart.CurrentTimeRaw ? Chart.CurrentTimeRaw : Time);
         var endY = TimeToPreviewCoords(EndTime);
         
         var clip = dc.PushClip(Lane == NoteLane.TOP ? new Rect(x - 30, endY, 60, startY - endY) :
@@ -297,7 +297,7 @@ public class CopNote : NoteBase
         var rangeStart = (Lane == NoteLane.TOP ? -GamePreview.TopLaneY - 20 :
             GamePreview.BottomLaneY - 20);
         
-        var x = ((time - Chart.CurrentTime) / 1000) * PreviewPixelsPerSecond + rangeStart;
+        var x = ((time - Chart.CurrentTimeRaw) / 1000) * PreviewPixelsPerSecond + rangeStart;
         return (Lane == NoteLane.TOP ? -x : x);
     }
 

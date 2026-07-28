@@ -170,7 +170,7 @@ public class NoteViewer : Control
     public static double TimeToScreenCoords(double time)
     {
         var scaledPixelsPerMs = PixelsPerSecond * CurrentZoom / 1000;
-        var visibleRangeStart = Chart.CurrentTime - Config.Settings.CurrentTimePosition /
+        var visibleRangeStart = Chart.CurrentTimeRaw - Config.Settings.CurrentTimePosition /
                                 scaledPixelsPerMs;
         return (time - visibleRangeStart) * scaledPixelsPerMs;
     }
@@ -182,7 +182,7 @@ public class NoteViewer : Control
     public static double ScreenCoordsToTime(double y)
     {
         var scaledPixelsPerMs = PixelsPerSecond * CurrentZoom / 1000;
-        var visibleRangeStart = Chart.CurrentTime - Config.Settings.CurrentTimePosition /
+        var visibleRangeStart = Chart.CurrentTimeRaw - Config.Settings.CurrentTimePosition /
                                 scaledPixelsPerMs;
         return visibleRangeStart + y / scaledPixelsPerMs;
     }
@@ -279,10 +279,10 @@ public class NoteViewer : Control
         if (Chart.SongLoaded)
         {
             var scaledPixelsPerMs = PixelsPerSecond * CurrentZoom / 1000;
-            var visibleRangeStart = Chart.CurrentTime - Config.Settings.CurrentTimePosition /
+            var visibleRangeStart = Chart.CurrentTimeRaw - Config.Settings.CurrentTimePosition /
                                     scaledPixelsPerMs;
             var visibleRangeEnd =
-                Chart.CurrentTime + (ViewerHeight - Config.Settings.CurrentTimePosition) /
+                Chart.CurrentTimeRaw + (ViewerHeight - Config.Settings.CurrentTimePosition) /
                 scaledPixelsPerMs;
             
             // Trace.WriteLine($"Visible range: {visibleRangeStart} - {visibleRangeEnd}");
@@ -335,7 +335,7 @@ public class NoteViewer : Control
                                                        _cameraLaneText.Height / 2),
                             _laneNumberFillBrush, _textOutlinePen);
 
-        if (ChartBuilder.BreakpointTime.SoftNotEquals(-1000))
+        if (ChartBuilder.BreakpointTime != -1000)
         {
             RenderBreakpoint(dc);
         }
@@ -502,9 +502,9 @@ public class NoteViewer : Control
     {
         NoteBase? topNote = null, centerNote = null, bottomNote = null;
         // cop id doesn't change the center lane
-        if (ChartBuilder.CenterLaneStartTime.SoftNotEquals(-1000))
+        if (ChartBuilder.CenterLaneStartTime != -1000)
         {
-            if (ChartBuilder.CenterLaneStartTime.SoftEquals(Chart.CurrentTime))
+            if (ChartBuilder.CenterLaneStartTime == Chart.CurrentTime)
             {
                 centerNote = new FreestyleNote
                 {
@@ -521,7 +521,7 @@ public class NoteViewer : Control
             }
         }
 
-        if (ChartBuilder.TopLaneStartTime.SoftNotEquals(-1000))
+        if (ChartBuilder.TopLaneStartTime != -1000)
         {
             topNote = MakeNotePlaceholder(
                 Math.Min(ChartBuilder.TopLaneStartTime, Chart.CurrentTime),
@@ -529,7 +529,7 @@ public class NoteViewer : Control
             topNote.Lane = NoteLane.TOP;
         }
             
-        if (ChartBuilder.BottomLaneStartTime.SoftNotEquals(-1000))
+        if (ChartBuilder.BottomLaneStartTime != -1000)
         {
             bottomNote = MakeNotePlaceholder(
                 Math.Min(ChartBuilder.BottomLaneStartTime, Chart.CurrentTime),
@@ -542,11 +542,11 @@ public class NoteViewer : Control
         centerNote?.Render(dc, false);
     }
 
-    private NoteBase MakeNotePlaceholder(double start, double end)
+    private NoteBase MakeNotePlaceholder(long start, long end)
     {
         if (ChartBuilder.CopId != 0)
         {
-            if (start.SoftEquals(end))
+            if (start == end)
             {
                 return new CopNote(NoteType.COP_SINGLE, ChartBuilder.CopId)
                 {
@@ -562,7 +562,7 @@ public class NoteViewer : Control
             };
         }
         
-        if (start.SoftEquals(end))
+        if (start == end)
         {
             return new SingleNote
             {

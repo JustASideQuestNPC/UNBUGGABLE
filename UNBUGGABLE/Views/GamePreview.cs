@@ -46,7 +46,7 @@ public class GamePreview : Control
     /// </summary>
     public static double TimeToScreenCoords(double time)
     {
-        var x = ((time - Chart.CurrentTime) / 1000) * PixelsPerSecond + NoteTargetX;
+        var x = ((time - Chart.CurrentTimeRaw) / 1000) * PixelsPerSecond + NoteTargetX;
         return (CurrentNotesFromRight ? x : -x);
     }
     
@@ -85,7 +85,7 @@ public class GamePreview : Control
         var fromRight = true;
         foreach (var note in Chart.Notes)
         {
-            if (note.Time > Chart.CurrentTime + 1000)
+            if (note.Time > Chart.CurrentTimeRaw + 1000)
             {
                 break;
             }
@@ -103,7 +103,7 @@ public class GamePreview : Control
                     case 1:
                         if (copNote.IsFinisher)
                         {
-                            if (finishTime <= Chart.CurrentTime)
+                            if (finishTime <= Chart.CurrentTimeRaw)
                             {
                                 Cop1State = CopState.DEAD;
                             }
@@ -116,7 +116,7 @@ public class GamePreview : Control
                     case 2:
                         if (copNote.IsFinisher)
                         {
-                            if (finishTime <= Chart.CurrentTime)
+                            if (finishTime <= Chart.CurrentTimeRaw)
                             {
                                 Cop2State = CopState.DEAD;
                             }
@@ -129,7 +129,7 @@ public class GamePreview : Control
                     case 3:
                         if (copNote.IsFinisher)
                         {
-                            if (finishTime <= Chart.CurrentTime)
+                            if (finishTime <= Chart.CurrentTimeRaw)
                             {
                                 Cop3State = CopState.DEAD;
                             }
@@ -142,7 +142,7 @@ public class GamePreview : Control
                     case 4:
                         if (copNote.IsFinisher)
                         {
-                            if (finishTime <= Chart.CurrentTime)
+                            if (finishTime <= Chart.CurrentTimeRaw)
                             {
                                 Cop4State = CopState.DEAD;
                             }
@@ -238,7 +238,7 @@ public class GamePreview : Control
             if (note.Type == NoteType.CAMERA_WIDE)
             {
                 currentNoteZoomedOut = !currentNoteZoomedOut;
-                if (note.Time < Chart.CurrentTime)
+                if (note.Time < Chart.CurrentTimeRaw)
                 {
                     viewableZoomedOut = currentNoteZoomedOut;
                 }
@@ -246,7 +246,7 @@ public class GamePreview : Control
             else if (note.Type is NoteType.CAMERA_SWAP or NoteType.CAMERA_INSTANT)
             {
                 CurrentNotesFromRight = !CurrentNotesFromRight;
-                if (note.Time < Chart.CurrentTime)
+                if (note.Time < Chart.CurrentTimeRaw)
                 {
                     viewableNotesFromRight = CurrentNotesFromRight;
                 }

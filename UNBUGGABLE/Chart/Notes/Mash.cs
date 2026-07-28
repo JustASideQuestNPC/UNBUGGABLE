@@ -52,13 +52,13 @@ public class MashNote : NoteBase
 
     public override void RenderPreview(DrawingContext dc)
     {
-        if (EndTime < Chart.CurrentTime || Time > Chart.CurrentTime + 1000)
+        if (EndTime < Chart.CurrentTimeRaw || Time > Chart.CurrentTimeRaw + 1000)
         {
             return;
         }
         
-        var startX = GamePreview.TimeToScreenCoords(Time < Chart.CurrentTime ?
-                                                        Chart.CurrentTime : Time);
+        var startX = GamePreview.TimeToScreenCoords(Time < Chart.CurrentTimeRaw ?
+                                                        Chart.CurrentTimeRaw : Time);
         var endX = GamePreview.TimeToScreenCoords(EndTime);
         var rect = new RoundedRect(
             new Rect(startX - 30, GamePreview.TopLaneY, 60,

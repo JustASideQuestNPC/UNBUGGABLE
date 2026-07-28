@@ -107,7 +107,7 @@ public class Settings
     public required double ZoomIncrement;
     public required List<string> LaneOrder;
     public required double HitSoundOffset;
-    public required double HardChartOffset;
+    public required long HardChartOffset;
     public required double HitSoundTickRate;
     public required double CurrentTimePosition;
     
