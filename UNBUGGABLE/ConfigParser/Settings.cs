@@ -94,6 +94,7 @@ public class Settings
     public required bool AlwaysEnableCustomDifficultyName;
     public required bool AutoSelectPastedNotes;
     public required bool AllowTopLaneCopMashes;
+    public required bool PreserveNoiszFlag;
 
     [YamlMember(Alias = "showFreestyleSubNotesWhilePlacing", ApplyNamingConventions = false)]
     public required bool ShowSubFreestylesInNoteViewer;
