@@ -64,23 +64,21 @@ public class PlayPauseAction(List<string> keybinds) : InputActionBase(keybinds)
 
 public class ZoomInAction(List<string> keybinds) : InputActionBase(keybinds)
 {
+    public override bool CanUseWhilePlacingNotes => false;
+    
     public override async Task OnPress()
     {
-        if (!ChartBuilder.PlacingNote)
-        {
-            NoteViewer.IncreaseZoom();
-        }
+        NoteViewer.IncreaseZoom();
     }
 }
 
 public class ZoomOutAction(List<string> keybinds) : InputActionBase(keybinds)
 {
+    public override bool CanUseWhilePlacingNotes => false;
+    
     public override async Task OnPress()
     {
-        if (!ChartBuilder.PlacingNote)
-        {
-            NoteViewer.DecreaseZoom();
-        }
+        NoteViewer.DecreaseZoom();
     }
 }
 

@@ -44,6 +44,8 @@ public abstract class InputActionBase
     /// If true, the action can activate whether the song is playing.
     /// </summary>
     public virtual bool CanUseWhilePlaying => false;
+
+    public virtual bool CanUseWhilePlacingNotes => true;
     
     public InputActionBase(List<string> keybindStrings)
     {

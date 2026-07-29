@@ -367,6 +367,9 @@ public static class Config
         {
             Trace.WriteLine($"Could not parse keybinds: {e.Message}");
         }
+
+        CurrentTheme = ColorThemes.TryGetValue(Settings.ColorTheme, out var theme) ?
+            theme : ColorThemes["Default"];
         
         Trace.WriteLine("Loaded config");
         Settings.PrintSettings();
@@ -427,7 +430,7 @@ public static class Config
                                 theme[$"{brushName}"] = brushColor;
                             }
                             ColorThemes.Add(themeName, theme);
-                            Trace.WriteLine($"Loaded theme {themeName}");
+                            Trace.WriteLine($"Loaded theme \"{themeName}\"");
                         }
                     }
                 }

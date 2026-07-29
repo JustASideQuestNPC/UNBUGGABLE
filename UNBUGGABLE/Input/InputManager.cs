@@ -133,7 +133,8 @@ public static class InputManager
                         type is CallbackType.MOUSE_PRESS or CallbackType.MOUSE_RELEASE or
                             CallbackType.SCROLL && // scroll wheel is considered a mouse button here
                         (MouseButton)arg == keybind.MouseButton) &&
-                    (!Chart.Playing || action.CanUseWhilePlaying))
+                    (!Chart.Playing || action.CanUseWhilePlaying) &&
+                    (!ChartBuilder.PlacingNote || action.CanUseWhilePlacingNotes))
                 {
                     if (CtrlPressed == keybind.Ctrl && ShiftPressed == keybind.Shift &&
                         AltPressed == keybind.Alt)
