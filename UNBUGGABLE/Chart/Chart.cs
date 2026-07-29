@@ -485,7 +485,6 @@ public static partial class Chart
                 {
                     if (_hitSound != null)
                     {
-                        Trace.WriteLine($"{note.Lane} {note.Type} {note.Time} ms hit sound at {_currentTimeRaw} ms with {offset} ms offset");
                         SfxEngine.Play(_hitSound, offset);
                     }
                     break;

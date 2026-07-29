@@ -1,0 +1,172 @@
+﻿{
+    "undo": [
+        "ctrl+z"
+    ],
+    "redo": [
+        "ctrl+y"
+    ],
+    "saveFile": [
+        "ctrl+s"
+    ],
+    "openFile": [
+        "ctrl+o"
+    ],
+    "resetPlaySpeed": [
+        "r"
+    ],
+    "reloadConfig": [],
+    "playPause": [
+        "space"
+    ],
+    "moveForward": [
+        "scrollDown",
+        "down"
+    ],
+    "moveBack": [
+        "scrollUp",
+        "up"
+    ],
+    "zoomIn": [
+        "ctrl+scrollDown",
+        "ctrl+oemPlus"
+    ],
+    "zoomOut": [
+        "ctrl+scrollUp",
+        "ctrl+oemMinus"
+    ],
+    "prevLabel": [
+        "pageUp"
+    ],
+    "nextLabel": [
+        "pageDown"
+    ],
+    "prevNoteSnap": [
+        "left"
+    ],
+    "nextNoteSnap": [
+        "right"
+    ],
+    "placeTopLane": [
+        "d3"
+    ],
+    "placeBottomLane": [
+        "d5"
+    ],
+    "placeCameraLane": [
+        "d6"
+    ],
+    "placeCenterLane": [
+        "d4"
+    ],
+    "selectAll": [
+        "ctrl+a"
+    ],
+    "selectAllTopLane": [
+        "alt+d3"
+    ],
+    "selectAllBottomLane": [
+        "alt+d5"
+    ],
+    "selectAllCameraLane": [
+        "alt+d6"
+    ],
+    "selectAllCenterLane": [
+        "alt+d4"
+    ],
+    "selectAllMarkers": [
+        "alt+q"
+    ],
+    "cut": [
+        "ctrl+x"
+    ],
+    "copy": [
+        "ctrl+c"
+    ],
+    "paste": [
+        "ctrl+v"
+    ],
+    "clearSelection": [
+        "escape"
+    ],
+    "deleteSelection": [
+        "back",
+        "delete"
+    ],
+    "mirrorSelection": [
+        "m"
+    ],
+    "moveSelectionForward": [
+        "shift+down"
+    ],
+    "moveSelectionBack": [
+        "shift+up"
+    ],
+    "setFinishFlag": [
+        "e",
+        "f"
+    ],
+    "setWhistleFlag": [
+        "w"
+    ],
+    "setClapFlag": [
+        "c",
+        "r"
+    ],
+    "setNoiszSpawn": [
+        "n"
+    ],
+    "copId0": [
+        "ctrl+d0",
+        "ctrl+oem3"
+    ],
+    "copId1": [
+        "ctrl+d1"
+    ],
+    "copId2": [
+        "ctrl+d2"
+    ],
+    "copId3": [
+        "ctrl+d3"
+    ],
+    "copId4": [
+        "ctrl+d4"
+    ],
+    "prevCop": [
+        "oemComma",
+        "oemPipe"
+    ],
+    "nextCop": [
+        "oemPeriod",
+        "oemQuestion"
+    ],
+    "addBpmChange": [
+        "f9"
+    ],
+    "removeBpmChange": [
+        "ctrl+f9"
+    ],
+    "addLabel": [
+        "l"
+    ],
+    "removeLabel": [
+        "ctrl+l"
+    ],
+    "addMarker1": [
+        "q"
+    ],
+    "addMarker2": [
+        "shift+q"
+    ],
+    "addMarker3": [
+        "ctrl+q"
+    ],
+    "setBreakpoint": [
+        "b"
+    ],
+    "removeBreakpoint": [
+        "ctrl+b"
+    ],
+    "emergencyReload": [
+        "ctrl+alt+r"
+    ]
+}

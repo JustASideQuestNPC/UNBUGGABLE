@@ -97,11 +97,13 @@ Section "Main App" MainAppComponent
     Call BruteForceInstallApp
 
     CreateDirectory "$INSTDIR\configs"
-    File "/oname=$OUTDIR\configs\config.yaml" "UNBUGGABLE\configs\config.yaml"
-    File "/oname=$OUTDIR\configs\keybinds.yaml" "UNBUGGABLE\configs\keybinds.yaml"
+    File "/oname=$OUTDIR\configs\config.json" "UNBUGGABLE\configs\updatedConfig.json"
+    File "/oname=$OUTDIR\configs\keybinds.json" "UNBUGGABLE\configs\updatedKeybinds.json"
     File "/oname=$OUTDIR\configs\themes.json" "UNBUGGABLE\configs\themes.json"
-    FileWrite $UninstLog "$OUTDIR\configs\config.yaml$\r$\n"
-    FileWrite $UninstLog "$OUTDIR\configs\keybinds.yaml$\r$\n"
+    FileWrite $UninstLog "$OUTDIR\configs\updatedConfig.json$\r$\n"
+    FileWrite $UninstLog "$OUTDIR\configs\updatedKeybinds.json$\r$\n"
+    FileWrite $UninstLog "$OUTDIR\configs\config.json$\r$\n"
+    FileWrite $UninstLog "$OUTDIR\configs\keybinds.json$\r$\n"
     FileWrite $UninstLog "$OUTDIR\configs\themes.json$\r$\n"
 
     ${WriteUninstaller} "UNBUGGABLE_Uninstaller.exe"

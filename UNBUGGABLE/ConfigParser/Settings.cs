@@ -1,35 +1,99 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
-using YamlDotNet.Serialization;
+using System.Text.Json.Serialization;
 
 namespace UNBUGGABLE.Resources;
 
-public class HitSounds {
-    // all of these members have to be required so that i can make the yaml parser fail if any
-    // settings are missing
-    public required bool Single;
-    public required bool Spike;
-    public required bool Freestyle;
-    public required bool HoldStart;
-    public required bool HoldEnd;
-    public required bool DoubleStart;
-    public required bool DoubleEnd;
-    public required bool MashStart;
-    public required bool MashEnd;
-    public required bool CopSingle;
-    public required bool CopHoldStart;
-    public required bool CopHoldEnd;
-    public required bool CopMashStart;
-    public required bool CopMashEnd;
-    public required bool CameraChange;
-    public required bool Marker1;
-    public required bool Marker2;
-    public required bool Marker3;
 
+// Root myDeserializedClass = JsonSerializer.Deserialize<Root>(myJsonResponse);
+public class Debug
+{
+    [JsonRequired][JsonPropertyName("enabled")]
+    public bool Enabled = false;
+
+    [JsonRequired][JsonPropertyName("commandStacks")]
+    public bool CommandStacks = true;
+
+    [JsonRequired][JsonPropertyName("inputData")]
+    public bool InputData = true;
+
+    [JsonRequired][JsonPropertyName("mediaPlayer")]
+    public bool MediaPlayer = true;
+
+    [JsonRequired][JsonPropertyName("noteTimestamps")]
+    public bool NoteTimeStamps = true;
+    
     public string GetFormattedString()
     {
         return $"""
-                
+                    - command stacks: {CommandStacks}
+                    - input data: {InputData}
+                    - media player: {MediaPlayer}
+                    - note timestamps: {NoteTimeStamps}
+                """;
+    }
+}
+
+public class HitSounds
+{
+    [JsonRequired][JsonPropertyName("single")]
+    public bool Single = true;
+
+    [JsonRequired][JsonPropertyName("spike")]
+    public bool Spike = true;
+
+    [JsonRequired][JsonPropertyName("freestyle")]
+    public bool Freestyle = true;
+
+    [JsonRequired][JsonPropertyName("holdStart")]
+    public bool HoldStart = true;
+
+    [JsonRequired][JsonPropertyName("holdEnd")]
+    public bool HoldEnd = true;
+
+    [JsonRequired][JsonPropertyName("doubleStart")]
+    public bool DoubleStart = true;
+
+    [JsonRequired][JsonPropertyName("doubleEnd")]
+    public bool DoubleEnd = true;
+
+    [JsonRequired][JsonPropertyName("mashStart")]
+    public bool MashStart = true;
+
+    [JsonRequired][JsonPropertyName("mashEnd")]
+    public bool MashEnd = true;
+
+    [JsonRequired][JsonPropertyName("copSingle")]
+    public bool CopSingle = true;
+
+    [JsonRequired][JsonPropertyName("copHoldStart")]
+    public bool CopHoldStart = true;
+
+    [JsonRequired][JsonPropertyName("copHoldEnd")]
+    public bool CopHoldEnd = true;
+
+    [JsonRequired][JsonPropertyName("copMashStart")]
+    public bool CopMashStart = true;
+
+    [JsonRequired][JsonPropertyName("copMashEnd")]
+    public bool CopMashEnd = true;
+
+    [JsonRequired][JsonPropertyName("cameraChange")]
+    public bool CameraChange = true;
+
+    [JsonRequired][JsonPropertyName("marker1")]
+    public bool Marker1 = false;
+
+    [JsonRequired][JsonPropertyName("marker2")]
+    public bool Marker2 = false;
+
+    [JsonRequired][JsonPropertyName("marker3")]
+    public bool Marker3 = false;
+    
+    public string GetFormattedString()
+    {
+        return $"""
+
                     - single: {Single}
                     - spike: {Spike}
                     - freestyle: {Freestyle}
@@ -52,79 +116,92 @@ public class HitSounds {
     }
 }
 
-public class DebugToggles
-{
-    public required bool Enabled;
-    public required bool CommandStacks;
-    public required bool InputData;
-    public required bool MediaPlayer;
-    
-    [YamlMember(Alias = "noteTimestamps", ApplyNamingConventions = false)]
-    public required bool NoteTimeStamps;
-    
-    public string GetFormattedString()
-    {
-        return $"""
-                    - command stacks: {CommandStacks}
-                    - input data: {InputData}
-                    - media player: {MediaPlayer}
-                    - note timestamps: {NoteTimeStamps}
-                """;
-    }
-}
-
 public class Settings
 {
-    public required string ColorTheme;
+    [JsonRequired][JsonPropertyName("colorTheme")]
+    public string ColorTheme = "default";
+
+    [JsonRequired][JsonPropertyName("useBeatFiles")]
+    public bool DefaultSaveToBeatFiles = true;
+
+    [JsonRequired][JsonPropertyName("enhancedPreview")]
+    public bool EnhancedPreview = true;
+
+    [JsonRequired] [JsonPropertyName("alwaysShowAllNoteFlags")]
+    public bool AlwaysShowAllFlags = false;
+
+    [JsonRequired] [JsonPropertyName("enableBreakpoints")]
+    public bool EnableBreakpoints = true;
+
+    [JsonRequired][JsonPropertyName("useLane2AsMarkers")]
+    public bool Lane2Markers = true;
+
+    [JsonRequired] [JsonPropertyName("saveMarkersAsLane2Notes")]
+    public bool SaveMarkersInLane2 = false;
+
+    [JsonRequired][JsonPropertyName("alwaysEnableCustomDifficultyName")]
+    public bool AlwaysEnableCustomDifficultyName = false;
+
+    [JsonRequired][JsonPropertyName("autoSelectPastedNotes")]
+    public bool AutoSelectPastedNotes = true;
+
+    [JsonRequired][JsonPropertyName("allowTopLaneCopMashes")]
+    public bool AllowTopLaneCopMashes = false;
+
+    [JsonRequired] [JsonPropertyName("showFreestyleSubNotesWhilePlacing")]
+    public bool ShowSubFreestylesInNoteViewer = true;
+
+    [JsonRequired][JsonPropertyName("enableNegativeMashConversion")]
+    public bool NegativeMashConversion = true;
+
+    [JsonRequired][JsonPropertyName("beatSnaps")]
+    public List<int> BeatSnaps = [1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 20, 5, 9, 11, 13];
+
+    [JsonRequired][JsonPropertyName("pasteOverwrites")]
+    public string PasteBehavior = "notes";
+
+    [JsonRequired][JsonPropertyName("preserveNoiszFlag")]
+    public bool PreserveNoiszFlag = true;
+
+    [JsonRequired] [JsonPropertyName("minZoom")]
+    public double MinZoom = 0.5;
+
+    [JsonRequired] [JsonPropertyName("maxZoom")]
+    public double MaxZoom = 7.5;
+
+    [JsonRequired] [JsonPropertyName("zoomIncrement")]
+    public double ZoomIncrement = 0.25;
+
+    [JsonRequired][JsonPropertyName("laneOrder")]
+    public List<string> LaneOrder = ["top", "center", "bottom", "camera"];
+
+    [JsonRequired][JsonPropertyName("doublePreviewAlpha")]
+    public double DoublePreviewAlpha = 0.5;
+
+    [JsonRequired][JsonPropertyName("currentTimePosition")]
+    public int CurrentTimePosition = 175;
+
+    [JsonRequired][JsonPropertyName("hitSoundOffset")]
+    public int HitSoundOffset = -30;
+
+    [JsonRequired][JsonPropertyName("hardChartOffset")]
+    public int HardChartOffset = -60;
+
+    [JsonRequired][JsonPropertyName("hitSoundTickRate")]
+    public int HitSoundTickRate = 180;
+
+    [JsonRequired][JsonPropertyName("maxConcurrentHitSounds")]
+    public int MaxConcurrentSfx = 16;
+
+    [JsonRequired][JsonPropertyName("autosaveInterval")]
+    public int AutosaveInterval = 600;
+
+    [JsonRequired][JsonPropertyName("hitSounds")]
+    public HitSounds HitSounds = new();
+
+    [JsonRequired][JsonPropertyName("debug")]
+    public Debug DebugToggles = new();
     
-    [YamlMember(Alias = "useBeatFiles", ApplyNamingConventions = false)]
-    public required bool DefaultSaveToBeatFiles;
-    public required bool EnhancedPreview;
-    
-    [YamlMember(Alias = "alwaysShowAllNoteFlags", ApplyNamingConventions = false)]
-    public required bool AlwaysShowAllFlags;
-    public required bool EnableBreakpoints;
-    
-    [YamlMember(Alias = "useLane2AsMarkers", ApplyNamingConventions = false)]
-    public required bool Lane2Markers;
-
-    [YamlMember(Alias = "saveMarkersAsLane2Notes", ApplyNamingConventions = false)]
-    public required bool SaveMarkersInLane2;
-
-    public required bool AlwaysEnableCustomDifficultyName;
-    public required bool AutoSelectPastedNotes;
-    public required bool AllowTopLaneCopMashes;
-    public required bool PreserveNoiszFlag;
-
-    [YamlMember(Alias = "showFreestyleSubNotesWhilePlacing", ApplyNamingConventions = false)]
-    public required bool ShowSubFreestylesInNoteViewer;
-
-    [YamlMember(Alias = "pasteOverwrites", ApplyNamingConventions = false)]
-    public required string PasteBehavior; // "none", "notes", or "region"
-
-    public required List<int> BeatSnaps;
-    public required double MinZoom;
-    public required double MaxZoom;
-    public required double ZoomIncrement;
-    public required List<string> LaneOrder;
-    public required double HitSoundOffset;
-    public required long HardChartOffset;
-    public required double HitSoundTickRate;
-    public required double CurrentTimePosition;
-    
-    [YamlMember(Alias = "enableNegativeMashConversion", ApplyNamingConventions = false)]
-    public required bool NegativeMashConversion;
-    
-    [YamlMember(Alias = "maxConcurrentHitSounds", ApplyNamingConventions = false)]
-    public required int MaxConcurrentSfx;
-    public required HitSounds HitSounds;
-    
-    [YamlMember(Alias = "debug", ApplyNamingConventions = false)]
-    public required DebugToggles DebugToggles;
-
-    public required long AutosaveInterval;
-    public required double DoublePreviewAlpha;
-
     public void PrintSettings()
     {
         Trace.WriteLine($"""

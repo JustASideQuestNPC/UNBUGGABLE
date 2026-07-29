@@ -57,85 +57,24 @@ public static class Config
         { "Cop3", Color.Parse("#44F430") },
         { "Cop4", Color.Parse("#F4E430") },
     };
-    
-    public static Settings Settings { get; private set; } = new()
-    {
-        ColorTheme = "Default",
-        DefaultSaveToBeatFiles = true,
-        EnhancedPreview = true,
-        AlwaysShowAllFlags = false,
-        EnableBreakpoints = true,
-        Lane2Markers = true,
-        SaveMarkersInLane2 = false,
-        AlwaysEnableCustomDifficultyName = false,
-        AutoSelectPastedNotes = true,
-        AllowTopLaneCopMashes = false,
-        PreserveNoiszFlag = true,
-        ShowSubFreestylesInNoteViewer = true,
-        BeatSnaps = [1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 20, 5, 9, 11, 13],
-        MinZoom = 0.5,
-        MaxZoom = 0.75,
-        ZoomIncrement = 0.25,
-        LaneOrder = ["top", "center", "bottom", "camera"],
-        HitSoundOffset = 0,
-        HardChartOffset = -60,
-        HitSoundTickRate = 150,
-        MaxConcurrentSfx = 16,
-        CurrentTimePosition = 175,
-        NegativeMashConversion = true,
-        PasteBehavior = "notes",
-        AutosaveInterval = 60000,
-        DoublePreviewAlpha = 0.5,
-        HitSounds = new()
-        {
-            Single = true,
-            Spike = true,
-            Freestyle = true,
-            HoldStart = true,
-            HoldEnd = true,
-            DoubleStart = true,
-            DoubleEnd = true,
-            MashStart = true,
-            MashEnd = true,
-            CopSingle = true,
-            CopHoldStart = true,
-            CopHoldEnd = true,
-            CopMashStart = true,
-            CopMashEnd = true,
-            CameraChange = false,
-            Marker1 = false,
-            Marker2 = false,
-            Marker3 = false
-        },
-        DebugToggles = new()
-        {
-            Enabled = false,
-            CommandStacks = true,
-            InputData = true,
-            MediaPlayer = true,
-            NoteTimeStamps = true
-        }
-    };
+
+    public static Settings Settings { get; private set; } = new();
     
     public static bool PracticeModInstalled { get; private set; } = false;
     public static string PracticeModConfigPath { get; private set; } = "";
-    
-    public static Keybinds Keybinds { get; private set; }
+
+    public static Keybinds Keybinds { get; private set; } = new();
     
     /// <summary>
     /// Default starting location for saving and loading files.
     /// </summary>
     public static string CustomSongsDirectory { get; private set; } = "";
     
-    /// <summary>
-    /// Path to the file with user settings.
-    /// </summary>
-    private const string ConfigFileName = "configs/config.yaml";
-    
-    /// <summary>
-    /// Path to the file with keybinds.
-    /// </summary>
-    private const string KeybindFileName = "configs/keybinds.yaml";
+    private static readonly string ConfigFilePath = Path.Combine(Environment.CurrentDirectory,
+                                                                 "configs/config.json");
+
+    private static readonly string KeybindFilePath = Path.Combine(Environment.CurrentDirectory,
+                                                                  "configs/keybinds.json");
 
     /// <summary>
     /// Path to the file with all color themes.
@@ -178,56 +117,46 @@ public static class Config
         { "cop3", JsonValueKind.String },
         { "cop4", JsonValueKind.String }
     };
-
-    /// <summary>
-    /// Verifies that a JSON object has the correct keys and types.
-    /// </summary>
-    /// <param name="json">The JSON value to check.</param>
-    /// <param name="types">A dictionary with the correct keys and types. Allowed types are</param>
-    /// <param name="allowMissing">Whether the object can be missing one or more of the required
-    ///                            keys. Useful for JSON objects that have default values.</param>
-    private static bool VerifyJsonObject(JsonObject json, Dictionary<string, JsonValueKind> types, 
-        bool allowMissing = false)
-    {
-        // why is there no JSON.tryParse?
-        try
-        {
-            foreach (var (themeName, _) in json)
-            {
-                if (!types.ContainsKey(themeName))
-                {
-                    return false;
-                }
-            }
-
-            foreach (var (themeName, type) in types)
-            {
-                if (!json.ContainsKey(themeName) && !allowMissing)
-                {
-                    return false;
-                }
-                
-                if (json[themeName]!.GetValueKind() != type)
-                {
-                    return false;
-                }
-            }
-        }
-        catch (JsonException e)
-        {
-            Trace.WriteLine($"Could not parse JSON: {e.Message}");
-            return false;
-        }
-
-        return true;
-    }
-
+    
     /// <summary>
     /// Loads and parses user settings and color themes.
     /// <param name="resources">The resource dictionary to add theme brushes to.</param>
     /// </summary>
     public static void LoadAllConfigFiles(IResourceDictionary resources)
     {
+        // updatedConfig and updatedKeybinds are temporary files used for preserving existing
+        // settings after an update
+        var updatedConfigPath = Path.Combine(Environment.CurrentDirectory,
+                                               "configs/updatedConfig.json");
+        if (File.Exists(updatedConfigPath))
+        {
+            Trace.WriteLine("updating configs");
+            var fullCopy = (
+                !File.Exists(ConfigFilePath) ||
+                !JsonHelper.TryMergeFiles(ConfigFilePath, updatedConfigPath, ConfigFilePath));
+            if (fullCopy)
+            {
+                Trace.WriteLine(
+                    "Keybinds.json does not exist (or was invalid), fully copying updated file");
+                File.Move(updatedConfigPath, ConfigFilePath);
+            }
+        }
+        var updatedKeybindsPath = Path.Combine(Environment.CurrentDirectory,
+                                               "configs/updatedKeybinds.json");
+        if (File.Exists(updatedKeybindsPath))
+        {
+            Trace.WriteLine("updating configs");
+            var fullCopy = (
+                !File.Exists(KeybindFilePath) ||
+                !JsonHelper.TryMergeFiles(KeybindFilePath, updatedKeybindsPath, KeybindFilePath));
+            if (fullCopy)
+            {
+                Trace.WriteLine(
+                    "Keybinds.json does not exist (or was invalid), fully copying updated file");
+                File.Move(updatedKeybindsPath, KeybindFilePath);
+            }
+        }
+        
         LoadThemes(resources);
         LoadKeybinds();
         LoadConfig();
@@ -235,306 +164,103 @@ public static class Config
 
     public static void LoadKeybinds()
     {
-        var deserializer = new DeserializerBuilder()
-                           .WithNamingConvention(CamelCaseNamingConvention.Instance)
-                           .IgnoreUnmatchedProperties()
-                           .Build();
-
-        var keybinds = new Keybinds
+        try
         {
-            Undo = ["ctrl+z"],
-            Redo = ["ctrl+y"],
-            SaveFile = ["ctrl+s"],
-            OpenFile = ["ctrl+o"],
-            ResetPlaySpeed = ["r"],
-            ReloadConfig = [""],
-
-            MoveForward = ["scrollDown", "down"],
-            MoveBack = ["scrollUp", "up"],
-            PlayPause = ["space"],
-            ZoomIn = ["ctrl+scrollUp", "ctrl+oemPlus"],
-            ZoomOut = ["ctrl+scrollDown", "ctrl+oemMinus"],
-            PrevLabel = ["pageUp"],
-            NextLabel = ["pageDown"],
-            PrevNoteSnap = ["left"],
-            NextNoteSnap = ["right"],
-
-            PlaceTopLane = ["3"],
-            PlaceBottomLane = ["4"],
-            PlaceCameraLane = ["5"],
-            PlaceCenterLane = ["6"],
-
-            SelectAll = ["ctrl+a"],
-            SelectTopLane = ["alt+3"],
-            SelectBottomLane = ["alt+4"],
-            SelectCameraLane = ["alt+5"],
-            SelectCenterLane = ["alt+6"],
-            Cut = ["ctrl+x"],
-            Copy = ["ctrl+c"],
-            Paste = ["ctrl+v"],
-            ClearSelection = ["escape"],
-            DeleteSelection = ["delete", "back"],
-            MirrorSelection = ["ctrl+m"],
-            MoveSelectionForward = ["shift+up"],
-            MoveSelectionBack = ["shift+down"],
-            SetFinishFlag = ["e", "f"],
-            SetWhistleFlag = ["w"],
-            SetClapFlag = ["c", "r"],
-            SetNoiszFlag = ["n"],
-
-            CopId0 = ["ctrl+0", "ctrl+oem3"],
-            CopId1 = ["ctrl+1"],
-            CopId2 = ["ctrl+2"],
-            CopId3 = ["ctrl+3"],
-            CopId4 = ["ctrl+4"],
-            PrevCop = ["oemComma", "oemPip"],
-            NextCop = ["oemPeriod", "oemQuestion"],
-
-            AddBpmChange = ["f9"],
-            RemoveBpmChange = ["ctrl+f9"],
-            AddLabel = ["l"],
-            RemoveLabel = ["ctrl+l"],
-            AddMarker1 = ["q"],
-            AddMarker2 = ["shift+q"],
-            AddMarker3 = ["ctrl+q"],
-            SetBreakpoint = ["b"],
-            RemoveBreakpoint = ["ctrl+b"],
-            EmergencyReload = ["ctrl+alt+r"]
-        };
-
-        var path = Path.Combine(Environment.CurrentDirectory, KeybindFileName);
-        if (File.Exists(path))
-        {
-            try
+            var buffer = JsonSerializer.Deserialize<Keybinds>(File.ReadAllText(KeybindFilePath));
+            if (buffer != null)
             {
-                var loadedKeybinds = deserializer.Deserialize<Keybinds>(File.ReadAllText(path));
-                if (VerifyKeybindStrings(loadedKeybinds.Undo) &&
-                    VerifyKeybindStrings(loadedKeybinds.Redo) &&
-                    VerifyKeybindStrings(loadedKeybinds.SaveFile) &&
-                    VerifyKeybindStrings(loadedKeybinds.OpenFile) &&
-                    VerifyKeybindStrings(loadedKeybinds.ResetPlaySpeed) &&
-                    VerifyKeybindStrings(loadedKeybinds.ReloadConfig) &&
-                    VerifyKeybindStrings(loadedKeybinds.MoveForward) &&
-                    VerifyKeybindStrings(loadedKeybinds.MoveBack) &&
-                    VerifyKeybindStrings(loadedKeybinds.PlayPause) &&
-                    VerifyKeybindStrings(loadedKeybinds.ZoomIn) &&
-                    VerifyKeybindStrings(loadedKeybinds.ZoomOut) &&
-                    VerifyKeybindStrings(loadedKeybinds.PrevLabel) &&
-                    VerifyKeybindStrings(loadedKeybinds.NextLabel) &&
-                    VerifyKeybindStrings(loadedKeybinds.PrevNoteSnap) &&
-                    VerifyKeybindStrings(loadedKeybinds.NextNoteSnap) &&
-                    VerifyKeybindStrings(loadedKeybinds.PlaceTopLane) &&
-                    VerifyKeybindStrings(loadedKeybinds.PlaceBottomLane) &&
-                    VerifyKeybindStrings(loadedKeybinds.PlaceCameraLane) &&
-                    VerifyKeybindStrings(loadedKeybinds.PlaceCenterLane) &&
-                    VerifyKeybindStrings(loadedKeybinds.SelectAll) &&
-                    VerifyKeybindStrings(loadedKeybinds.SelectTopLane) &&
-                    VerifyKeybindStrings(loadedKeybinds.SelectBottomLane) &&
-                    VerifyKeybindStrings(loadedKeybinds.SelectCameraLane) &&
-                    VerifyKeybindStrings(loadedKeybinds.SelectCenterLane) &&
-                    VerifyKeybindStrings(loadedKeybinds.Cut) &&
-                    VerifyKeybindStrings(loadedKeybinds.Copy) &&
-                    VerifyKeybindStrings(loadedKeybinds.Paste) &&
-                    VerifyKeybindStrings(loadedKeybinds.ClearSelection) &&
-                    VerifyKeybindStrings(loadedKeybinds.DeleteSelection) &&
-                    VerifyKeybindStrings(loadedKeybinds.MirrorSelection) &&
-                    VerifyKeybindStrings(loadedKeybinds.MoveSelectionForward) &&
-                    VerifyKeybindStrings(loadedKeybinds.MoveSelectionBack) &&
-                    VerifyKeybindStrings(loadedKeybinds.SetFinishFlag) &&
-                    VerifyKeybindStrings(loadedKeybinds.SetWhistleFlag) &&
-                    VerifyKeybindStrings(loadedKeybinds.SetClapFlag) &&
-                    VerifyKeybindStrings(loadedKeybinds.CopId0) &&
-                    VerifyKeybindStrings(loadedKeybinds.CopId1) &&
-                    VerifyKeybindStrings(loadedKeybinds.CopId2) &&
-                    VerifyKeybindStrings(loadedKeybinds.CopId3) &&
-                    VerifyKeybindStrings(loadedKeybinds.CopId4) &&
-                    VerifyKeybindStrings(loadedKeybinds.PrevCop) &&
-                    VerifyKeybindStrings(loadedKeybinds.NextCop) &&
-                    VerifyKeybindStrings(loadedKeybinds.AddBpmChange) &&
-                    VerifyKeybindStrings(loadedKeybinds.RemoveBpmChange) &&
-                    VerifyKeybindStrings(loadedKeybinds.AddLabel) &&
-                    VerifyKeybindStrings(loadedKeybinds.RemoveLabel) &&
-                    VerifyKeybindStrings(loadedKeybinds.AddMarker1) &&
-                    VerifyKeybindStrings(loadedKeybinds.AddMarker2) &&
-                    VerifyKeybindStrings(loadedKeybinds.AddMarker3) &&
-                    VerifyKeybindStrings(loadedKeybinds.SetBreakpoint) &&
-                    VerifyKeybindStrings(loadedKeybinds.RemoveBreakpoint) &&
-                    VerifyKeybindStrings(loadedKeybinds.EmergencyReload))
-                {
-                    keybinds = loadedKeybinds;
-                }
+                Keybinds = buffer;
             }
-            catch (YamlException e)
+            else
             {
-                Trace.WriteLine($"Could not parse keybind file: {e.Message}");
+                Trace.WriteLine("Could not parse keybinds: file is empty.");
             }
         }
-        else
+        catch (JsonException e)
         {
-            Trace.WriteLine("Keybind file not found.");
+            Trace.WriteLine($"Could not parse keybinds: {e.Message}");
         }
-
-        Keybinds = keybinds;
+        
         InputManager.Actions = [
-            new UndoAction(keybinds.Undo),
-            new RedoAction(keybinds.Redo),
-            new SaveFileAction(keybinds.SaveFile),
-            new OpenFileAction(keybinds.OpenFile),
-            new ResetPlaySpeedAction(keybinds.ResetPlaySpeed),
-            new ReloadConfigCommand(keybinds.ReloadConfig),
-            new ZoomInAction(keybinds.ZoomIn),
-            new ZoomOutAction(keybinds.ZoomOut),
-            new MoveForwardAction(keybinds.MoveForward),
-            new MoveBackAction(keybinds.MoveBack),
-            new PlayPauseAction(keybinds.PlayPause),
-            new PrevLabelAction(keybinds.PrevLabel),
-            new NextLabelAction(keybinds.NextLabel),
-            new PrevNoteSnapAction(keybinds.PrevNoteSnap),
-            new NextNoteSnapAction(keybinds.NextNoteSnap),
-            new PlaceTopLaneAction(keybinds.PlaceTopLane),
-            new PlaceBottomLaneAction(keybinds.PlaceBottomLane),
-            new PlaceCameraLaneAction(keybinds.PlaceCameraLane),
-            new PlaceCenterLaneAction(keybinds.PlaceCenterLane),
-            new SelectAllAction(keybinds.SelectAll),
-            new SelectLaneAction(keybinds.SelectTopLane, NoteLane.TOP),
-            new SelectLaneAction(keybinds.SelectBottomLane, NoteLane.BOTTOM),
-            new SelectLaneAction(keybinds.SelectCameraLane, NoteLane.CAMERA),
-            new SelectLaneAction(keybinds.SelectCenterLane, NoteLane.CENTER),
-            new CutAction(keybinds.Cut),
-            new CopyAction(keybinds.Copy),
-            new PasteAction(keybinds.Paste),
-            new ClearSelectionAction(keybinds.ClearSelection),
-            new DeleteSelectionAction(keybinds.DeleteSelection),
-            new MirrorSelectionAction(keybinds.MirrorSelection),
-            new MoveSelectionForwardAction(keybinds.MoveSelectionForward),
-            new MoveSelectionBackAction(keybinds.MoveSelectionBack),
-            new SetNoteFlagAction(keybinds.SetFinishFlag, 'f'),
-            new SetNoteFlagAction(keybinds.SetWhistleFlag, 'w'),
-            new SetNoteFlagAction(keybinds.SetClapFlag, 'c'),
-            new SetNoteFlagAction(keybinds.SetNoiszFlag, 'n'),
-            new CopId0Action(keybinds.CopId0),
-            new CopId1Action(keybinds.CopId1),
-            new CopId2Action(keybinds.CopId2),
-            new CopId3Action(keybinds.CopId3),
-            new CopId4Action(keybinds.CopId4),
-            new PrevCopAction(keybinds.PrevCop),
-            new NextCopAction(keybinds.NextCop),
-            new AddBpmChangeAction(keybinds.AddBpmChange),
-            new RemoveBpmChangeAction(keybinds.RemoveBpmChange),
-            new AddLabelAction(keybinds.AddLabel),
-            new RemoveLabelAction(keybinds.RemoveLabel),
-            new AddMarker1Action(keybinds.AddMarker1),
-            new AddMarker2Action(keybinds.AddMarker2),
-            new AddMarker3Action(keybinds.AddMarker3),
-            new SetBreakpointAction(keybinds.SetBreakpoint),
-            new RemoveBreakpointAction(keybinds.RemoveBreakpoint),
-            new EmergencyReloadAction(keybinds.EmergencyReload)
+            new UndoAction(Keybinds.Undo),
+            new RedoAction(Keybinds.Redo),
+            new SaveFileAction(Keybinds.SaveFile),
+            new OpenFileAction(Keybinds.OpenFile),
+            new ResetPlaySpeedAction(Keybinds.ResetPlaySpeed),
+            new ReloadConfigCommand(Keybinds.ReloadConfig),
+            new ZoomInAction(Keybinds.ZoomIn),
+            new ZoomOutAction(Keybinds.ZoomOut),
+            new MoveForwardAction(Keybinds.MoveForward),
+            new MoveBackAction(Keybinds.MoveBack),
+            new PlayPauseAction(Keybinds.PlayPause),
+            new PrevLabelAction(Keybinds.PrevLabel),
+            new NextLabelAction(Keybinds.NextLabel),
+            new PrevNoteSnapAction(Keybinds.PrevNoteSnap),
+            new NextNoteSnapAction(Keybinds.NextNoteSnap),
+            new PlaceTopLaneAction(Keybinds.PlaceTopLane),
+            new PlaceBottomLaneAction(Keybinds.PlaceBottomLane),
+            new PlaceCameraLaneAction(Keybinds.PlaceCameraLane),
+            new PlaceCenterLaneAction(Keybinds.PlaceCenterLane),
+            new SelectAllAction(Keybinds.SelectAll),
+            new SelectLaneAction(Keybinds.SelectTopLane, NoteLane.TOP),
+            new SelectLaneAction(Keybinds.SelectBottomLane, NoteLane.BOTTOM),
+            new SelectLaneAction(Keybinds.SelectCameraLane, NoteLane.CAMERA),
+            new SelectLaneAction(Keybinds.SelectCenterLane, NoteLane.CENTER),
+            new CutAction(Keybinds.Cut),
+            new CopyAction(Keybinds.Copy),
+            new PasteAction(Keybinds.Paste),
+            new ClearSelectionAction(Keybinds.ClearSelection),
+            new DeleteSelectionAction(Keybinds.DeleteSelection),
+            new MirrorSelectionAction(Keybinds.MirrorSelection),
+            new MoveSelectionForwardAction(Keybinds.MoveSelectionForward),
+            new MoveSelectionBackAction(Keybinds.MoveSelectionBack),
+            new SetNoteFlagAction(Keybinds.SetFinishFlag, 'f'),
+            new SetNoteFlagAction(Keybinds.SetWhistleFlag, 'w'),
+            new SetNoteFlagAction(Keybinds.SetClapFlag, 'c'),
+            new SetNoteFlagAction(Keybinds.SetNoiszFlag, 'n'),
+            new CopId0Action(Keybinds.CopId0),
+            new CopId1Action(Keybinds.CopId1),
+            new CopId2Action(Keybinds.CopId2),
+            new CopId3Action(Keybinds.CopId3),
+            new CopId4Action(Keybinds.CopId4),
+            new PrevCopAction(Keybinds.PrevCop),
+            new NextCopAction(Keybinds.NextCop),
+            new AddBpmChangeAction(Keybinds.AddBpmChange),
+            new RemoveBpmChangeAction(Keybinds.RemoveBpmChange),
+            new AddLabelAction(Keybinds.AddLabel),
+            new RemoveLabelAction(Keybinds.RemoveLabel),
+            new AddMarker1Action(Keybinds.AddMarker1),
+            new AddMarker2Action(Keybinds.AddMarker2),
+            new AddMarker3Action(Keybinds.AddMarker3),
+            new SetBreakpointAction(Keybinds.SetBreakpoint),
+            new RemoveBreakpointAction(Keybinds.RemoveBreakpoint),
+            new EmergencyReloadAction(Keybinds.EmergencyReload)
         ];
         
         Trace.WriteLine("Loaded keybinds");
     }
-
+    
     public static void LoadConfig()
     {
-        var deserializer = new DeserializerBuilder()
-                           .WithNamingConvention(CamelCaseNamingConvention.Instance)
-                           .IgnoreUnmatchedProperties()
-                           .Build();
-        
-        var configPath = Path.Combine(Environment.CurrentDirectory, ConfigFileName);
-        if (File.Exists(configPath))
+        try
         {
-            try
+            var buffer = JsonSerializer.Deserialize<Settings>(File.ReadAllText(ConfigFilePath));
+            if (buffer != null)
             {
-                var settings = deserializer.Deserialize<Settings>(File.ReadAllText(configPath));
-                Settings = settings;
-                
-                var valid = !(settings.MinZoom <= 0 || settings.MaxZoom <= 0 ||
-                              settings.MinZoom > settings.MaxZoom || settings.ZoomIncrement == 0 ||
-                              settings.BeatSnaps.Count == 0 ||
-                              settings.BeatSnaps.Any(snap => snap <= 0));
-
-                if (settings.LaneOrder.Count != 4 ||
-                    settings.LaneOrder.Count != settings.LaneOrder.Distinct().Count())
-                {
-                    valid = false;
-                }
-                
-                bool hasTop = false, hasBottom = false, hasCamera = false, hasCenter = false;
-                foreach (var lane in settings.LaneOrder)
-                {
-                    switch (lane)
-                    {
-                        case "top":
-                            hasTop = true;
-                            break;
-                        case "bottom":
-                            hasBottom = true;
-                            break;
-                        case "camera":
-                            hasCamera = true;
-                            break;
-                        case "center":
-                            hasCenter = true;
-                            break;
-                    }
-                }
-
-                if (!hasTop || !hasBottom || !hasCamera || !hasCenter)
-                {
-                    valid = false;
-                }
-
-                if (settings.PasteBehavior != "none" && settings.PasteBehavior != "notes" &&
-                    settings.PasteBehavior != "region")
-                {
-                    valid = false;
-                }
-
-                if (valid)
-                {
-                    Settings = settings;
-                    Trace.WriteLine("Loaded settings:");
-                    Settings.PrintSettings();
-                }
-                else
-                {
-                    Trace.WriteLine("Invalid settings, using default values.");
-                }
-            }
-            catch (YamlException e)
-            {
-                Trace.WriteLine($"Could not parse config file: {e.Message}");
-            }
-        }
-        else
-        {
-            Trace.WriteLine("Config file not found.");
-        }
-        
-        // look for your custom songs directory
-        var gameDataDirectory = Path.GetFullPath(
-            "../LocalLow/D-CELL GAMES/UNBEATABLE",
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
-        CustomSongsDirectory = (Directory.Exists(Path.Combine(gameDataDirectory, "CustomSongs"))
-            ? Path.Combine(gameDataDirectory, "CustomSongs")
-            : Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
-        
-        // breakpoints also require stefy's practice mod to be installed
-        if (Settings.EnableBreakpoints)
-        {
-            PracticeModConfigPath = Path.Combine(gameDataDirectory, "practice-mode-settings.txt");
-            if (File.Exists(PracticeModConfigPath))
-            {
-                Trace.WriteLine("Found Practice Mod, enabling breakpoints.");
-                PracticeModInstalled = true;
+                Settings = buffer;
             }
             else
             {
-                Trace.WriteLine("Install Practice Mod to enable breakpoints.");
-                PracticeModInstalled = false;
+                Trace.WriteLine("Could not parse config: file is empty.");
             }
         }
+        catch (JsonException e)
+        {
+            Trace.WriteLine($"Could not parse keybinds: {e.Message}");
+        }
+        
+        Trace.WriteLine("Loaded config");
+        Settings.PrintSettings();
     }
 
     private static void LoadThemes(IResourceDictionary resources)
@@ -558,7 +284,7 @@ public static class Config
                         }
 
                         var themeJson = themeValue.AsObject();
-                        if (VerifyJsonObject(themeJson, ColorThemePropertyTypes))
+                        if (JsonHelper.VerifyJsonObject(themeJson, ColorThemePropertyTypes))
                         {
                             var theme = new Dictionary<string, Color>();
                             foreach (var (colorName, colorString) in themeJson)
@@ -589,8 +315,13 @@ public static class Config
         }
     }
 
-    private static bool VerifyKeybindStrings(List<string> keybindStrings)
+    private static bool VerifyKeybindStrings(List<string>? keybindStrings)
     {
+        if (keybindStrings == null)
+        {
+            return false;
+        }
+        
         foreach (var str in keybindStrings)
         {
             if (str == "")
