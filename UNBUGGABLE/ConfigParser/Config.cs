@@ -166,10 +166,62 @@ public static class Config
     {
         try
         {
-            var buffer = JsonSerializer.Deserialize<Keybinds>(File.ReadAllText(KeybindFilePath));
-            if (buffer != null)
+            var keybinds = JsonSerializer.Deserialize<Keybinds>(File.ReadAllText(KeybindFilePath));
+            if (keybinds != null && (VerifyKeybindStrings(keybinds.Undo) &&
+                    VerifyKeybindStrings(keybinds.Redo) &&
+                    VerifyKeybindStrings(keybinds.SaveFile) &&
+                    VerifyKeybindStrings(keybinds.OpenFile) &&
+                    VerifyKeybindStrings(keybinds.ResetPlaySpeed) &&
+                    VerifyKeybindStrings(keybinds.ReloadConfig) &&
+                    VerifyKeybindStrings(keybinds.MoveForward) &&
+                    VerifyKeybindStrings(keybinds.MoveBack) &&
+                    VerifyKeybindStrings(keybinds.QuickScrollModifier) &&
+                    VerifyKeybindStrings(keybinds.PlayPause) &&
+                    VerifyKeybindStrings(keybinds.ZoomIn) &&
+                    VerifyKeybindStrings(keybinds.ZoomOut) &&
+                    VerifyKeybindStrings(keybinds.PrevLabel) &&
+                    VerifyKeybindStrings(keybinds.NextLabel) &&
+                    VerifyKeybindStrings(keybinds.PrevNoteSnap) &&
+                    VerifyKeybindStrings(keybinds.NextNoteSnap) &&
+                    VerifyKeybindStrings(keybinds.PlaceTopLane) &&
+                    VerifyKeybindStrings(keybinds.PlaceBottomLane) &&
+                    VerifyKeybindStrings(keybinds.PlaceCameraLane) &&
+                    VerifyKeybindStrings(keybinds.PlaceCenterLane) &&
+                    VerifyKeybindStrings(keybinds.SelectAll) &&
+                    VerifyKeybindStrings(keybinds.SelectTopLane) &&
+                    VerifyKeybindStrings(keybinds.SelectBottomLane) &&
+                    VerifyKeybindStrings(keybinds.SelectCameraLane) &&
+                    VerifyKeybindStrings(keybinds.SelectCenterLane) &&
+                    VerifyKeybindStrings(keybinds.Cut) &&
+                    VerifyKeybindStrings(keybinds.Copy) &&
+                    VerifyKeybindStrings(keybinds.Paste) &&
+                    VerifyKeybindStrings(keybinds.ClearSelection) &&
+                    VerifyKeybindStrings(keybinds.DeleteSelection) &&
+                    VerifyKeybindStrings(keybinds.MirrorSelection) &&
+                    VerifyKeybindStrings(keybinds.MoveSelectionForward) &&
+                    VerifyKeybindStrings(keybinds.MoveSelectionBack) &&
+                    VerifyKeybindStrings(keybinds.SetFinishFlag) &&
+                    VerifyKeybindStrings(keybinds.SetWhistleFlag) &&
+                    VerifyKeybindStrings(keybinds.SetClapFlag) &&
+                    VerifyKeybindStrings(keybinds.CopId0) &&
+                    VerifyKeybindStrings(keybinds.CopId1) &&
+                    VerifyKeybindStrings(keybinds.CopId2) &&
+                    VerifyKeybindStrings(keybinds.CopId3) &&
+                    VerifyKeybindStrings(keybinds.CopId4) &&
+                    VerifyKeybindStrings(keybinds.PrevCop) &&
+                    VerifyKeybindStrings(keybinds.NextCop) &&
+                    VerifyKeybindStrings(keybinds.AddBpmChange) &&
+                    VerifyKeybindStrings(keybinds.RemoveBpmChange) &&
+                    VerifyKeybindStrings(keybinds.AddLabel) &&
+                    VerifyKeybindStrings(keybinds.RemoveLabel) &&
+                    VerifyKeybindStrings(keybinds.AddMarker1) &&
+                    VerifyKeybindStrings(keybinds.AddMarker2) &&
+                    VerifyKeybindStrings(keybinds.AddMarker3) &&
+                    VerifyKeybindStrings(keybinds.SetBreakpoint) &&
+                    VerifyKeybindStrings(keybinds.RemoveBreakpoint) &&
+                    VerifyKeybindStrings(keybinds.EmergencyReload)))
             {
-                Keybinds = buffer;
+                Keybinds = keybinds;
             }
             else
             {
@@ -192,6 +244,7 @@ public static class Config
             new ZoomOutAction(Keybinds.ZoomOut),
             new MoveForwardAction(Keybinds.MoveForward),
             new MoveBackAction(Keybinds.MoveBack),
+            new QuickScrollModifierAction(Keybinds.QuickScrollModifier),
             new PlayPauseAction(Keybinds.PlayPause),
             new PrevLabelAction(Keybinds.PrevLabel),
             new NextLabelAction(Keybinds.NextLabel),
@@ -285,6 +338,11 @@ public static class Config
 
                 if (settings.PasteBehavior != "none" && settings.PasteBehavior != "notes" &&
                     settings.PasteBehavior != "region")
+                {
+                    valid = false;
+                }
+
+                if (settings.QuickScrollBeats <= 0)
                 {
                     valid = false;
                 }

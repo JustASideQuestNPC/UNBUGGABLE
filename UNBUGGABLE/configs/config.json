@@ -72,5 +72,6 @@
     "inputData": true,
     "mediaPlayer": true,
     "noteTimestamps": true
-  }
+  },
+  "quickScrollBeats": 5
 }

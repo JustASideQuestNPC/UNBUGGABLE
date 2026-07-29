@@ -153,6 +153,9 @@ public class Settings
 
     [JsonRequired][JsonPropertyName("enableNegativeMashConversion")]
     public bool NegativeMashConversion = true;
+    
+    [JsonRequired][JsonPropertyName("quickScrollBeats")]
+    public int QuickScrollBeats = 5;
 
     [JsonRequired][JsonPropertyName("beatSnaps")]
     public List<int> BeatSnaps = [1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 20, 5, 9, 11, 13];

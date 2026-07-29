@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using UNBEATABLEChartEditor.Input;
+using UNBUGGABLE.Resources;
 using UNBUGGABLE.Views;
 
 namespace UNBUGGABLE.Keybinds;
@@ -11,7 +12,14 @@ public class MoveForwardAction(List<string> keybinds) : InputActionBase(keybinds
 
     public override async Task OnPress()
     {
-        Chart.MoveToNextSnap();
+        if (ChartBuilder.QuickScroll)
+        {
+            Chart.QuickScroll(Config.Settings.QuickScrollBeats);
+        }
+        else
+        {
+            Chart.MoveToNextSnap();
+        }
     }
 }
 
@@ -20,10 +28,29 @@ public class MoveBackAction(List<string> keybinds) : InputActionBase(keybinds)
     public override bool IgnoreModifiers => true;
     public override async Task OnPress()
     {
-        Chart.MoveToPreviousSnap();
+        if (ChartBuilder.QuickScroll)
+        {
+            Chart.QuickScroll(-Config.Settings.QuickScrollBeats);
+        }
+        else
+        {
+            Chart.MoveToPreviousSnap();
+        }
     }
 }
 
+public class QuickScrollModifierAction(List<string> keybinds) : InputActionBase(keybinds)
+{
+    public override async Task OnPress()
+    {
+        ChartBuilder.QuickScroll = true;
+    }
+    
+    public override async Task OnRelease()
+    {
+        ChartBuilder.QuickScroll = false;
+    }
+}
 
 public class PlayPauseAction(List<string> keybinds) : InputActionBase(keybinds)
 {
@@ -39,7 +66,10 @@ public class ZoomInAction(List<string> keybinds) : InputActionBase(keybinds)
 {
     public override async Task OnPress()
     {
-        NoteViewer.IncreaseZoom();
+        if (!ChartBuilder.PlacingNote)
+        {
+            NoteViewer.IncreaseZoom();
+        }
     }
 }
 
@@ -47,7 +77,10 @@ public class ZoomOutAction(List<string> keybinds) : InputActionBase(keybinds)
 {
     public override async Task OnPress()
     {
-        NoteViewer.DecreaseZoom();
+        if (!ChartBuilder.PlacingNote)
+        {
+            NoteViewer.DecreaseZoom();
+        }
     }
 }
 

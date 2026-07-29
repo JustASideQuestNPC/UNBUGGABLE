@@ -146,6 +146,10 @@ A list of every value that the chart editor can snap to. For some reason, the of
 multiplies all snap values by 4. The default snap values for UNBUGGABLE match the ones in the
 official editor.
 
+## quickScrollBeats
+While holding the quick scroll modifier (default `f`), you scroll this many beats at a time. Must be
+a positive integer.
+
 ## pasteOverwrites
 Determines what happens when pasting over existing notes, either "none", "notes", or "region":
 - "none": If a note is pasted on top of an existing note, the existing note will stay and the new

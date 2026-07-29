@@ -46,17 +46,17 @@ public static class Utils
     /// <summary>
     /// Returns whether this number is within 1 of another number.
     /// </summary>
-    public static bool SoftEquals(this double a, double b)
+    public static bool SoftEquals(this double a, double b, double threshold = 1)
     {
-        return Math.Abs(a - b) < 1;
+        return Math.Abs(a - b) < threshold;
     }
     
     /// <summary>
     /// Returns whether this number is note within 1 of another number.
     /// </summary>
-    public static bool SoftNotEquals(this double a, double b)
+    public static bool SoftNotEquals(this double a, double b, double threshold = 1)
     {
-        return Math.Abs(a - b) > 1;
+        return Math.Abs(a - b) > threshold;
     }
     
     /// <summary>

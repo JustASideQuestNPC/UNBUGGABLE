@@ -412,6 +412,29 @@ public static partial class Chart
     public static long GetNextSnapTime() =>
         _currentSnapLineSetIndex < _currentSnapLineSet.Count - 1 ?
         _currentSnapLineSet[_currentSnapLineSetIndex + 1] : _currentSnapLineSet[^1];
+    
+    public static void QuickScroll(int numBeats)
+    {
+        var lastSnapLineSet = _currentSnapLineSet;
+        
+        _currentSnapLineSet = SnapLineSets[1];
+        SetTimeToNearestSnap();
+        
+        for (var i = 0; i < Math.Abs(numBeats); ++i)
+        {
+            if (numBeats > 0)
+            {
+                MoveToNextSnap();
+            }
+            else
+            {
+                MoveToPreviousSnap();
+            }
+        }
+        
+        _currentSnapLineSet = lastSnapLineSet;
+        SetTimeToNearestSnap();
+    }
 
     public static void MoveToNextLabel()
     {

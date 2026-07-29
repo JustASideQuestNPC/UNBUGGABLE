@@ -26,6 +26,9 @@
         "scrollUp",
         "up"
     ],
+    "quickScrollModifier": [
+        "f"
+    ],
     "zoomIn": [
         "ctrl+scrollDown",
         "ctrl+oemPlus"

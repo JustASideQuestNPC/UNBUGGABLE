@@ -26,6 +26,11 @@ public static class ChartBuilder
     public static long BottomLaneStartTime { get; private set; } = -1000;
     public static long CenterLaneStartTime { get; private set; } = -1000;
     
+    public static bool PlacingNote => TopLaneStartTime != -1000 || BottomLaneStartTime != -1000 ||
+                                      CenterLaneStartTime != -1000;
+    
+    public static bool QuickScroll { get; set; } = false;
+    
     public static List<NoteBase> SelectedNotes = new();
     
     public static long BreakpointTime { get; private set; } = -1000;
@@ -257,7 +262,7 @@ public static class ChartBuilder
     {
         var bpm = await new NumberEntryDialog("edit bpm change",
                                               Math.Round(region.Bpm, 2)).ShowAsync();
-        if (bpm.HasValue && bpm.Value.SoftNotEquals(region.Bpm))
+        if (bpm.HasValue && bpm.Value.SoftNotEquals(region.Bpm, 0.0001))
         {
             if (region.Previous != null)
             {
@@ -267,7 +272,7 @@ public static class ChartBuilder
                     
             // setting a region's bpm to the same as the previous region merges them
             if (region.Previous != null &&
-                bpm.Value.SoftEquals(region.Previous.Bpm))
+                bpm.Value.SoftEquals(region.Previous.Bpm, 0.0001))
             {
                 Trace.WriteLine("Merge bpm regions");
                 ChartBuilderCommandInvoker.Execute(new RemoveBpmRegionCommand(region));
