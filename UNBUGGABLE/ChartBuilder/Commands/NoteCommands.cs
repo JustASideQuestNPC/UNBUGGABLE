@@ -35,33 +35,48 @@ public class PasteNotesCommand : ICommand
 {
     public string Name => "Paste Notes";
 
-    private List<NoteBase> _addedNotes;
-    private List<NoteBase> _removedNotes = [];
+    private readonly List<NoteBase> _addedNotes;
+    private readonly List<NoteBase> _removedNotes = [];
     
     public PasteNotesCommand(List<NoteBase> notes)
     {
-        if (Config.Settings.PasteOverwrite)
+        switch (Config.Settings.PasteBehavior)
         {
-            _addedNotes = notes;
-            foreach (var note in notes)
+            case "region":
             {
-                var existingNote = Chart.GetNote(note.Time, note.Lane);
-                if (existingNote != null)
-                {
-                    _removedNotes.Add(existingNote);
-                }
+                _addedNotes = notes;
+                var start = notes.Min(n => n.Time);
+                var end = notes.Max(n => n.EndTime);
+                _removedNotes = Chart.GetNoteRegion(start, end);
+                break;
             }
-        }
-        else
-        {
-            _addedNotes = [];
-            foreach (var note in notes)
+            case "notes":
             {
-                var existingNote = Chart.GetNote(note.Time, note.Lane);
-                if (existingNote == null)
+                _addedNotes = notes;
+                foreach (var note in notes)
                 {
-                    _addedNotes.Add(note);
+                    var existingNote = Chart.GetNote(note.Time, note.Lane);
+                    if (existingNote != null)
+                    {
+                        _removedNotes.Add(existingNote);
+                    }
                 }
+
+                break;
+            }
+            default: // "none"
+            {
+                _addedNotes = [];
+                foreach (var note in notes)
+                {
+                    var existingNote = Chart.GetNote(note.Time, note.Lane);
+                    if (existingNote == null)
+                    {
+                        _addedNotes.Add(note);
+                    }
+                }
+
+                break;
             }
         }
     }

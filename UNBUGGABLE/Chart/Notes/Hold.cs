@@ -79,32 +79,44 @@ public class HoldNote : NoteBase
         }
     }
 
+    private bool _hasPlayedHitSound = false;
     public override long? ShouldPlayHitSound(double rangeStart, double rangeEnd)
     {
+        long? offset = null;
         switch (Type)
         {
             case NoteType.HOLD:
                 if (Time > rangeStart && Time <= rangeEnd && Config.Settings.HitSounds.HoldStart)
                 {
-                    return (long)(Time - rangeStart);
+                    offset = (long)(Time - rangeStart);
                 }
                 if (EndTime > rangeStart && EndTime <= rangeEnd && Config.Settings.HitSounds.HoldEnd)
                 {
-                    return (long)(EndTime - rangeStart);
+                    offset = (long)(EndTime - rangeStart);
                 }
                 break;
             case NoteType.DOUBLE:
                 if (Time > rangeStart && Time <= rangeEnd && Config.Settings.HitSounds.DoubleStart)
                 {
-                    return (long)(Time - rangeStart);
+                    offset = (long)(Time - rangeStart);
                 }
                 if (EndTime > rangeStart && EndTime <= rangeEnd && Config.Settings.HitSounds.DoubleEnd)
                 {
-                    return (long)(EndTime - rangeStart);
+                    offset = (long)(EndTime - rangeStart);
                 }
                 break;
         }
+
+        if (offset != null)
+        {
+            if (!_hasPlayedHitSound)
+            {
+                return offset;
+            }
+            _hasPlayedHitSound = true;
+        }
         
+        _hasPlayedHitSound = false;
         return null;
     }
     

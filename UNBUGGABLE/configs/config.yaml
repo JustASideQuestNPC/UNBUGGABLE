@@ -57,9 +57,14 @@ enableNegativeMashConversion: true
 # official editor.
 beatSnaps: [1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 20, 5, 9, 11, 13]
 
-# Whether pasting a note on top of another note will delete the existing note and keep the pasted
-# note, or vice versa.
-pasteOverwritesExistingNotes: true
+# Determines what happens when pasting over existing notes, either "none", "notes", or "region":
+# "none": If a note is pasted on top of an existing note, the existing note will stay and the new
+#         note will not be pasted.
+# "notes": If a note is pasted on top of an existing note, the existing note will be removed and the
+#          new note will replace it.
+# "region": When pasting, ALL notes between the start and the end of the pasted section will be
+#           removed, even if they weren't in the same place as one of the pasted notes.
+pasteOverwrites: "region"
 
 # If true, replacing/extending a note will preserve whether the N (noisz spawn) flag is on that
 # note. Does not apply to cop notes.

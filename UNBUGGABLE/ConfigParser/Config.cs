@@ -83,7 +83,7 @@ public static class Config
         MaxConcurrentSfx = 16,
         CurrentTimePosition = 175,
         NegativeMashConversion = true,
-        PasteOverwrite = true,
+        PasteBehavior = "notes",
         AutosaveInterval = 60000,
         DoublePreviewAlpha = 0.5,
         HitSounds = new()
@@ -481,6 +481,12 @@ public static class Config
                 }
 
                 if (!hasTop || !hasBottom || !hasCamera || !hasCenter)
+                {
+                    valid = false;
+                }
+
+                if (settings.PasteBehavior != "none" && settings.PasteBehavior != "notes" &&
+                    settings.PasteBehavior != "region")
                 {
                     valid = false;
                 }

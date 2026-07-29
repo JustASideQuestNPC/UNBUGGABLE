@@ -99,8 +99,8 @@ public class Settings
     [YamlMember(Alias = "showFreestyleSubNotesWhilePlacing", ApplyNamingConventions = false)]
     public required bool ShowSubFreestylesInNoteViewer;
 
-    [YamlMember(Alias = "pasteOverwritesExistingNotes", ApplyNamingConventions = false)]
-    public required bool PasteOverwrite;
+    [YamlMember(Alias = "pasteOverwrites", ApplyNamingConventions = false)]
+    public required string PasteBehavior; // "none", "notes", or "region"
 
     public required List<int> BeatSnaps;
     public required double MinZoom;
