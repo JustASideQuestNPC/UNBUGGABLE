@@ -244,10 +244,61 @@ public static class Config
     {
         try
         {
-            var buffer = JsonSerializer.Deserialize<Settings>(File.ReadAllText(ConfigFilePath));
-            if (buffer != null)
+            var settings = JsonSerializer.Deserialize<Settings>(File.ReadAllText(ConfigFilePath));
+            if (settings != null)
             {
-                Settings = buffer;
+                var valid = !(settings.MinZoom <= 0 || settings.MaxZoom <= 0 ||
+                              settings.MinZoom > settings.MaxZoom || settings.ZoomIncrement == 0 ||
+                              settings.BeatSnaps.Count == 0 ||
+                              settings.BeatSnaps.Any(snap => snap <= 0));
+
+                if (settings.LaneOrder.Count != 4 ||
+                    settings.LaneOrder.Count != settings.LaneOrder.Distinct().Count())
+                {
+                    valid = false;
+                }
+                
+                bool hasTop = false, hasBottom = false, hasCamera = false, hasCenter = false;
+                foreach (var lane in settings.LaneOrder)
+                {
+                    switch (lane)
+                    {
+                        case "top":
+                            hasTop = true;
+                            break;
+                        case "bottom":
+                            hasBottom = true;
+                            break;
+                        case "camera":
+                            hasCamera = true;
+                            break;
+                        case "center":
+                            hasCenter = true;
+                            break;
+                    }
+                }
+
+                if (!hasTop || !hasBottom || !hasCamera || !hasCenter)
+                {
+                    valid = false;
+                }
+
+                if (settings.PasteBehavior != "none" && settings.PasteBehavior != "notes" &&
+                    settings.PasteBehavior != "region")
+                {
+                    valid = false;
+                }
+
+                if (valid)
+                {
+                    Settings = settings;
+                    Trace.WriteLine("Loaded settings:");
+                    Settings.PrintSettings();
+                }
+                else
+                {
+                    Trace.WriteLine("Invalid settings, using default values.");
+                }
             }
             else
             {
@@ -261,6 +312,30 @@ public static class Config
         
         Trace.WriteLine("Loaded config");
         Settings.PrintSettings();
+        
+        // look for your custom songs directory
+        var gameDataDirectory = Path.GetFullPath(
+            "../LocalLow/D-CELL GAMES/UNBEATABLE",
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+        CustomSongsDirectory = (Directory.Exists(Path.Combine(gameDataDirectory, "CustomSongs"))
+            ? Path.Combine(gameDataDirectory, "CustomSongs")
+            : Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+        
+        // breakpoints also require stefy's practice mod to be installed
+        if (Settings.EnableBreakpoints)
+        {
+            PracticeModConfigPath = Path.Combine(gameDataDirectory, "practice-mode-settings.txt");
+            if (File.Exists(PracticeModConfigPath))
+            {
+                Trace.WriteLine("Found Practice Mod, enabling breakpoints.");
+                PracticeModInstalled = true;
+            }
+            else
+            {
+                Trace.WriteLine("Install Practice Mod to enable breakpoints.");
+                PracticeModInstalled = false;
+            }
+        }
     }
 
     private static void LoadThemes(IResourceDictionary resources)

@@ -422,15 +422,15 @@ public partial class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        if (Chart.ChartFileName == "")
+        var fullPath = Path.Combine(Path.Combine(Config.CustomSongsDirectory,
+                                                 Chart.ChartFolderName),
+                                    $"{Chart.ChartFileName}.beat.txt");
+        if (Chart.ChartFileName == "" || !File.Exists(fullPath))
         {
             await SaveNewBeatFile();
         }
         else
         {
-            var fullPath = Path.Combine(Path.Combine(Config.CustomSongsDirectory,
-                                                     Chart.ChartFolderName),
-                                        $"{Chart.ChartFileName}.beat.txt");
             Trace.WriteLine($"Saving to {fullPath}");
             await ChartBuilder.SaveToBeatPath(fullPath);
             ShowEventIndicator($"Saved to {Chart.ChartFileName}.beat.txt");
@@ -478,14 +478,15 @@ public partial class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        if (Chart.ChartFileName == "")
+        var fullPath = Path.Combine(Config.CustomSongsDirectory,
+                                    $"{Chart.ChartFileName}.txt");
+        if (Chart.ChartFileName == "" || !File.Exists(fullPath))
         {
             await SaveNewStandardFile();
         }
         else
         {
-            var fullPath = Path.Combine(Config.CustomSongsDirectory,
-                                        $"{Chart.ChartFileName}.txt");
+            
             Trace.WriteLine($"Saving to {fullPath}");
             await ChartBuilder.SaveToStandardPath(fullPath);
             ShowEventIndicator($"Saved to {Chart.ChartFileName}.txt");
