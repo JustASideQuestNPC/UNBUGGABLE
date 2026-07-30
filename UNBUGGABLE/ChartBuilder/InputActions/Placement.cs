@@ -55,12 +55,20 @@ public class PlaceCenterLaneAction(List<string> keybinds) : InputActionBase(keyb
     }
 }
 
-public class NudgeToSnapAction(List<string> keybinds) : InputActionBase(keybinds)
+public class NudgeAction(List<string> keybinds, bool head, int direction) :
+    InputActionBase(keybinds)
 {
     public override bool CanUseWhilePlacingNotes => false;
 
     public override async Task OnPress()
     {
-        ChartBuilder.NudgeNotesToSnap();
+        if (head)
+        {
+            ChartBuilder.NudgeNoteHeads(direction);
+        }
+        else
+        {
+            ChartBuilder.NudgeNoteTails(direction);
+        }
     }
 }

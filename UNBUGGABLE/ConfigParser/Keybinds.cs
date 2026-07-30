@@ -113,6 +113,12 @@ public class Keybinds
     public List<string> RemoveBreakpoint { get; set; } = ["ctrl+b"];
     [JsonRequired][JsonPropertyName("emergencyReload")]
     public List<string> EmergencyReload { get; set; } = ["ctrl+alt+r"];
-    [JsonRequired][JsonPropertyName("nudgeToSnap")]
-    public List<string> NudgeToSnap { get; set; } = ["shift+s"];
+    [JsonRequired][JsonPropertyName("nudgeForward")]
+    public List<string> NudgeForward { get; set; } = ["alt+s"];
+    [JsonRequired][JsonPropertyName("nudgeBack")]
+    public List<string> NudgeBack { get; set; } = ["alt+w"];
+    [JsonRequired][JsonPropertyName("nudgeTailForward")]
+    public List<string> NudgeTailForward { get; set; } = ["alt+shift+s"];
+    [JsonRequired][JsonPropertyName("nudgeTailBack")]
+    public List<string> NudgeTailBack { get; set; } = ["alt+shift+w"];
 }

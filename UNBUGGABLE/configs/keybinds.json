@@ -61,8 +61,17 @@
     "placeCenterLane": [
         "d4"
     ],
-    "nudgeToSnap": [
-        "shift+s"
+    "nudgeForward": [
+        "alt+s"
+    ],
+    "nudgeBack": [
+        "alt+w"
+    ],
+    "nudgeTailForward": [
+        "alt+shift+s"
+    ],
+    "nudgeTailBack": [
+        "alt+shift+w"
     ],
     "selectAll": [
         "ctrl+a"

@@ -167,60 +167,63 @@ public static class Config
         try
         {
             var keybinds = JsonSerializer.Deserialize<Keybinds>(File.ReadAllText(KeybindFilePath));
-            if (keybinds != null && (VerifyKeybindStrings(keybinds.Undo) &&
-                    VerifyKeybindStrings(keybinds.Redo) &&
-                    VerifyKeybindStrings(keybinds.SaveFile) &&
-                    VerifyKeybindStrings(keybinds.OpenFile) &&
-                    VerifyKeybindStrings(keybinds.ResetPlaySpeed) &&
-                    VerifyKeybindStrings(keybinds.ReloadConfig) &&
-                    VerifyKeybindStrings(keybinds.MoveForward) &&
-                    VerifyKeybindStrings(keybinds.MoveBack) &&
-                    VerifyKeybindStrings(keybinds.QuickScrollModifier) &&
-                    VerifyKeybindStrings(keybinds.PlayPause) &&
-                    VerifyKeybindStrings(keybinds.ZoomIn) &&
-                    VerifyKeybindStrings(keybinds.ZoomOut) &&
-                    VerifyKeybindStrings(keybinds.PrevLabel) &&
-                    VerifyKeybindStrings(keybinds.NextLabel) &&
-                    VerifyKeybindStrings(keybinds.PrevNoteSnap) &&
-                    VerifyKeybindStrings(keybinds.NextNoteSnap) &&
-                    VerifyKeybindStrings(keybinds.PlaceTopLane) &&
-                    VerifyKeybindStrings(keybinds.PlaceBottomLane) &&
-                    VerifyKeybindStrings(keybinds.PlaceCameraLane) &&
-                    VerifyKeybindStrings(keybinds.PlaceCenterLane) &&
-                    VerifyKeybindStrings(keybinds.NudgeToSnap) &&
-                    VerifyKeybindStrings(keybinds.SelectAll) &&
-                    VerifyKeybindStrings(keybinds.SelectTopLane) &&
-                    VerifyKeybindStrings(keybinds.SelectBottomLane) &&
-                    VerifyKeybindStrings(keybinds.SelectCameraLane) &&
-                    VerifyKeybindStrings(keybinds.SelectCenterLane) &&
-                    VerifyKeybindStrings(keybinds.Cut) &&
-                    VerifyKeybindStrings(keybinds.Copy) &&
-                    VerifyKeybindStrings(keybinds.Paste) &&
-                    VerifyKeybindStrings(keybinds.ClearSelection) &&
-                    VerifyKeybindStrings(keybinds.DeleteSelection) &&
-                    VerifyKeybindStrings(keybinds.MirrorSelection) &&
-                    VerifyKeybindStrings(keybinds.MoveSelectionForward) &&
-                    VerifyKeybindStrings(keybinds.MoveSelectionBack) &&
-                    VerifyKeybindStrings(keybinds.SetFinishFlag) &&
-                    VerifyKeybindStrings(keybinds.SetWhistleFlag) &&
-                    VerifyKeybindStrings(keybinds.SetClapFlag) &&
-                    VerifyKeybindStrings(keybinds.CopId0) &&
-                    VerifyKeybindStrings(keybinds.CopId1) &&
-                    VerifyKeybindStrings(keybinds.CopId2) &&
-                    VerifyKeybindStrings(keybinds.CopId3) &&
-                    VerifyKeybindStrings(keybinds.CopId4) &&
-                    VerifyKeybindStrings(keybinds.PrevCop) &&
-                    VerifyKeybindStrings(keybinds.NextCop) &&
-                    VerifyKeybindStrings(keybinds.AddBpmChange) &&
-                    VerifyKeybindStrings(keybinds.RemoveBpmChange) &&
-                    VerifyKeybindStrings(keybinds.AddLabel) &&
-                    VerifyKeybindStrings(keybinds.RemoveLabel) &&
-                    VerifyKeybindStrings(keybinds.AddMarker1) &&
-                    VerifyKeybindStrings(keybinds.AddMarker2) &&
-                    VerifyKeybindStrings(keybinds.AddMarker3) &&
-                    VerifyKeybindStrings(keybinds.SetBreakpoint) &&
-                    VerifyKeybindStrings(keybinds.RemoveBreakpoint) &&
-                    VerifyKeybindStrings(keybinds.EmergencyReload)))
+            if (keybinds != null && VerifyKeybindStrings(keybinds.Undo) &&
+                                    VerifyKeybindStrings(keybinds.Redo) &&
+                                    VerifyKeybindStrings(keybinds.SaveFile) &&
+                                    VerifyKeybindStrings(keybinds.OpenFile) &&
+                                    VerifyKeybindStrings(keybinds.ResetPlaySpeed) &&
+                                    VerifyKeybindStrings(keybinds.ReloadConfig) &&
+                                    VerifyKeybindStrings(keybinds.MoveForward) &&
+                                    VerifyKeybindStrings(keybinds.MoveBack) &&
+                                    VerifyKeybindStrings(keybinds.QuickScrollModifier) &&
+                                    VerifyKeybindStrings(keybinds.PlayPause) &&
+                                    VerifyKeybindStrings(keybinds.ZoomIn) &&
+                                    VerifyKeybindStrings(keybinds.ZoomOut) &&
+                                    VerifyKeybindStrings(keybinds.PrevLabel) &&
+                                    VerifyKeybindStrings(keybinds.NextLabel) &&
+                                    VerifyKeybindStrings(keybinds.PrevNoteSnap) &&
+                                    VerifyKeybindStrings(keybinds.NextNoteSnap) &&
+                                    VerifyKeybindStrings(keybinds.PlaceTopLane) &&
+                                    VerifyKeybindStrings(keybinds.PlaceBottomLane) &&
+                                    VerifyKeybindStrings(keybinds.PlaceCameraLane) &&
+                                    VerifyKeybindStrings(keybinds.PlaceCenterLane) &&
+                                    VerifyKeybindStrings(keybinds.SelectAll) &&
+                                    VerifyKeybindStrings(keybinds.SelectTopLane) &&
+                                    VerifyKeybindStrings(keybinds.SelectBottomLane) &&
+                                    VerifyKeybindStrings(keybinds.SelectCameraLane) &&
+                                    VerifyKeybindStrings(keybinds.SelectCenterLane) &&
+                                    VerifyKeybindStrings(keybinds.Cut) &&
+                                    VerifyKeybindStrings(keybinds.Copy) &&
+                                    VerifyKeybindStrings(keybinds.Paste) &&
+                                    VerifyKeybindStrings(keybinds.ClearSelection) &&
+                                    VerifyKeybindStrings(keybinds.DeleteSelection) &&
+                                    VerifyKeybindStrings(keybinds.MirrorSelection) &&
+                                    VerifyKeybindStrings(keybinds.MoveSelectionForward) &&
+                                    VerifyKeybindStrings(keybinds.MoveSelectionBack) &&
+                                    VerifyKeybindStrings(keybinds.SetFinishFlag) &&
+                                    VerifyKeybindStrings(keybinds.SetWhistleFlag) &&
+                                    VerifyKeybindStrings(keybinds.SetClapFlag) &&
+                                    VerifyKeybindStrings(keybinds.CopId0) &&
+                                    VerifyKeybindStrings(keybinds.CopId1) &&
+                                    VerifyKeybindStrings(keybinds.CopId2) &&
+                                    VerifyKeybindStrings(keybinds.CopId3) &&
+                                    VerifyKeybindStrings(keybinds.CopId4) &&
+                                    VerifyKeybindStrings(keybinds.PrevCop) &&
+                                    VerifyKeybindStrings(keybinds.NextCop) &&
+                                    VerifyKeybindStrings(keybinds.AddBpmChange) &&
+                                    VerifyKeybindStrings(keybinds.RemoveBpmChange) &&
+                                    VerifyKeybindStrings(keybinds.AddLabel) &&
+                                    VerifyKeybindStrings(keybinds.RemoveLabel) &&
+                                    VerifyKeybindStrings(keybinds.AddMarker1) &&
+                                    VerifyKeybindStrings(keybinds.AddMarker2) &&
+                                    VerifyKeybindStrings(keybinds.AddMarker3) &&
+                                    VerifyKeybindStrings(keybinds.SetBreakpoint) &&
+                                    VerifyKeybindStrings(keybinds.RemoveBreakpoint) &&
+                                    VerifyKeybindStrings(keybinds.EmergencyReload) &&
+                                    VerifyKeybindStrings(keybinds.NudgeForward) &&
+                                    VerifyKeybindStrings(keybinds.NudgeBack) &&
+                                    VerifyKeybindStrings(keybinds.NudgeTailForward) &&
+                                    VerifyKeybindStrings(keybinds.NudgeTailBack))
             {
                 Keybinds = keybinds;
             }
@@ -255,7 +258,10 @@ public static class Config
             new PlaceBottomLaneAction(Keybinds.PlaceBottomLane),
             new PlaceCameraLaneAction(Keybinds.PlaceCameraLane),
             new PlaceCenterLaneAction(Keybinds.PlaceCenterLane),
-            new NudgeToSnapAction(Keybinds.NudgeToSnap),
+            new NudgeAction(Keybinds.NudgeForward, true, 1),
+            new NudgeAction(Keybinds.NudgeBack, true, -1),
+            new NudgeAction(Keybinds.NudgeTailForward, false, 1),
+            new NudgeAction(Keybinds.NudgeTailBack, false, -1),
             new SelectAllAction(Keybinds.SelectAll),
             new SelectLaneAction(Keybinds.SelectTopLane, NoteLane.TOP),
             new SelectLaneAction(Keybinds.SelectBottomLane, NoteLane.BOTTOM),
