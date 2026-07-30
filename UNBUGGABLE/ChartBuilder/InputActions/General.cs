@@ -48,6 +48,6 @@ public class ReloadConfigCommand(List<string> keybinds) : InputActionBase(keybin
 {
     public override async Task OnPress()
     {
-        App.MainWindowViewModel.ReloadConfigCommand.Execute(null);
+        App.MainWindowViewModel.TryReloadConfigCommand.Execute(null);
     }   
 }

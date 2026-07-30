@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using UNBEATABLEChartEditor;
 using UNBEATABLEChartEditor.Input;
 using UNBUGGABLE.Resources;
+using UNBUGGABLE.Views;
 
 namespace UNBUGGABLE.Keybinds;
 
@@ -77,5 +79,13 @@ public class EmergencyReloadAction(List<string> keybinds) : InputActionBase(keyb
             await ChartBuilder.SaveToStandardPath(UserData.LastOpenedChartFile);
         }
         await ChartBuilder.TryLoadChartFile(UserData.LastOpenedChartFile);
+    }
+}
+
+public class LockNoteFlagAction(List<string> keybinds, char flag) : InputActionBase(keybinds)
+{
+    public override async Task OnPress()
+    {
+        ChartBuilder.ToggleFlagLock(flag);
     }
 }

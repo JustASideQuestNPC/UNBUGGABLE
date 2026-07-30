@@ -32,7 +32,7 @@
                         Height="50">
                 
                 <Button Classes="SquareIconButton" ToolTip.Tip="Reload Config File"
-                        Command="{Binding ReloadConfigCommand}" Focusable="False">
+                        Command="{Binding TryReloadConfigCommand}" Focusable="False">
                     <materialIcons:MaterialIcon Kind="Reload" />
                 </Button>
                     
@@ -171,6 +171,11 @@
                                     <TextBlock Grid.Row="3" Grid.Column="1" Classes="BigText" 
                                                Text="{Binding Cop4State}" />
                                 </Grid>
+                            </StackPanel>
+                            
+                            <StackPanel Orientation="Vertical" Spacing="0">
+                                <TextBlock Classes="SmallText">locked flags</TextBlock>
+                                <TextBlock Classes="BigText" Text="{Binding LockedFlagsText}" />
                             </StackPanel>
                         </StackPanel>
                         

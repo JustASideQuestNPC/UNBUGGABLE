@@ -27,7 +27,7 @@
         "up"
     ],
     "quickScrollModifier": [
-        "f"
+        "x"
     ],
     "zoomIn": [
         "ctrl+scrollDown",
@@ -129,6 +129,20 @@
     ],
     "setNoiszSpawn": [
         "n"
+    ],
+    "lockFinishFlag": [
+        "shift+e",
+        "shift+f"
+    ],
+    "lockWhistleFlag": [
+        "shift+w"
+    ],
+    "lockClapFlag": [
+        "shift+c",
+        "shift+r"
+    ],
+    "lockNoiszSpawn": [
+        "shift+n"
     ],
     "copId0": [
         "ctrl+d0",

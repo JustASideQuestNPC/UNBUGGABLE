@@ -65,6 +65,9 @@ public static class Config
 
     public static Keybinds Keybinds { get; private set; } = new();
     
+    public static bool LoadError { get; private set; } = false;
+    public static string LoadErrorMessage { get; private set; } = "";
+    
     /// <summary>
     /// Default starting location for saving and loading files.
     /// </summary>
@@ -75,6 +78,8 @@ public static class Config
 
     private static readonly string KeybindFilePath = Path.Combine(Environment.CurrentDirectory,
                                                                   "configs/keybinds.json");
+    private static readonly string ThemesFilePath = Path.Combine(Environment.CurrentDirectory,
+                                                                 "configs/themes.json");
 
     /// <summary>
     /// Path to the file with all color themes.
@@ -122,7 +127,7 @@ public static class Config
     /// Loads and parses user settings and color themes.
     /// <param name="resources">The resource dictionary to add theme brushes to.</param>
     /// </summary>
-    public static void LoadAllConfigFiles(IResourceDictionary resources)
+    public static void LoadAllConfigFiles()
     {
         // updatedConfig and updatedKeybinds are temporary files used for preserving existing
         // settings after an update
@@ -157,12 +162,33 @@ public static class Config
             }
         }
         
-        LoadThemes(resources);
-        LoadKeybinds();
-        LoadConfig();
+        LoadError = !TryLoadThemes(out var errorMessage);
+        if (!LoadError)
+        {
+            LoadError = !TryLoadKeybinds(out errorMessage);
+        }
+        if (!LoadError)
+        {
+            LoadError = !TryLoadConfig(out errorMessage);
+        }
+        LoadErrorMessage = errorMessage;
     }
 
-    public static void LoadKeybinds()
+    public static void TryReloadConfig()
+    {
+        LoadError = !TryLoadThemes(out var errorMessage);
+        if (!LoadError)
+        {
+            LoadError = !TryLoadKeybinds(out errorMessage);
+        }
+        if (!LoadError)
+        {
+            LoadError = !TryLoadConfig(out errorMessage);
+        }
+        LoadErrorMessage = errorMessage;
+    }
+
+    private static bool TryLoadKeybinds(out string errorMessage)
     {
         try
         {
@@ -201,8 +227,13 @@ public static class Config
                                     VerifyKeybindStrings(keybinds.MoveSelectionForward) &&
                                     VerifyKeybindStrings(keybinds.MoveSelectionBack) &&
                                     VerifyKeybindStrings(keybinds.SetFinishFlag) &&
+                                    VerifyKeybindStrings(keybinds.LockFinishFlag) &&
                                     VerifyKeybindStrings(keybinds.SetWhistleFlag) &&
+                                    VerifyKeybindStrings(keybinds.LockWhistleFlag) &&
                                     VerifyKeybindStrings(keybinds.SetClapFlag) &&
+                                    VerifyKeybindStrings(keybinds.LockClapFlag) &&
+                                    VerifyKeybindStrings(keybinds.SetNoiszFlag) &&
+                                    VerifyKeybindStrings(keybinds.LockNoiszFlag) &&
                                     VerifyKeybindStrings(keybinds.CopId0) &&
                                     VerifyKeybindStrings(keybinds.CopId1) &&
                                     VerifyKeybindStrings(keybinds.CopId2) &&
@@ -229,12 +260,16 @@ public static class Config
             }
             else
             {
-                Trace.WriteLine("Could not parse keybinds: file is empty.");
+                errorMessage = "Could not parse keybinds: some keybind strings are invalid";
+                Trace.WriteLine(errorMessage);
+                return false;
             }
         }
         catch (JsonException e)
         {
-            Trace.WriteLine($"Could not parse keybinds: {e.Message}");
+            errorMessage = $"Could not parse keybinds: {e.Message}";
+            Trace.WriteLine(errorMessage);
+            return false;
         }
         
         InputManager.Actions = [
@@ -279,6 +314,10 @@ public static class Config
             new SetNoteFlagAction(Keybinds.SetWhistleFlag, 'w'),
             new SetNoteFlagAction(Keybinds.SetClapFlag, 'c'),
             new SetNoteFlagAction(Keybinds.SetNoiszFlag, 'n'),
+            new LockNoteFlagAction(Keybinds.LockFinishFlag, 'f'),
+            new LockNoteFlagAction(Keybinds.LockWhistleFlag, 'w'),
+            new LockNoteFlagAction(Keybinds.LockClapFlag, 'c'),
+            new LockNoteFlagAction(Keybinds.LockNoiszFlag, 'n'),
             new CopId0Action(Keybinds.CopId0),
             new CopId1Action(Keybinds.CopId1),
             new CopId2Action(Keybinds.CopId2),
@@ -299,19 +338,23 @@ public static class Config
         ];
         
         Trace.WriteLine("Loaded keybinds");
+        errorMessage = "";
+        return true;
     }
     
-    public static void LoadConfig()
+    private static bool TryLoadConfig(out string errorMessage)
     {
+        errorMessage = "";
+        var loadSuccessful = true;
         try
         {
             var settings = JsonSerializer.Deserialize<Settings>(File.ReadAllText(ConfigFilePath));
             if (settings != null)
             {
-                var valid = !(settings.MinZoom <= 0 || settings.MaxZoom <= 0 ||
-                              settings.MinZoom > settings.MaxZoom || settings.ZoomIncrement == 0 ||
-                              settings.BeatSnaps.Count == 0 ||
-                              settings.BeatSnaps.Any(snap => snap <= 0));
+                loadSuccessful = !(settings.MinZoom <= 0 || settings.MaxZoom <= 0 || 
+                                   settings.MinZoom > settings.MaxZoom ||
+                                   settings.ZoomIncrement == 0 || settings.BeatSnaps.Count == 0 ||
+                                   settings.BeatSnaps.Any(snap => snap <= 0));
                 
                 settings.BeatSnaps = settings.BeatSnaps.Distinct().ToList();
                 // TONS of things in the chart code depend on the first beat snap being one beat
@@ -324,7 +367,8 @@ public static class Config
                 if (settings.LaneOrder.Count != 4 ||
                     settings.LaneOrder.Count != settings.LaneOrder.Distinct().Count())
                 {
-                    valid = false;
+                    errorMessage = "Invalid lane order";
+                    loadSuccessful = false;
                 }
                 
                 bool hasTop = false, hasBottom = false, hasCamera = false, hasCenter = false;
@@ -349,21 +393,33 @@ public static class Config
 
                 if (!hasTop || !hasBottom || !hasCamera || !hasCenter)
                 {
-                    valid = false;
+                    errorMessage = "Invalid lane order";
+                    loadSuccessful = false;
                 }
 
                 if (settings.PasteBehavior != "none" && settings.PasteBehavior != "notes" &&
                     settings.PasteBehavior != "region")
                 {
-                    valid = false;
+                    errorMessage = "Invalid paste overwrite setting: must be \"none\", " +
+                                   "\"notes\", or \"region\".";
+                    loadSuccessful = false;
+                }
+
+                if (settings.AutoSelectBehavior != "none" &&
+                    settings.AutoSelectBehavior != "pasted" && settings.AutoSelectBehavior != "all")
+                {
+                    errorMessage = "Invalid auto select setting: must be \"none\", " +
+                                   "\"pasted\", or \"all\".";
+                    loadSuccessful = false;
                 }
 
                 if (settings.QuickScrollBeats <= 0)
                 {
-                    valid = false;
+                    errorMessage = "Quick scroll beats must be > 0";
+                    loadSuccessful = false;
                 }
 
-                if (valid)
+                if (loadSuccessful)
                 {
                     Settings = settings;
                     Trace.WriteLine("Loaded settings:");
@@ -376,12 +432,16 @@ public static class Config
             }
             else
             {
+                errorMessage = "Config file is empty";
+                loadSuccessful = false;
                 Trace.WriteLine("Could not parse config: file is empty.");
             }
         }
         catch (JsonException e)
         {
-            Trace.WriteLine($"Could not parse keybinds: {e.Message}");
+            errorMessage = $"Could not parse config file: {e.Message}";
+            loadSuccessful = false;
+            Trace.WriteLine(errorMessage);
         }
 
         CurrentTheme = ColorThemes.TryGetValue(Settings.ColorTheme, out var theme) ?
@@ -413,10 +473,15 @@ public static class Config
                 PracticeModInstalled = false;
             }
         }
+        
+        return loadSuccessful;
     }
 
-    private static void LoadThemes(IResourceDictionary resources)
+    private static bool TryLoadThemes(out string errorMessage)
     {
+        errorMessage = "";
+        ColorThemes.Clear();
+        
         var themeFilePath = Path.Combine(Environment.CurrentDirectory, ColorThemeListFileName);
         if (File.Exists(themeFilePath))
         {
@@ -452,19 +517,24 @@ public static class Config
                 }
                 else
                 {
-                    Trace.WriteLine("Could not parse color themes: file is empty.");
+                    errorMessage = "Could not parse color themes: file is empty.";
+                    Trace.WriteLine(errorMessage);
                 }
             }
             catch (JsonException e)
             {
-                Trace.WriteLine($"Could not parse color themes: {e.Message}");
+                errorMessage = $"Could not parse color themes: {e.Message}";
+                Trace.WriteLine(errorMessage);
             }
             Trace.WriteLine("Loaded color themes.");
         }
         else
         {
-            Trace.WriteLine("Color theme file not found.");
+            errorMessage = "Color theme file not found.";
+            Trace.WriteLine(errorMessage);
         }
+
+        return errorMessage == "";
     }
 
     private static bool VerifyKeybindStrings(List<string>? keybindStrings)

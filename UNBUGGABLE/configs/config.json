@@ -7,7 +7,7 @@
   "useLane2AsMarkers": true,
   "saveMarkersAsLane2Notes": false,
   "alwaysEnableCustomDifficultyName": false,
-  "autoSelectPastedNotes": true,
+  "autoSelect": "pasted",
   "allowTopLaneCopMashes": false,
   "showFreestyleSubNotesWhilePlacing": true,
   "enableNegativeMashConversion": true,

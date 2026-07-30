@@ -31,17 +31,19 @@ public static class ChartBuilder
     
     public static bool QuickScroll { get; set; } = false;
     
-    public static List<NoteBase> SelectedNotes = new();
+    public static List<NoteBase> SelectedNotes = [];
     
     public static long BreakpointTime { get; private set; } = -1000;
     
     // 0 for normal notes, 1-4 for cop notes
     public static int CopId { get; private set; } = 0;
     
-    private static List<NoteBase> _clipboard = new();
+    private static List<NoteBase> _clipboard = [];
     
     private static readonly List<string> NoteTypeNames = [
         "notes", "cop 1", "cop 2", "cop 3", "cop 4"];
+    
+    private static readonly NoteFlags LockedFlags = new(false, false, false);
 
     public static void ResetInputStates()
     {
@@ -73,8 +75,6 @@ public static class ChartBuilder
             MouseDragStart = new Point(MousePosition.X, MousePosition.Y);
             MouseDragStartTime = NoteViewer.ScreenCoordsToTime(MouseDragStart.Value.Y);
         }
-        
-        // Chart.PlayHitSound();
     }
 
     public static void OnMouseRelease()
@@ -657,6 +657,46 @@ public static class ChartBuilder
         ChartBuilderCommandInvoker.Execute(new NudgeNotesCommand(nudges));
     }
 
+    public static void ToggleFlagLock(char flag)
+    {
+        bool newValue;
+        switch (flag)
+        {
+            case 'c':
+                LockedFlags.C = !LockedFlags.C;
+                newValue = LockedFlags.C;
+                break;
+            case 'f':
+                LockedFlags.F = !LockedFlags.F;
+                newValue = LockedFlags.F;
+                break;
+            case 'w':
+                LockedFlags.W = !LockedFlags.W;
+                newValue = LockedFlags.W;
+                break;
+            case 'n':
+                LockedFlags.N = !LockedFlags.N;
+                newValue = LockedFlags.N;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(flag), flag, null);
+        }
+
+        App.MainWindowViewModel.ShowEventIndicator(
+            flag == 'n'
+                ? $"Noisz spawn {(newValue ? "locked" : "unlocked")}"
+                : $"{char.ToUpper(flag)} flag {(newValue ? "locked" : "unlocked")}");
+        var lockedFlagsText = (LockedFlags.N ? "N" : "") +
+                              (LockedFlags.C ? "C" : "") +
+                              (LockedFlags.F ? "F" : "") +
+                              (LockedFlags.W ? "W" : "");
+        if (lockedFlagsText != "")
+        {
+            lockedFlagsText = "none";
+        }
+        App.MainWindowViewModel.LockedFlagsText = lockedFlagsText;
+    }
+
     private static void CheckForNoteOperation(NoteLane lane, long start, long end)
     {
         var oldNote = Chart.GetNote(start, lane, 1);
@@ -771,10 +811,28 @@ public static class ChartBuilder
                 newNote.Flags.N = oldNote.Flags.N;
             }
             
-            ChartBuilderCommandInvoker.Execute(new UpdateNotesCommand([oldNote], [newNote]));
+            ChartBuilderCommandInvoker.Execute(
+                new UpdateNotesCommand([oldNote], [newNote],
+                                       Config.Settings.AutoSelectBehavior == "all"));
         }
         else
         {
+            if (LockedFlags.C)
+            {
+                newNote.Flags.C = true;
+            }
+            if (LockedFlags.F)
+            {
+                newNote.Flags.F = true;
+            }
+            if (LockedFlags.W)
+            {
+                newNote.Flags.W = true;
+            }
+            if (LockedFlags.N)
+            {
+                newNote.Flags.N = true;
+            }
             ChartBuilderCommandInvoker.Execute(new AddNotesCommand([newNote]));
         }
     }

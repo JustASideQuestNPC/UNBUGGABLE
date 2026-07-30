@@ -75,10 +75,18 @@ public class Keybinds
     public List<string> SetFinishFlag { get; set; } = ["e", "f"];
     [JsonRequired][JsonPropertyName("setWhistleFlag")]
     public List<string> SetWhistleFlag { get; set; } = ["w"];
-    [JsonRequired][JsonPropertyName("setClapFlag")]
-    public List<string> SetClapFlag { get; set; } = ["c", "r"];
     [JsonRequired][JsonPropertyName("setNoiszSpawn")]
     public List<string> SetNoiszFlag { get; set; } = ["n"];
+    [JsonRequired][JsonPropertyName("setClapFlag")]
+    public List<string> SetClapFlag { get; set; } = ["c", "r"];
+    [JsonRequired][JsonPropertyName("lockFinishFlag")]
+    public List<string> LockFinishFlag { get; set; } = ["shift+e", "shift+f"];
+    [JsonRequired][JsonPropertyName("lockWhistleFlag")]
+    public List<string> LockWhistleFlag { get; set; } = ["shift+w"];
+    [JsonRequired][JsonPropertyName("lockClapFlag")]
+    public List<string> LockClapFlag { get; set; } = ["shift+c", "shift+r"];
+    [JsonRequired][JsonPropertyName("lockNoiszSpawn")]
+    public List<string> LockNoiszFlag { get; set; } = ["shift+n"];
     [JsonRequired][JsonPropertyName("copId0")]
     public List<string> CopId0 { get; set; } = ["ctrl+d0", "ctrl+oem3"];
     [JsonRequired][JsonPropertyName("copId1")] 

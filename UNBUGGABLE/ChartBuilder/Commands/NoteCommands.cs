@@ -18,6 +18,11 @@ public class AddNotesCommand(List<NoteBase> notes) : ICommand
         {
             Chart.AddNote(note);
         }
+
+        if (Config.Settings.AutoSelectBehavior == "all")
+        {
+            ChartBuilder.SelectedNotes = [..notes];
+        }
     }
     
     public void Undo()
@@ -75,7 +80,6 @@ public class PasteNotesCommand : ICommand
                         _addedNotes.Add(note);
                     }
                 }
-
                 break;
             }
         }
@@ -94,7 +98,7 @@ public class PasteNotesCommand : ICommand
             Chart.AddNote(note);
         }
         
-        if (Config.Settings.AutoSelectPastedNotes)
+        if (Config.Settings.AutoSelectBehavior != "none")
         {
             ChartBuilder.SelectedNotes = [.._addedNotes];
         }

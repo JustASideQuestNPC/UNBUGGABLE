@@ -86,6 +86,7 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty] private string? _cop2State = "";
     [ObservableProperty] private string? _cop3State = "";
     [ObservableProperty] private string? _cop4State = "";
+    [ObservableProperty] private string? _lockedFlagsText = "";
     [ObservableProperty] private bool _songLoaded = false;
     [ObservableProperty] private bool _editorUiEnabled = false;
     [ObservableProperty] private bool _placementPriorityListEnabled = false;
@@ -542,14 +543,23 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void ReloadConfig()
+    private async Task TryReloadConfig()
     {
-        Config.LoadConfig();
-        Config.LoadKeybinds();
-        
-        NoteViewer.UpdateNoteColumnPositions();
-        Chart.RebuildSnapLineSets();
-        ShowEventIndicator("Reloaded config.");
+        Config.TryReloadConfig();
+        if (Config.LoadError)
+        {
+            await new MessageDialog($"Error loading config:\n{Config.LoadErrorMessage}")
+                .ShowAsync();
+        }
+        else
+        {
+            NoteViewer.UpdateNoteColumnPositions();
+            if (Chart.SongLoaded)
+            {
+                Chart.RebuildSnapLineSets();
+            }
+            ShowEventIndicator("Reloaded config.");
+        }
     }
 
     [RelayCommand]

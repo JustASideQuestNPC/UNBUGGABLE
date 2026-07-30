@@ -1,9 +1,12 @@
 using System;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using UNBEATABLEChartEditor.Dialogs;
 using UNBEATABLEChartEditor.Input;
+using UNBUGGABLE.Resources;
 
 namespace UNBUGGABLE.Views;
 

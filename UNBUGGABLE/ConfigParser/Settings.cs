@@ -142,8 +142,8 @@ public class Settings
     [JsonRequired][JsonPropertyName("alwaysEnableCustomDifficultyName")]
     public bool AlwaysEnableCustomDifficultyName { get; set; } = false;
 
-    [JsonRequired][JsonPropertyName("autoSelectPastedNotes")]
-    public bool AutoSelectPastedNotes { get; set; } = true;
+    [JsonRequired][JsonPropertyName("autoSelect")]
+    public string AutoSelectBehavior { get; set; } = "pasted";
 
     [JsonRequired][JsonPropertyName("allowTopLaneCopMashes")]
     public bool AllowTopLaneCopMashes { get; set; } = false;
@@ -220,7 +220,7 @@ public class Settings
                          lane 2 markers: {Lane2Markers}
                          save markers as lane 2 notes: {SaveMarkersInLane2}
                          always enable custom difficulty name: {AlwaysEnableCustomDifficultyName}
-                         auto select pasted notes: {AutoSelectPastedNotes}
+                         auto select: {AutoSelectBehavior}
                          allow top lane cop mashes: {AllowTopLaneCopMashes}
                          show sub freestyles while placing: {ShowSubFreestylesInNoteViewer}
                          negative mash conversion: {NegativeMashConversion}

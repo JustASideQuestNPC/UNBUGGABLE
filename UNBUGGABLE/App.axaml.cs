@@ -56,18 +56,12 @@ public partial class App : Application
             brush.Color = brushColor;
             Console.WriteLine($"Applied {brushColor} to {brushName}");
         }
-        
-        // There's a bug in avalonia that makes parts of the app theme impossible to override for
-        // combo boxes (and some other controls). Normally I'd have to completely re-template those
-        // controls, but I'm not actually using the app theme so it's safe to just hack it
-        // Resources["ThemeBackgroundBrush"] = new SolidColorBrush(
-        //     colorTheme["WindowBackgroundSecondary"]);
     }
 
     public override void OnFrameworkInitializationCompleted()
     {
         // load configs and apply UI settings
-        Config.LoadAllConfigFiles(Resources);
+        Config.LoadAllConfigFiles();
         SfxEngine.Init(Config.Settings.MaxConcurrentSfx);
         UserData.LoadData();
         ApplyColorTheme(Config.CurrentTheme);
@@ -83,6 +77,10 @@ public partial class App : Application
                 DataContext = new MainWindowViewModel(),
             };
             desktop.MainWindow = MainWindow;
+            
+            // "reload" the config again to give an error message after 
+            MainWindow.Loaded += (sender, e) => MainWindowViewModel.TryReloadConfigCommand
+                                                                   .Execute(null);
             MainWindow.Closing += (sender, e) => MainWindowViewModel.OnWindowClosed(sender, e);
         }
 
