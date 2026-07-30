@@ -206,6 +206,9 @@ public class Settings
     [JsonRequired][JsonPropertyName("debug")]
     public Debug DebugToggles { get; set; } = new();
     
+    [JsonRequired][JsonPropertyName("enableLivePlacement")]
+    public bool EnableLivePlacement { get; set; } = false;
+    
     public void PrintSettings()
     {
         Trace.WriteLine($"""
@@ -221,6 +224,7 @@ public class Settings
                          allow top lane cop mashes: {AllowTopLaneCopMashes}
                          show sub freestyles while placing: {ShowSubFreestylesInNoteViewer}
                          negative mash conversion: {NegativeMashConversion}
+                         live placement: {EnableLivePlacement}
                          double preview alpha: {DoublePreviewAlpha}
                          autosave interval: {AutosaveInterval} seconds
                          beat snaps: [{string.Join(", ", BeatSnaps)}]

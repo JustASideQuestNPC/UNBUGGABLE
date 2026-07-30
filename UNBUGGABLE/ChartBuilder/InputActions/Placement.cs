@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using UNBEATABLEChartEditor.Input;
+using UNBUGGABLE.Resources;
 
 namespace UNBUGGABLE.Keybinds;
 
 public class PlaceTopLaneAction(List<string> keybinds) : InputActionBase(keybinds)
 {
+    public override bool CanUseWhilePlaying => Config.Settings.EnableLivePlacement;
     public override bool IgnoreModifiers => true;
     public override async Task OnPress()
     {
@@ -20,6 +22,7 @@ public class PlaceTopLaneAction(List<string> keybinds) : InputActionBase(keybind
 
 public class PlaceBottomLaneAction(List<string> keybinds) : InputActionBase(keybinds)
 {
+    public override bool CanUseWhilePlaying => Config.Settings.EnableLivePlacement;
     public override bool IgnoreModifiers => true;
     public override async Task OnPress()
     {
@@ -34,6 +37,7 @@ public class PlaceBottomLaneAction(List<string> keybinds) : InputActionBase(keyb
 
 public class PlaceCameraLaneAction(List<string> keybinds) : InputActionBase(keybinds)
 {
+    public override bool CanUseWhilePlaying => Config.Settings.EnableLivePlacement;
     public override bool IgnoreModifiers => true;
     public override async Task OnPress()
     {
@@ -43,6 +47,7 @@ public class PlaceCameraLaneAction(List<string> keybinds) : InputActionBase(keyb
 
 public class PlaceCenterLaneAction(List<string> keybinds) : InputActionBase(keybinds)
 {
+    public override bool CanUseWhilePlaying => Config.Settings.EnableLivePlacement;
     public override bool IgnoreModifiers => true;
     public override async Task OnPress()
     {

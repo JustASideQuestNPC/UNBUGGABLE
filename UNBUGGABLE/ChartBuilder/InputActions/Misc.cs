@@ -38,27 +38,13 @@ public class RemoveLabelAction(List<string> keybinds) : InputActionBase(keybinds
     }
 }
 
-public class AddMarker1Action(List<string> keybinds) : InputActionBase(keybinds)
+public class AddMarkerAction(List<string> keybinds, int type) : InputActionBase(keybinds)
 {
+    public override bool CanUseWhilePlaying => Config.Settings.EnableLivePlacement;
+    
     public override async Task OnPress()
     {
-        ChartBuilder.AddMarker(0);
-    }
-}
-
-public class AddMarker2Action(List<string> keybinds) : InputActionBase(keybinds)
-{
-    public override async Task OnPress()
-    {
-        ChartBuilder.AddMarker(1);
-    }
-}
-
-public class AddMarker3Action(List<string> keybinds) : InputActionBase(keybinds)
-{
-    public override async Task OnPress()
-    {
-        ChartBuilder.AddMarker(2);
+        ChartBuilder.AddMarker(type);
     }
 }
 

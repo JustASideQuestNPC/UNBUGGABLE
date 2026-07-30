@@ -141,6 +141,12 @@ If true, freestyles (not mashes) with the F flag will be converted to negative m
 is saved. Negative mashes look like normal mashes in-game, but behave like freestyles and die
 immediately upon being hit.
 
+## enableLivePlacement
+If true, you can place notes, camera changes, and markers while the song is playing. **Live**
+**placement is extremely experimental and will not become an actual feature until a later version.**
+The only reason this setting exists is because I fixed the bug that originally made it possible (all
+this setting does is re-enable that bug for note placement only).
+
 ## beatSnaps
 A list of every value that the chart editor can snap to. For some reason, the official editor
 multiplies all snap values by 4. The default snap values for UNBUGGABLE match the ones in the

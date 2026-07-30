@@ -126,15 +126,23 @@ public static class InputManager
         InputActionBase? ignoreModifierFallback = null;
         foreach (var action in Actions)
         {
+            if (Chart.Playing && !action.CanUseWhilePlaying)
+            {
+                continue;
+            }
+
+            if (ChartBuilder.PlacingNote && !action.CanUseWhilePlacingNotes)
+            {
+                continue;
+            }
+            
             foreach (var keybind in action.Keybinds)
             {
                 if ((type is CallbackType.KEY_PRESS or CallbackType.KEY_RELEASE &&
                      (Key)arg == keybind.Key) || (
                         type is CallbackType.MOUSE_PRESS or CallbackType.MOUSE_RELEASE or
                             CallbackType.SCROLL && // scroll wheel is considered a mouse button here
-                        (MouseButton)arg == keybind.MouseButton) &&
-                    (!Chart.Playing || action.CanUseWhilePlaying) &&
-                    (!ChartBuilder.PlacingNote || action.CanUseWhilePlacingNotes))
+                        (MouseButton)arg == keybind.MouseButton))
                 {
                     if (CtrlPressed == keybind.Ctrl && ShiftPressed == keybind.Shift &&
                         AltPressed == keybind.Alt)

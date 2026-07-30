@@ -290,9 +290,9 @@ public static class Config
             new RemoveBpmChangeAction(Keybinds.RemoveBpmChange),
             new AddLabelAction(Keybinds.AddLabel),
             new RemoveLabelAction(Keybinds.RemoveLabel),
-            new AddMarker1Action(Keybinds.AddMarker1),
-            new AddMarker2Action(Keybinds.AddMarker2),
-            new AddMarker3Action(Keybinds.AddMarker3),
+            new AddMarkerAction(Keybinds.AddMarker1, 0),
+            new AddMarkerAction(Keybinds.AddMarker2, 1),
+            new AddMarkerAction(Keybinds.AddMarker3, 2),
             new SetBreakpointAction(Keybinds.SetBreakpoint),
             new RemoveBreakpointAction(Keybinds.RemoveBreakpoint),
             new EmergencyReloadAction(Keybinds.EmergencyReload)
