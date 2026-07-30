@@ -235,25 +235,31 @@ public class GamePreview : Control
         var currentNoteZoomedOut = false;
         foreach (var note in Chart.Notes)
         {
-            if (note.Type == NoteType.CAMERA_WIDE)
+            switch (note.Type)
             {
-                currentNoteZoomedOut = !currentNoteZoomedOut;
-                if (note.Time < Chart.CurrentTimeRaw)
+                case NoteType.CAMERA_WIDE:
                 {
-                    viewableZoomedOut = currentNoteZoomedOut;
+                    currentNoteZoomedOut = !currentNoteZoomedOut;
+                    if (note.Time < Chart.CurrentTimeRaw)
+                    {
+                        viewableZoomedOut = currentNoteZoomedOut;
+                    }
+
+                    break;
                 }
-            }
-            else if (note.Type is NoteType.CAMERA_SWAP or NoteType.CAMERA_INSTANT)
-            {
-                CurrentNotesFromRight = !CurrentNotesFromRight;
-                if (note.Time < Chart.CurrentTimeRaw)
+                case NoteType.CAMERA_SWAP or NoteType.CAMERA_INSTANT:
                 {
-                    viewableNotesFromRight = CurrentNotesFromRight;
+                    CurrentNotesFromRight = !CurrentNotesFromRight;
+                    if (note.Time < Chart.CurrentTimeRaw)
+                    {
+                        viewableNotesFromRight = CurrentNotesFromRight;
+                    }
+
+                    break;
                 }
-            }
-            else
-            {
-                note.RenderPreview(dc);
+                default:
+                    note.RenderPreview(dc);
+                    break;
             }
         }
 

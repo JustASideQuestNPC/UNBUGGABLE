@@ -37,13 +37,9 @@ public class MashNote : NoteBase
         }
         
         dc.DrawRectangle(_tailBrush, null, new Rect(x - 16, startY, 32, endY - startY));
-        dc.DrawRectangle(_fillBrush, new Pen(_outlineBrush, 4),
-                         new Rect(x - 40, startY - 12, 80, 24));
-        if (selected)
-        {
-            dc.DrawRectangle(null, new Pen(_selectedBrush, 4),
-                             new Rect(x - 40, startY - 12, 80, 24));
-        }
+            
+        var pen = selected ? new Pen(SelectedBrush, 4) : new Pen(OutlineBrush, 4);
+        dc.DrawRectangle(_fillBrush, pen, new Rect(x - 40, startY - 12, 80, 24));
         
         RenderFlags(dc, x, startY, new NoteFlags(Flags.C, false, Flags.W));
         
@@ -68,7 +64,7 @@ public class MashNote : NoteBase
         {
             dc.DrawLine(new Pen(_tailBrush, 40), new Point(startX, 0), new Point(endX, 0));
         }
-        dc.DrawRectangle(_fillBrush, new Pen(_outlineBrush, 6), rect);
+        dc.DrawRectangle(_fillBrush, new Pen(OutlineBrush, 6), rect);
     }
 
     public override long? ShouldPlayHitSound(double rangeStart, double rangeEnd)

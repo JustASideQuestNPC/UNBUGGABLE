@@ -60,6 +60,13 @@ There are also some UNBUGGABLE-specific keybinds:
   Otherwise, sets the editor to place normal notes.
 - `n` while notes are selected: Set singles, spikes, holds, and doubles to be Noisz notes that spawn
   in the center of the screen, like in the base game's Noisz charts.
+- `shift+c/f/w/n`: Lock the C/W/F flags or the Noisz spawn. While a flag is locked, placing a note
+  will immediately give it that flag (does not apply to pasting notes). **Note:** Locking the W flag
+  will make all singles and holds become spikes and doubles, and make all camera changes zoom
+  in/out. Locking the F flag will make all freestyles become negative mashes (if conversion is
+  enabled). Locking the C flag will make singles and holds become invisible notes, make all camera
+  changes be instant swaps, and will make most other note types invalid. Locking Noisz spawns does
+  nothing for camera changes and center lane notes.
 - Drag while holding right click to delete notes instead of selecting them.
 
 ## Editing Keybinds
@@ -88,7 +95,6 @@ All settings for UNBUGGABLE can be changed by editing `configs/config.json` (des
 setting are in the config file). After editing the config file, either restart the editor or hit the
 "Reload Config" button in the top left corner to reload most settings. **Note:** For technical
 reasons, these settings will not change until you fully restart the editor:
-- colorTheme
 - hitSoundTickRate
 - maxConcurrentHitSounds
 - autosaveInterval
@@ -124,9 +130,12 @@ UNBUGGABLE section of a .beat.txt file, regardless of this setting.
 ## alwaysEnableCustomDifficultyName
 If true, you can set a difficulty name for every difficulty slot, not just Star.
 
-## autoSelectPastedNotes
-If true, pasting notes will automatically select those notes (this is useful for pasting and then
-mirroring sections).
+## autoSelectBehavior
+Determines when notes are automatically selected after being placed, either "none", "pasted", or
+"all":
+- "none": Notes are never automatically selected.
+- "pasted": Pasting one or more notes automatically selects those notes.
+- "all": Notes are automatically selected whenever you add them for any reason.
 
 ## allowTopLaneCopMashes
 Whether to allow placing cop mashes on the top lane. In-game, cop mashes are always on the bottom

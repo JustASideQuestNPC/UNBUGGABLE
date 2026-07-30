@@ -34,11 +34,10 @@ public class FreestyleNote : NoteBase
             rect = new Rect(x - 24, y - 12, 48, 24);
         }
         
-        dc.DrawRectangle(_fillBrush, new Pen(_outlineBrush, 4), rect);
-        if (selected)
-        {
-            dc.DrawRectangle(null, new Pen(_selectedBrush, 4), rect);
-        }
+            
+        var pen = selected ? new Pen(SelectedBrush, 4) 
+            : new Pen(OutlineBrush, 4);
+        dc.DrawRectangle(_fillBrush, pen, rect);
         
         RenderFlags(dc, x, y);
         
@@ -60,7 +59,7 @@ public class FreestyleNote : NoteBase
             var rect = new RoundedRect(
                 new Rect(x - 30, GamePreview.TopLaneY, 60,
                          -GamePreview.TopLaneY + GamePreview.BottomLaneY), 30);
-            dc.DrawRectangle(_fillBrush, new Pen(_outlineBrush, 6), rect);
+            dc.DrawRectangle(_fillBrush, new Pen(OutlineBrush, 6), rect);
             return;
         }
         
@@ -71,14 +70,14 @@ public class FreestyleNote : NoteBase
         {
             if (parentNote?.Time < Chart.CurrentTimeRaw)
             {
-                dc.DrawEllipse(_fillBrush, new Pen(_outlineBrush, 6), new Point(
+                dc.DrawEllipse(_fillBrush, new Pen(OutlineBrush, 6), new Point(
                                    GamePreview.TimeToScreenCoords(Chart.CurrentTimeRaw), 0), 30, 30);
             }
-            dc.DrawEllipse(_fillBrush, new Pen(_outlineBrush, 6), new Point(x, 0), 15, 15);
+            dc.DrawEllipse(_fillBrush, new Pen(OutlineBrush, 6), new Point(x, 0), 15, 15);
         }
         else
         {
-            dc.DrawEllipse(_fillBrush, new Pen(_outlineBrush, 6), new Point(x, 0), 30, 30);
+            dc.DrawEllipse(_fillBrush, new Pen(OutlineBrush, 6), new Point(x, 0), 30, 30);
         }
     }
 

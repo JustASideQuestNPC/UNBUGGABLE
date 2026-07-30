@@ -94,11 +94,9 @@ public class SingleNote : NoteBase
             return;
         }
         
-        dc.DrawRectangle(_singleBrush, new Pen(_outlineBrush, 4), new Rect(x - 40, y - 12, 80, 24));
-        if (selected)
-        {
-            dc.DrawRectangle(null, new Pen(_selectedBrush, 4), new Rect(x - 40, y - 12, 80, 24));
-        }
+            
+        var pen = selected ? new Pen(SelectedBrush, 4) : new Pen(OutlineBrush, 4);
+        dc.DrawRectangle(_singleBrush, pen, new Rect(x - 40, y - 12, 80, 24));
         
         RenderFlags(dc, x, y);
         RenderDebugTime(dc, x, y);
@@ -106,7 +104,7 @@ public class SingleNote : NoteBase
 
     private void RenderSinglePreview(DrawingContext dc, double y)
     {
-        dc.DrawEllipse(_singleBrush, new Pen(_outlineBrush, 6),
+        dc.DrawEllipse(_singleBrush, new Pen(OutlineBrush, 6),
                        new Point(GamePreview.TimeToScreenCoords(Time), y), 30, 30);
     }
     
@@ -130,11 +128,9 @@ public class SingleNote : NoteBase
         transform.Children.Add(new TranslateTransform(x + offset, y));
         shape.Transform = transform;
         
-        dc.DrawGeometry(_spikeBrush, new Pen(_outlineBrush, 4), shape);
-        if (selected)
-        {
-            dc.DrawGeometry(null, new Pen(_selectedBrush, 4), shape);
-        }
+            
+        var pen = selected ? new Pen(SelectedBrush, 4) : new Pen(OutlineBrush, 4);
+        dc.DrawGeometry(_spikeBrush, pen, shape);
         
         RenderFlags(dc, x, y, new NoteFlags(Flags.C, Flags.F, false, Flags.N));
         RenderDebugTime(dc, x, y);
@@ -153,7 +149,7 @@ public class SingleNote : NoteBase
                                                       y + offset));
         shape.Transform = transform;
         
-        dc.DrawGeometry(_spikeBrush, new Pen(_outlineBrush, 6), shape);
+        dc.DrawGeometry(_spikeBrush, new Pen(OutlineBrush, 6), shape);
     }
     
     private double TimeToNoiszPreviewY(double time)

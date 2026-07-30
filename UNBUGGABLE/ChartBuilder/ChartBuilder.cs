@@ -95,7 +95,7 @@ public static class ChartBuilder
         var notes = Chart.GetNoteRegion(Math.Min(MouseDragStartTime, dragEndTime),
                                         Math.Max(MouseDragStartTime, dragEndTime), selectedLanes);
 
-        var hoveredNote = Chart.Notes.FirstOrDefault(n => n.MouseOver());
+        var hoveredNote = Chart.NonMarkerNotes.FirstOrDefault(n => n.MouseOver());
         if (hoveredNote != null && !notes.Contains(hoveredNote))
         {
             notes.Add(hoveredNote);

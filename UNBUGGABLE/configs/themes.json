@@ -14,6 +14,7 @@
         "cameraChange": "#FBB7DE",
         "noteOutline": "#000000",
         "selectedNoteOverlay": "#FFFFFF",
+        "setpieceNoteOverlay": "#FF0000",
         "selectDragOverlay": "#FFFFFF",
         "deleteDragOverlay": "#FF0000",
         "viewableArea": "#FBB7DE",

@@ -57,7 +57,7 @@ public class CopNote : NoteBase
             Flags.F = true;
         }
         
-        _outlineBrush = (SolidColorBrush)App.Current.Resources["NoteOutline"];
+        OutlineBrush = (SolidColorBrush)App.Current.Resources["NoteOutline"];
         _fillBrush = (SolidColorBrush)App.Current.Resources[id switch
         {
             1 => "Cop1",
@@ -70,7 +70,7 @@ public class CopNote : NoteBase
             Opacity = 0.6
         };
         
-        _typeface = new Typeface((FontFamily)App.Current.Resources["RobotoMonoBold"]);
+        Typeface = new Typeface((FontFamily)App.Current.Resources["RobotoMonoBold"]);
     }
     
     public override void Render(DrawingContext dc, bool selected)
@@ -110,32 +110,24 @@ public class CopNote : NoteBase
         {
             return;
         }
+            
+        var pen = selected ? new Pen(SelectedBrush, 4) : new Pen(OutlineBrush, 4);
         
         if (IsFinisher)
         {
             var shape = _finisherStar.Clone();
             shape.Transform = new TranslateTransform(x, startY);
-            dc.DrawGeometry(_fillBrush, new Pen(_outlineBrush, 4), shape);
-            if (selected)
-            {
-                dc.DrawGeometry(_fillBrush, new Pen(_selectedBrush, 4), shape);
-            }
+            dc.DrawGeometry(_fillBrush, pen, shape);
         }
         else
         {
-            dc.DrawRectangle(_fillBrush, new Pen(_outlineBrush, 4),
-                             new Rect(x - 40, startY - 12, 80, 24));
-            if (selected)
-            {
-                dc.DrawRectangle(null, new Pen(_selectedBrush, 4),
-                                 new Rect(x - 40, startY - 12, 80, 24));
-            }
+            dc.DrawRectangle(_fillBrush, pen, new Rect(x - 40, startY - 12, 80, 24));
         }
         
         var textColor = (SolidColorBrush)App.Current.Resources["TextPrimary"];
         var textOutline = new Pen((SolidColorBrush)App.Current.Resources["TextDark"], 2);
         var text = new FormattedText(CopId.ToString(), CultureInfo.CurrentCulture,
-                                     FlowDirection.LeftToRight, _typeface, 40, textColor);
+                                     FlowDirection.LeftToRight, Typeface, 40, textColor);
         dc.DrawOutlinedText(text, new Point(x - text.Width / 2, startY - 2 - text.Height / 2),
                             textColor, textOutline);
         

@@ -78,7 +78,7 @@ public abstract partial class NoteBase
     public virtual NoteLane Lane { get; set; }
     
     // invisible notes disappear 1 beat before reaching the player
-    public bool Invisible { get; }
+    public bool Invisible => Type is NoteType.SINGLE or NoteType.HOLD && Flags.C;
     
     /// <summary>
     /// Sound flags applied to the note, ordered as [c, f, w].
@@ -90,9 +90,9 @@ public abstract partial class NoteBase
     /// </summary>
     public int CopId { get; set; } = 0;
     
-    protected SolidColorBrush _outlineBrush;
-    protected SolidColorBrush _selectedBrush;
-    protected Typeface _typeface;
+    protected SolidColorBrush OutlineBrush = (SolidColorBrush)App.Current.Resources["NoteOutline"];
+    protected SolidColorBrush SelectedBrush = (SolidColorBrush)App.Current.Resources["SelectedNoteOverlay"];
+    protected Typeface Typeface = new Typeface((FontFamily)App.Current.Resources["RobotoMonoBold"]);
     
     /// <summary>
     /// Attempts to construct a note from a hit object string in a chart file.
@@ -275,9 +275,6 @@ public abstract partial class NoteBase
 
     protected NoteBase(NoteFlags? startingFlags = null)
     {
-        _outlineBrush = (SolidColorBrush)App.Current.Resources["NoteOutline"];
-        _selectedBrush = (SolidColorBrush)App.Current.Resources["SelectedNoteOverlay"];
-        _typeface = new Typeface((FontFamily)App.Current.Resources["RobotoMonoBold"]);
         Flags = startingFlags ?? new NoteFlags(false, false, false);
     }
 
@@ -368,7 +365,7 @@ public abstract partial class NoteBase
         var color = (SolidColorBrush)App.Current.Resources["TextPrimary"];
         var outline = new Pen((SolidColorBrush)App.Current.Resources["TextDark"], 2);
         var text = new FormattedText(flagString, CultureInfo.CurrentCulture,
-                                     FlowDirection.LeftToRight, _typeface, 40, color);
+                                     FlowDirection.LeftToRight, Typeface, 40, color);
         
         dc.DrawOutlinedText(text, new Point(x - text.Width / 2, y - 2 - text.Height / 2),
                             color, outline);
@@ -385,16 +382,15 @@ public abstract partial class NoteBase
         var color = (SolidColorBrush)App.Current.Resources["TextPrimary"];
         var outline = new Pen((SolidColorBrush)App.Current.Resources["TextDark"], 1);
         var text = new FormattedText(timeString, CultureInfo.CurrentCulture,
-                                     FlowDirection.LeftToRight, _typeface, 20, color);
+                                     FlowDirection.LeftToRight, Typeface, 20, color);
 
         dc.DrawOutlinedText(text, new Point(x - text.Width / 2, y - 14 - text.Height),
                             color, outline);
     }
 
-    protected string GetFlagString(NoteFlags? flags = null)
+    protected string GetFlagString()
     {
-        var binaryString =
-            $"{(Flags.C ? 1 : 0)}{(Flags.F ? 1 : 0)}{(Flags.W ? 1 : 0)}0";
+        var binaryString = $"{(Flags.C ? 1 : 0)}{(Flags.F ? 1 : 0)}{(Flags.W ? 1 : 0)}0";
         return Convert.ToInt32(binaryString, 2).ToString();
     }
 }

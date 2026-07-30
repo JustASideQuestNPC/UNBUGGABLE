@@ -44,11 +44,9 @@ public class CameraChange : NoteBase
         var shape = _shape.Clone();
         shape.Transform = new TranslateTransform(x, y);
         
-        dc.DrawGeometry(_fillBrush, new Pen(_outlineBrush, 4), shape);
-        if (selected)
-        {
-            dc.DrawGeometry(null, new Pen(_selectedBrush, 4), shape);
-        }
+        var pen = selected ? new Pen(SelectedBrush, 4) : new Pen(OutlineBrush, 4);
+        dc.DrawGeometry(_fillBrush, pen, shape);
+        
         RenderFlags(dc, x, y);
         
         RenderDebugTime(dc, x, y);

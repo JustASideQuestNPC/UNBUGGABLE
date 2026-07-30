@@ -45,11 +45,11 @@ public class HoldNote : NoteBase
         dc.DrawRectangle(Type == NoteType.HOLD ? _holdTailBrush : _doubleTailBrush, null,
                          new Rect(x - 16, startY, 32, endY - startY));
         dc.DrawRectangle(Type == NoteType.HOLD ? _holdBrush : _doubleBrush,
-                         new Pen(_outlineBrush, 4),  new Rect(x - 40, startY - 12, 80, 24));
+                         new Pen(OutlineBrush, 4),  new Rect(x - 40, startY - 12, 80, 24));
         
         if (selected)
         {
-            dc.DrawRectangle(null, new Pen(_selectedBrush, 4),
+            dc.DrawRectangle(null, new Pen(SelectedBrush, 4),
                              new Rect(x - 40, startY - 12, 80, 24));
         }
         
@@ -115,7 +115,7 @@ public class HoldNote : NoteBase
         var endX = GamePreview.TimeToScreenCoords(EndTime);
         
         dc.DrawLine(new Pen(_holdTailBrush, 20), new Point(startX, y), new Point(endX, y));
-        dc.DrawEllipse(_holdBrush, new Pen(_outlineBrush, 6), new Point(startX, y), 30, 30);
+        dc.DrawEllipse(_holdBrush, new Pen(OutlineBrush, 6), new Point(startX, y), 30, 30);
     }
     
     private void RenderDoublePreview(DrawingContext dc, double startY)
@@ -127,7 +127,7 @@ public class HoldNote : NoteBase
                               startY, endY);
         
         var fillBrush = _doubleBrush;
-        var outlineBrush = _outlineBrush;
+        var outlineBrush = OutlineBrush;
         if (Time < Chart.CurrentTimeRaw)
         {
             fillBrush = new SolidColorBrush(fillBrush.Color)
