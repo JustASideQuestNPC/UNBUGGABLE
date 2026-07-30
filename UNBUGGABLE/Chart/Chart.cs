@@ -179,7 +179,7 @@ public static partial class Chart
             }
         }
     }
-    public static long CurrentTime => (long)Math.Floor(CurrentTimeRaw);
+    public static long CurrentTime => (long)Math.Round(CurrentTimeRaw);
 
     private static bool _songLoaded = false;
     public static bool SongLoaded
@@ -862,19 +862,39 @@ public static partial class Chart
         }
         return notes;
     }
+
+    /// <summary>
+    /// Returns a list of every non-marker, non-instant note that ends at a timestamp
+    /// (in milliseconds). List elements are formatted as <c>(note, index in the main note
+    /// list)</c>.
+    /// </summary>
+    public static List<(NoteBase, int)> GetNoteEndsAtTime(long time)
+    {
+        List<(NoteBase, int)> notes = [];
+        foreach (NoteBase note in NonMarkerNotes)
+        {
+            if (!note.Instant && note.EndTime == time)
+            {
+                notes.Add((note, NonMarkerNotes.IndexOf(note)));
+            }
+        }
+
+        return notes;
+    }
     
     /// <summary>
     /// Returns the note in a specific lane at a specific time, or null if that note does not exist.
     /// </summary>
-    public static NoteBase? GetNote(long time, NoteLane lane)
-        => _notes.FirstOrDefault(n => n.Time == time && n.Lane == lane);
+    public static NoteBase? GetNote(long time, NoteLane lane, long maxDistance = 0)
+        => _notes.FirstOrDefault(n => Math.Abs(n.Time - time) <= maxDistance && n.Lane == lane);
     
     /// <summary>
     /// Returns the (non-instant) note in a specific lane that <i>ends</i> at a specific time, or
     /// null if that note does not exist.
     /// </summary>
-    public static NoteBase? GetNoteFromEnd(long time, NoteLane lane) =>
-        _notes.FirstOrDefault(n => !n.Instant && n.EndTime == time && n.Lane == lane);
+    public static NoteBase? GetNoteFromEnd(long time, NoteLane lane, long maxDistance = 0) =>
+        _notes.FirstOrDefault(n => !n.Instant && Math.Abs(n.EndTime - time) <= maxDistance &&
+                                   n.Lane == lane);
 
     public static NoteBase? GetPreviousNote(NoteBase note)
     {
@@ -1115,7 +1135,7 @@ public static partial class Chart
                     bpmRegion = bpmRegion.Next;
                 }
                 time = nextTime;
-                snapLineSet.Add((long)Math.Floor(time));
+                snapLineSet.Add((long)Math.Round(time));
             }
             
             // Trace.WriteLine(
@@ -1397,7 +1417,7 @@ public static partial class Chart
                     if (double.TryParse(split[0], out var time))
                     {
                         // Trace.WriteLine($"Adding marker at {time} with type {split[1]}");
-                        TryAddMarker((long)Math.Floor(time), int.Parse(split[1]));
+                        TryAddMarker((long)Math.Round(time), int.Parse(split[1]));
                     }
                     else
                     {

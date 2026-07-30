@@ -393,3 +393,28 @@ public class ReorderNotesCommand(List<(NoteBase, int)> indexedOldOrder, List<Not
         Trace.WriteLine(string.Join(',', indexedOldOrder.Select(n => n.Item1.Lane)));
     }   
 }
+
+public class NudgeNotesCommand(List<(NoteBase, int, int)> nudges) : ICommand
+{
+    public string Name => "Nudge Notes";
+    
+    public void Execute()
+    {
+        foreach (var nudge in nudges)
+        {
+            nudge.Item1.Time += nudge.Item2;
+            nudge.Item1.EndTime += nudge.Item3;
+        }
+        App.MainWindowViewModel.UpdatePriorityListEntries(Chart.GetNotesAtTime(Chart.CurrentTime));
+    }
+    
+    public void Undo()
+    {
+        foreach (var nudge in nudges)
+        {
+            nudge.Item1.Time -= nudge.Item2;
+            nudge.Item1.EndTime -= nudge.Item3;
+        }
+        App.MainWindowViewModel.UpdatePriorityListEntries(Chart.GetNotesAtTime(Chart.CurrentTime));
+    }
+}

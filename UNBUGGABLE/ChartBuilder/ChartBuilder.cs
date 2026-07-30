@@ -625,14 +625,40 @@ public static class ChartBuilder
         }
     }
 
+    public static void NudgeNotesToSnap()
+    {
+        List<(NoteBase, int, int)> nudges = [];
+        // notes that start 1ms early
+        foreach (var note in Chart.GetNotesAtTime(Chart.CurrentTime - 1))
+        {
+            nudges.Add((note.Item1, 1, 0));
+        }
+        // notes that start 1ms late
+        foreach (var note in Chart.GetNotesAtTime(Chart.CurrentTime + 1))
+        {
+            nudges.Add((note.Item1, -1, 0));
+        }
+        // notes that end 1ms early
+        foreach (var note in Chart.GetNoteEndsAtTime(Chart.CurrentTime - 1))
+        {
+            nudges.Add((note.Item1, 0, -1));
+        }
+        // notes that end 1ms late
+        foreach (var note in Chart.GetNoteEndsAtTime(Chart.CurrentTime + 1))
+        {
+            nudges.Add((note.Item1, 0, 1));
+        }
+        ChartBuilderCommandInvoker.Execute(new NudgeNotesCommand(nudges));
+    }
+
     private static void CheckForNoteOperation(NoteLane lane, long start, long end)
     {
-        var oldNote = Chart.GetNote(start, lane);
+        var oldNote = Chart.GetNote(start, lane, 1);
         Trace.WriteLine(oldNote);
         // hold notes can also extend from the start of the note
         if (oldNote == null && end != start)
         {
-            oldNote = Chart.GetNote(end, lane) ?? Chart.GetNoteFromEnd(start, lane);
+            oldNote = Chart.GetNote(end, lane) ?? Chart.GetNoteFromEnd(start, lane, 1);
         }
         Trace.WriteLine(oldNote);
         

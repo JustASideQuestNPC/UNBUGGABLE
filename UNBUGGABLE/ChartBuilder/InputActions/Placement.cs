@@ -54,3 +54,13 @@ public class PlaceCenterLaneAction(List<string> keybinds) : InputActionBase(keyb
         ChartBuilder.EndCenterLanePlacement();
     }
 }
+
+public class NudgeToSnapAction(List<string> keybinds) : InputActionBase(keybinds)
+{
+    public override bool CanUseWhilePlacingNotes => false;
+
+    public override async Task OnPress()
+    {
+        ChartBuilder.NudgeNotesToSnap();
+    }
+}

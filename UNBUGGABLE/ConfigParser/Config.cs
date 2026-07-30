@@ -187,6 +187,7 @@ public static class Config
                     VerifyKeybindStrings(keybinds.PlaceBottomLane) &&
                     VerifyKeybindStrings(keybinds.PlaceCameraLane) &&
                     VerifyKeybindStrings(keybinds.PlaceCenterLane) &&
+                    VerifyKeybindStrings(keybinds.NudgeToSnap) &&
                     VerifyKeybindStrings(keybinds.SelectAll) &&
                     VerifyKeybindStrings(keybinds.SelectTopLane) &&
                     VerifyKeybindStrings(keybinds.SelectBottomLane) &&
@@ -254,6 +255,7 @@ public static class Config
             new PlaceBottomLaneAction(Keybinds.PlaceBottomLane),
             new PlaceCameraLaneAction(Keybinds.PlaceCameraLane),
             new PlaceCenterLaneAction(Keybinds.PlaceCenterLane),
+            new NudgeToSnapAction(Keybinds.NudgeToSnap),
             new SelectAllAction(Keybinds.SelectAll),
             new SelectLaneAction(Keybinds.SelectTopLane, NoteLane.TOP),
             new SelectLaneAction(Keybinds.SelectBottomLane, NoteLane.BOTTOM),
@@ -304,6 +306,14 @@ public static class Config
                               settings.MinZoom > settings.MaxZoom || settings.ZoomIncrement == 0 ||
                               settings.BeatSnaps.Count == 0 ||
                               settings.BeatSnaps.Any(snap => snap <= 0));
+                
+                settings.BeatSnaps = settings.BeatSnaps.Distinct().ToList();
+                // TONS of things in the chart code depend on the first beat snap being one beat
+                if (settings.BeatSnaps[0] != 1)
+                {
+                    settings.BeatSnaps.Remove(1);
+                    settings.BeatSnaps.Insert(0, 1);
+                }
 
                 if (settings.LaneOrder.Count != 4 ||
                     settings.LaneOrder.Count != settings.LaneOrder.Distinct().Count())
