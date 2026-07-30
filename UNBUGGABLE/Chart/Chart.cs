@@ -44,6 +44,8 @@ public class ChartDebugInfo
     public required long MediaPlayerTime;
     public required VLCState MediaPlayerState;
     public required string LastVlcOutput;
+    public required double ChartTime;
+    public required double PlaySpeed;
 }
 
 public static partial class Chart
@@ -79,6 +81,8 @@ public static partial class Chart
         MediaPlayerTime = _mediaPlayer.Time,
         MediaPlayerState = _mediaPlayer.State,
         LastVlcOutput = _lastVlcConsoleOutput,
+        ChartTime = CurrentTimeRaw,
+        PlaySpeed = PlaySpeed
     };
 
     private static List<NoteBase> _notes = [];

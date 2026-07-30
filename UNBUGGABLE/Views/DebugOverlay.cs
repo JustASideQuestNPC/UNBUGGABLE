@@ -60,6 +60,8 @@ public class DebugOverlay : Control
                                 media time: {chartDebug.MediaPlayerTime}
                                 media state: {chartDebug.MediaPlayerState}
                                 last vlc output: {chartDebug.LastVlcOutput}
+                                chart time: {chartDebug.ChartTime}
+                                play speed: {chartDebug.PlaySpeed}
                                 """);
         }
 

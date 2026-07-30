@@ -9,19 +9,19 @@ namespace UNBUGGABLE.Resources;
 public class Debug
 {
     [JsonRequired][JsonPropertyName("enabled")]
-    public bool Enabled = false;
+    public bool Enabled { get; set; } = false;
 
     [JsonRequired][JsonPropertyName("commandStacks")]
-    public bool CommandStacks = true;
+    public bool CommandStacks { get; set; } = true;
 
     [JsonRequired][JsonPropertyName("inputData")]
-    public bool InputData = true;
+    public bool InputData { get; set; } = true;
 
     [JsonRequired][JsonPropertyName("mediaPlayer")]
-    public bool MediaPlayer = true;
+    public bool MediaPlayer { get; set; } = true;
 
     [JsonRequired][JsonPropertyName("noteTimestamps")]
-    public bool NoteTimeStamps = true;
+    public bool NoteTimeStamps { get; set; } = true;
     
     public string GetFormattedString()
     {
@@ -37,58 +37,58 @@ public class Debug
 public class HitSounds
 {
     [JsonRequired][JsonPropertyName("single")]
-    public bool Single = true;
+    public bool Single { get; set; } = true;
 
     [JsonRequired][JsonPropertyName("spike")]
-    public bool Spike = true;
+    public bool Spike { get; set; } = true;
 
     [JsonRequired][JsonPropertyName("freestyle")]
-    public bool Freestyle = true;
+    public bool Freestyle { get; set; } = true;
 
     [JsonRequired][JsonPropertyName("holdStart")]
-    public bool HoldStart = true;
+    public bool HoldStart { get; set; } = true;
 
     [JsonRequired][JsonPropertyName("holdEnd")]
-    public bool HoldEnd = true;
+    public bool HoldEnd { get; set; } = true;
 
     [JsonRequired][JsonPropertyName("doubleStart")]
-    public bool DoubleStart = true;
+    public bool DoubleStart { get; set; } = true;
 
     [JsonRequired][JsonPropertyName("doubleEnd")]
-    public bool DoubleEnd = true;
+    public bool DoubleEnd { get; set; } = true;
 
     [JsonRequired][JsonPropertyName("mashStart")]
-    public bool MashStart = true;
+    public bool MashStart { get; set; } = true;
 
     [JsonRequired][JsonPropertyName("mashEnd")]
-    public bool MashEnd = true;
+    public bool MashEnd { get; set; } = true;
 
     [JsonRequired][JsonPropertyName("copSingle")]
-    public bool CopSingle = true;
+    public bool CopSingle { get; set; } = true;
 
     [JsonRequired][JsonPropertyName("copHoldStart")]
-    public bool CopHoldStart = true;
+    public bool CopHoldStart { get; set; } = true;
 
     [JsonRequired][JsonPropertyName("copHoldEnd")]
-    public bool CopHoldEnd = true;
+    public bool CopHoldEnd { get; set; } = true;
 
     [JsonRequired][JsonPropertyName("copMashStart")]
-    public bool CopMashStart = true;
+    public bool CopMashStart { get; set; } = true;
 
     [JsonRequired][JsonPropertyName("copMashEnd")]
-    public bool CopMashEnd = true;
+    public bool CopMashEnd { get; set; } = true;
 
     [JsonRequired][JsonPropertyName("cameraChange")]
-    public bool CameraChange = true;
+    public bool CameraChange { get; set; } = true;
 
     [JsonRequired][JsonPropertyName("marker1")]
-    public bool Marker1 = false;
+    public bool Marker1 { get; set; } = false;
 
     [JsonRequired][JsonPropertyName("marker2")]
-    public bool Marker2 = false;
+    public bool Marker2 { get; set; } = false;
 
     [JsonRequired][JsonPropertyName("marker3")]
-    public bool Marker3 = false;
+    public bool Marker3 { get; set; } = false;
     
     public string GetFormattedString()
     {
@@ -119,91 +119,92 @@ public class HitSounds
 public class Settings
 {
     [JsonRequired][JsonPropertyName("colorTheme")]
-    public string ColorTheme = "default";
+    public string ColorTheme { get; set; } = "default";
 
     [JsonRequired][JsonPropertyName("useBeatFiles")]
-    public bool DefaultSaveToBeatFiles = true;
+    public bool DefaultSaveToBeatFiles { get; set; } = true;
 
     [JsonRequired][JsonPropertyName("enhancedPreview")]
-    public bool EnhancedPreview = true;
+    public bool EnhancedPreview { get; set; } = true;
 
     [JsonRequired] [JsonPropertyName("alwaysShowAllNoteFlags")]
-    public bool AlwaysShowAllFlags = false;
+    public bool AlwaysShowAllFlags { get; set; } = false;
 
     [JsonRequired] [JsonPropertyName("enableBreakpoints")]
-    public bool EnableBreakpoints = true;
+    public bool EnableBreakpoints { get; set; } = true;
 
     [JsonRequired][JsonPropertyName("useLane2AsMarkers")]
-    public bool Lane2Markers = true;
+    public bool Lane2Markers { get; set; } = true;
 
     [JsonRequired] [JsonPropertyName("saveMarkersAsLane2Notes")]
-    public bool SaveMarkersInLane2 = false;
+    public bool SaveMarkersInLane2 { get; set; } = false;
 
     [JsonRequired][JsonPropertyName("alwaysEnableCustomDifficultyName")]
-    public bool AlwaysEnableCustomDifficultyName = false;
+    public bool AlwaysEnableCustomDifficultyName { get; set; } = false;
 
     [JsonRequired][JsonPropertyName("autoSelectPastedNotes")]
-    public bool AutoSelectPastedNotes = true;
+    public bool AutoSelectPastedNotes { get; set; } = true;
 
     [JsonRequired][JsonPropertyName("allowTopLaneCopMashes")]
-    public bool AllowTopLaneCopMashes = false;
+    public bool AllowTopLaneCopMashes { get; set; } = false;
 
     [JsonRequired] [JsonPropertyName("showFreestyleSubNotesWhilePlacing")]
-    public bool ShowSubFreestylesInNoteViewer = true;
+    public bool ShowSubFreestylesInNoteViewer { get; set; } = true;
 
     [JsonRequired][JsonPropertyName("enableNegativeMashConversion")]
-    public bool NegativeMashConversion = true;
+    public bool NegativeMashConversion { get; set; } = true;
     
     [JsonRequired][JsonPropertyName("quickScrollBeats")]
-    public int QuickScrollBeats = 5;
+    public int QuickScrollBeats { get; set; } = 5;
 
     [JsonRequired][JsonPropertyName("beatSnaps")]
-    public List<int> BeatSnaps = [1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 20, 5, 9, 11, 13];
+    public List<int> BeatSnaps { get; set; } =
+        [1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 20, 5, 9, 11, 13];
 
     [JsonRequired][JsonPropertyName("pasteOverwrites")]
-    public string PasteBehavior = "notes";
+    public string PasteBehavior { get; set; } = "notes";
 
     [JsonRequired][JsonPropertyName("preserveNoiszFlag")]
-    public bool PreserveNoiszFlag = true;
+    public bool PreserveNoiszFlag { get; set; } = true;
 
     [JsonRequired] [JsonPropertyName("minZoom")]
-    public double MinZoom = 0.5;
+    public double MinZoom { get; set; } = 0.5;
 
     [JsonRequired] [JsonPropertyName("maxZoom")]
-    public double MaxZoom = 7.5;
+    public double MaxZoom { get; set; } = 7.5;
 
     [JsonRequired] [JsonPropertyName("zoomIncrement")]
-    public double ZoomIncrement = 0.25;
+    public double ZoomIncrement { get; set; } = 0.25;
 
     [JsonRequired][JsonPropertyName("laneOrder")]
-    public List<string> LaneOrder = ["top", "center", "bottom", "camera"];
+    public List<string> LaneOrder { get; set; } = ["top", "center", "bottom", "camera"];
 
     [JsonRequired][JsonPropertyName("doublePreviewAlpha")]
-    public double DoublePreviewAlpha = 0.5;
+    public double DoublePreviewAlpha { get; set; } = 0.5;
 
     [JsonRequired][JsonPropertyName("currentTimePosition")]
-    public int CurrentTimePosition = 175;
+    public int CurrentTimePosition { get; set; } = 175;
 
     [JsonRequired][JsonPropertyName("hitSoundOffset")]
-    public int HitSoundOffset = -30;
+    public int HitSoundOffset { get; set; } = -30;
 
     [JsonRequired][JsonPropertyName("hardChartOffset")]
-    public int HardChartOffset = -60;
+    public int HardChartOffset { get; set; } = -60;
 
     [JsonRequired][JsonPropertyName("hitSoundTickRate")]
-    public int HitSoundTickRate = 180;
+    public int HitSoundTickRate { get; set; } = 180;
 
     [JsonRequired][JsonPropertyName("maxConcurrentHitSounds")]
-    public int MaxConcurrentSfx = 16;
+    public int MaxConcurrentSfx { get; set; } = 16;
 
     [JsonRequired][JsonPropertyName("autosaveInterval")]
-    public int AutosaveInterval = 600;
+    public int AutosaveInterval { get; set; } = 600;
 
     [JsonRequired][JsonPropertyName("hitSounds")]
-    public HitSounds HitSounds = new();
+    public HitSounds HitSounds { get; set; } = new();
 
     [JsonRequired][JsonPropertyName("debug")]
-    public Debug DebugToggles = new();
+    public Debug DebugToggles { get; set; } = new();
     
     public void PrintSettings()
     {
