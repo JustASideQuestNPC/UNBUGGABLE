@@ -67,9 +67,9 @@
     "marker3": false
   },
   "debug": {
-    "enabled": true,
-    "commandStacks": false,
-    "inputData": false,
+    "enabled": false,
+    "commandStacks": true,
+    "inputData": true,
     "mediaPlayer": true,
     "noteTimestamps": true
   },
