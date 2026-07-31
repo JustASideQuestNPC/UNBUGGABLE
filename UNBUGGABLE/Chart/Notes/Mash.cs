@@ -43,7 +43,7 @@ public class MashNote : NoteBase
         
         RenderFlags(dc, x, startY, new NoteFlags(Flags.C, false, Flags.W));
         
-        RenderDebugTime(dc, x, startY);
+        RenderDebugTime(dc, x, startY, endY);
     }
 
     public override void RenderPreview(DrawingContext dc)

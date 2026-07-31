@@ -69,10 +69,10 @@
   },
   "debug": {
     "enabled": false,
-    "commandStacks": true,
-    "inputData": true,
-    "mediaPlayer": true,
-    "noteTimestamps": true
+    "commandStacks": false,
+    "inputData": false,
+    "mediaPlayer": false,
+    "noteTimestamps": false
   },
   "quickScrollBeats": 5
 }

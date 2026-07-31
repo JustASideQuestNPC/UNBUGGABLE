@@ -56,7 +56,7 @@ public class HoldNote : NoteBase
         // overriding the flags hides the letter for a double note and does nothing to a hold note
         RenderFlags(dc, x, startY, new NoteFlags(Flags.C, Flags.F, false, Flags.N));
         
-        RenderDebugTime(dc, x, startY);
+        RenderDebugTime(dc, x, startY, endY);
     }
 
     public override void RenderPreview(DrawingContext dc)

@@ -371,21 +371,27 @@ public abstract partial class NoteBase
                             color, outline);
     }
 
-    protected void RenderDebugTime(DrawingContext dc, double x, double y)
+    protected void RenderDebugTime(DrawingContext dc, double x, double y, double tailY = -1)
     {
         if (!Config.Settings.DebugToggles.Enabled || !Config.Settings.DebugToggles.NoteTimeStamps)
         {
             return;
         }
-        
-        var timeString = Instant ? $"{Time}" : $"{Time}-{EndTime}";
         var color = (SolidColorBrush)App.Current.Resources["TextPrimary"];
         var outline = new Pen((SolidColorBrush)App.Current.Resources["TextDark"], 1);
-        var text = new FormattedText(timeString, CultureInfo.CurrentCulture,
+        
+        var text = new FormattedText($"{Time}", CultureInfo.CurrentCulture,
                                      FlowDirection.LeftToRight, Typeface, 20, color);
-
         dc.DrawOutlinedText(text, new Point(x - text.Width / 2, y - 14 - text.Height),
                             color, outline);
+
+        if (!Instant)
+        {
+            var tailText = new FormattedText($"{EndTime}", CultureInfo.CurrentCulture,
+                                             FlowDirection.LeftToRight, Typeface, 20, color);
+            dc.DrawOutlinedText(tailText, new Point(x - text.Width / 2, tailY - 14 - text.Height),
+                                color, outline);
+        }
     }
 
     protected string GetFlagString()

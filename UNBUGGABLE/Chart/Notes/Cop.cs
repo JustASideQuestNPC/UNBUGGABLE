@@ -77,9 +77,9 @@ public class CopNote : NoteBase
     {
         var x = NoteViewer.GetNoteX(Lane);
         var startY = NoteViewer.TimeToScreenCoords(Time);
+        var endY = NoteViewer.TimeToScreenCoords(EndTime);
         if (!Instant)
         {
-            var endY = NoteViewer.TimeToScreenCoords(EndTime);
             if ((startY < -50 && endY < -50) ||
                 (startY > NoteViewer.ViewerHeight + 50 && endY > NoteViewer.ViewerHeight + 50))
             {
@@ -131,7 +131,7 @@ public class CopNote : NoteBase
         dc.DrawOutlinedText(text, new Point(x - text.Width / 2, startY - 2 - text.Height / 2),
                             textColor, textOutline);
         
-        RenderDebugTime(dc, x, startY);
+        RenderDebugTime(dc, x, startY, endY);
     }
 
     public override void RenderPreview(DrawingContext dc)
