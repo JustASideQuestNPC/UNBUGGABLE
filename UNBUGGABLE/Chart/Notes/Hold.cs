@@ -106,7 +106,7 @@ public class HoldNote : NoteBase
         }
         return null;
     }
-    
+
     private void RenderHoldPreview(DrawingContext dc, double y)
     {
         var startX = GamePreview.TimeToScreenCoords(Time < Chart.CurrentTimeRaw ?

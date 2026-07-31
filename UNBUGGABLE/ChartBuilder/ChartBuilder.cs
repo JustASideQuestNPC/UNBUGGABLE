@@ -111,6 +111,32 @@ public static class ChartBuilder
             Trace.WriteLine($"Selected {SelectedNotes.Count} notes");
         }
         
+        // tail selection only works if no other notes are selected
+        if (SelectedNotes.Count == 0 && Config.Settings.HoldTailSelect != "none")
+        {
+            if (Config.Settings.HoldTailSelect == "all")
+            {
+                SelectedNotes = Chart.NonMarkerNotes.Where(n => !n.Instant && n.MouseOverTail())
+                                     .ToList();
+            }
+            else
+            {
+                var note = Config.Settings.HoldTailSelect switch
+                {
+                    "first" => Chart.NonMarkerNotes
+                                    .FirstOrDefault(n => !n.Instant && n.MouseOverTail()),
+                    "last" => Chart.NonMarkerNotes
+                                   .LastOrDefault(n => !n.Instant && n.MouseOverTail()),
+                    _ => throw new Exception("Invalid hold tail select setting")
+                };
+                
+                if (note != null)
+                {
+                    SelectedNotes = [note];
+                }
+            }
+        }
+        
         RightMouseDrag = false;
         MouseDragStart = null;
         MouseDragStartTime = -1000;

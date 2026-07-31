@@ -130,12 +130,23 @@ UNBUGGABLE section of a .beat.txt file, regardless of this setting.
 ## alwaysEnableCustomDifficultyName
 If true, you can set a difficulty name for every difficulty slot, not just Star.
 
-## autoSelectBehavior
+## autoSelect
 Determines when notes are automatically selected after being placed, either "none", "pasted", or
 "all":
 - "none": Notes are never automatically selected.
 - "pasted": Pasting one or more notes automatically selects those notes.
 - "all": Notes are automatically selected whenever you add them for any reason.
+
+## selectHoldNotesFromTail
+Determines whether you can select holds, doubles, and mashes by clicking on their tail, rather than
+just their head, either "none", "first", "last", or "all":
+- "none": Notes can never be selected by clicking on their tail.
+- "first": When clicking on a point that has multiple tails overlapping (such as with double stacks
+  or 4key holds), only the note that starts earliest in the chart will be selected.
+- "last": When clicking on a point that has multiple tails overlapping, only the note that starts
+  latest in the chart will be selected.
+- "all": When clicking on a point that has multiple tails overlapping, all notes will be selected.
+**Note:** Notes cannot be selected from the tail by dragging the mouse, only by clicking on them.
 
 ## allowTopLaneCopMashes
 Whether to allow placing cop mashes on the top lane. In-game, cop mashes are always on the bottom

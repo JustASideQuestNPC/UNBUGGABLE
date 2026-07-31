@@ -144,6 +144,9 @@ public class Settings
 
     [JsonRequired][JsonPropertyName("autoSelect")]
     public string AutoSelectBehavior { get; set; } = "pasted";
+    
+    [JsonRequired][JsonPropertyName("selectHoldNotesFromTail")]
+    public string HoldTailSelect { get; set; } = "all";
 
     [JsonRequired][JsonPropertyName("allowTopLaneCopMashes")]
     public bool AllowTopLaneCopMashes { get; set; } = false;

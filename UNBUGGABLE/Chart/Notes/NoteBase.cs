@@ -299,6 +299,14 @@ public abstract partial class NoteBase
         return new Rect(x - 40, y - 12, 80, 24).ContainsPoint(ChartBuilder.MousePosition);
     }
 
+    public bool MouseOverTail()
+    {
+        var x = NoteViewer.GetNoteX(Lane);
+        var startY = NoteViewer.TimeToScreenCoords(Time);
+        var endY = NoteViewer.TimeToScreenCoords(EndTime);
+        return new Rect(x - 16, startY, 32, endY - startY)
+            .ContainsPoint(ChartBuilder.MousePosition);
+    }
     public NoteBase Clone(long? newTime = null)
     {
         var clone = (NoteBase)MemberwiseClone();

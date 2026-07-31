@@ -415,6 +415,14 @@ public static class Config
                     loadSuccessful = false;
                 }
 
+                if (settings.HoldTailSelect != "first" && settings.HoldTailSelect != "last" &&
+                    settings.HoldTailSelect != "all" && settings.HoldTailSelect != "none")
+                {
+                    errorMessage = "Invalid hold tail select settings: must be \"first\", " +
+                                   "\"last\", \"all\", or \"none\"";
+                    loadSuccessful = false;
+                }
+
                 if (settings.QuickScrollBeats <= 0)
                 {
                     errorMessage = "Quick scroll beats must be > 0";
