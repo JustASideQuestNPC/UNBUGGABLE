@@ -32,7 +32,7 @@
   "pasteOverwrites": "region",
   "preserveNoiszFlag": true,
   "minZoom": 0.5,
-  "maxZoom": 3,
+  "maxZoom": 7.5,
   "zoomIncrement": 0.25,
   "laneOrder": [
     "top",
