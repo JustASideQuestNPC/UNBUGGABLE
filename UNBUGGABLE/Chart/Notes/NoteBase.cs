@@ -302,6 +302,8 @@ public abstract partial class NoteBase
     public NoteBase Clone(long? newTime = null)
     {
         var clone = (NoteBase)MemberwiseClone();
+        // deep copy the flags
+        clone.Flags = new NoteFlags(Flags.C, Flags.F, Flags.W, Flags.N);
         if (newTime != null)
         {
             clone.EndTime = newTime.Value + (EndTime - Time);
