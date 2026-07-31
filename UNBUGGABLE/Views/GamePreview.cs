@@ -3,6 +3,7 @@ using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using UNBUGGABLE.Resources;
 
 namespace UNBUGGABLE.Views;
 
@@ -27,10 +28,14 @@ public class GamePreview : Control
     public static CopState Cop3State = CopState.DEAD;
     public static CopState Cop4State = CopState.DEAD;
     
-    public static string LeftCopText { get; private set; } = "Left:";
-    public static string RightCopText { get; private set; } = "Right:";
-    
     public const int PixelsPerSecond = 650;
+
+    private static readonly List<Point> DirectionIndicatorVertices =
+    [
+        new(22, -40),
+        new(-22, 0),
+        new(22, 40)
+    ];
     
     private readonly SolidColorBrush _viewableAreaBrush =
         (SolidColorBrush)App.Current.Resources["ViewableArea"];
@@ -40,6 +45,9 @@ public class GamePreview : Control
         (SolidColorBrush)App.Current.Resources["SubBeatSnapLine"];
     private readonly SolidColorBrush _editorBackgroundBrush =
         (SolidColorBrush)App.Current.Resources["EditorBackground"];
+    private readonly SolidColorBrush _directionIndicatorBrush;
+    private readonly Geometry _directionIndicatorShape =
+        new PolylineGeometry(DirectionIndicatorVertices, true);
     
     /// <summary>
     /// Given a time in milliseconds, returns the x coordinate of that time.
@@ -48,6 +56,14 @@ public class GamePreview : Control
     {
         var x = ((time - Chart.CurrentTimeRaw) / 1000) * PixelsPerSecond + NoteTargetX;
         return (CurrentNotesFromRight ? x : -x);
+    }
+
+    public GamePreview()
+    {
+        _directionIndicatorBrush = new SolidColorBrush(_viewableAreaBrush.Color)
+        {
+            Opacity = 0.5,
+        };
     }
     
     public override void Render(DrawingContext dc)
@@ -201,9 +217,6 @@ public class GamePreview : Control
                 rightCopStates.Add("4");
             }
         }
-
-        LeftCopText = $"Left: {string.Join(", ", leftCopStates)}";
-        RightCopText = $"Right: {string.Join(", ", rightCopStates)}";
         
         if (Cop1State == CopState.LEFT || Cop2State == CopState.LEFT ||
             Cop3State == CopState.LEFT || Cop4State == CopState.LEFT)
@@ -288,6 +301,16 @@ public class GamePreview : Control
         
         dc.DrawRectangle(null, new Pen(_viewableAreaBrush, 5),
                          new Rect(viewableX, viewableY, viewableWidth, viewableHeight));
+
+        if (viewableZoomedOut && Config.Settings.EnhancedPreview)
+        {
+            var shape = _directionIndicatorShape.Clone();
+            if (viewableNotesFromRight)
+            {
+                shape.Transform = new RotateTransform(180);
+            }
+            dc.DrawGeometry(_directionIndicatorBrush, null, shape);
+        }
         
         positionOffset.Dispose();
         dc.DrawRectangle(null, new Pen(_accentBrush, 5),
