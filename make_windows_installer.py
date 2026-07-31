@@ -1,12 +1,9 @@
 '''
-Generates and then runs a terrible nsis script to turn this thing.
+Generates and then runs a terrible nsis script to turn this thing into a windows installer.
 '''
 
 import subprocess
 from pathlib import Path
-from os import walk, path
-
-APP_VERSION = '0.9.0'
 
 ASSETS_DIR = 'UNBUGGABLE\\Assets'
 PUBLISH_DIR = 'UNBUGGABLE\\publish'
