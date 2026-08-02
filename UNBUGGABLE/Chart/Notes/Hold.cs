@@ -45,6 +45,13 @@ public class HoldNote : NoteBase
         var tailPen = selected ? new Pen(SelectedBrush, 2) : null;
         dc.DrawRectangle(Type == NoteType.HOLD ? _holdTailBrush : _doubleTailBrush, tailPen,
                          new Rect(x - 16, startY, 32, endY - startY));
+
+        // also show where doubles will land
+        if (Type == NoteType.DOUBLE)
+        {
+            var endX = NoteViewer.GetNoteX(Lane == NoteLane.TOP ? NoteLane.BOTTOM : NoteLane.TOP);
+            dc.DrawRectangle(_doubleTailBrush, tailPen, new Rect(endX - 24, endY - 12, 48, 24));
+        }
         
         var pen = selected ? new Pen(SelectedBrush, 4) : new Pen(OutlineBrush, 4);
         dc.DrawRectangle(Type == NoteType.HOLD ? _holdBrush : _doubleBrush, pen,
