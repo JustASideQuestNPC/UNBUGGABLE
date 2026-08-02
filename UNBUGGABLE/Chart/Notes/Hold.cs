@@ -42,16 +42,13 @@ public class HoldNote : NoteBase
             return;
         }
         
-        dc.DrawRectangle(Type == NoteType.HOLD ? _holdTailBrush : _doubleTailBrush, null,
+        var tailPen = selected ? new Pen(SelectedBrush, 2) : null;
+        dc.DrawRectangle(Type == NoteType.HOLD ? _holdTailBrush : _doubleTailBrush, tailPen,
                          new Rect(x - 16, startY, 32, endY - startY));
-        dc.DrawRectangle(Type == NoteType.HOLD ? _holdBrush : _doubleBrush,
-                         new Pen(OutlineBrush, 4),  new Rect(x - 40, startY - 12, 80, 24));
         
-        if (selected)
-        {
-            dc.DrawRectangle(null, new Pen(SelectedBrush, 4),
-                             new Rect(x - 40, startY - 12, 80, 24));
-        }
+        var pen = selected ? new Pen(SelectedBrush, 4) : new Pen(OutlineBrush, 4);
+        dc.DrawRectangle(Type == NoteType.HOLD ? _holdBrush : _doubleBrush, pen,
+                         new Rect(x - 40, startY - 12, 80, 24));
         
         // overriding the flags hides the letter for a double note and does nothing to a hold note
         RenderFlags(dc, x, startY, new NoteFlags(Flags.C, Flags.F, false, Flags.N));

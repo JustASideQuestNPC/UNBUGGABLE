@@ -36,7 +36,8 @@ public class MashNote : NoteBase
             return;
         }
         
-        dc.DrawRectangle(_tailBrush, null, new Rect(x - 16, startY, 32, endY - startY));
+        var tailPen = selected ? new Pen(SelectedBrush, 2) : null;
+        dc.DrawRectangle(_tailBrush, tailPen, new Rect(x - 16, startY, 32, endY - startY));
             
         var pen = selected ? new Pen(SelectedBrush, 4) : new Pen(OutlineBrush, 4);
         dc.DrawRectangle(_fillBrush, pen, new Rect(x - 40, startY - 12, 80, 24));
