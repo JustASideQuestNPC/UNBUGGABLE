@@ -107,17 +107,32 @@ public static class ChartBuilder
         }
         else
         {
-            SelectedNotes = notes;
+            if (InputManager.CtrlPressed)
+            {
+                SelectedNotes.AddRange(notes);
+            }
+            else
+            {
+                SelectedNotes = notes;
+            }
             Trace.WriteLine($"Selected {SelectedNotes.Count} notes");
         }
         
-        // tail selection only works if no other notes are selected
-        if (SelectedNotes.Count == 0 && Config.Settings.HoldTailSelect != "none")
+        // tail selection only works if you don't drag select
+        if (notes.Count == 0 && Config.Settings.HoldTailSelect != "none")
         {
             if (Config.Settings.HoldTailSelect == "all")
             {
-                SelectedNotes = Chart.NonMarkerNotes.Where(n => !n.Instant && n.MouseOverTail())
-                                     .ToList();
+                if (InputManager.CtrlPressed)
+                {
+                    SelectedNotes.AddRange(Chart.NonMarkerNotes.Where(
+                                               n => !n.Instant && n.MouseOverTail()).ToList());
+                }
+                else
+                {
+                    SelectedNotes = Chart.NonMarkerNotes.Where(n => !n.Instant && n.MouseOverTail())
+                                         .ToList();
+                }
             }
             else
             {
@@ -132,7 +147,14 @@ public static class ChartBuilder
                 
                 if (note != null)
                 {
-                    SelectedNotes = [note];
+                    if (InputManager.CtrlPressed)
+                    {
+                        SelectedNotes.Add(note);
+                    }
+                    else
+                    {
+                        SelectedNotes = [note];
+                    }
                 }
             }
         }

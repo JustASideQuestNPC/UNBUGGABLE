@@ -50,7 +50,7 @@ public class HoldNote : NoteBase
         if (Type == NoteType.DOUBLE)
         {
             var endX = NoteViewer.GetNoteX(Lane == NoteLane.TOP ? NoteLane.BOTTOM : NoteLane.TOP);
-            dc.DrawRectangle(_doubleTailBrush, tailPen, new Rect(endX - 24, endY - 12, 48, 24));
+            dc.DrawRectangle(_doubleTailBrush, tailPen, new Rect(endX - 40, endY - 12, 80, 24));
         }
         
         var pen = selected ? new Pen(SelectedBrush, 4) : new Pen(OutlineBrush, 4);
