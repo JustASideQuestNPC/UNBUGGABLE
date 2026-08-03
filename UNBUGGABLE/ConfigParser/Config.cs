@@ -10,6 +10,7 @@ using System.Text.Json.Nodes;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
+using Tmds.DBus.Protocol;
 using UNBEATABLEChartEditor;
 using UNBEATABLEChartEditor.Input;
 using UNBUGGABLE.Keybinds;
@@ -80,7 +81,7 @@ public static class Config
     private static readonly string KeybindFilePath = Path.Combine(Environment.CurrentDirectory,
                                                                   "configs/keybinds.json");
     private static readonly string ThemesFilePath = Path.Combine(Environment.CurrentDirectory,
-                                                                 "configs/themes.json");
+                                                                 "configs/newThemes.json");
 
     /// <summary>
     /// Path to the file with all color themes.
@@ -163,8 +164,11 @@ public static class Config
                 File.Move(updatedKeybindsPath, KeybindFilePath);
             }
         }
-        
-        LoadError = !TryLoadThemes(out var errorMessage);
+        LoadError = !TryLoadOldThemes(out var errorMessage);
+        if (!LoadError)
+        {
+            LoadError = !TryLoadThemes(out errorMessage);
+        }
         if (!LoadError)
         {
             LoadError = !TryLoadKeybinds(out errorMessage);
@@ -486,8 +490,40 @@ public static class Config
         
         return loadSuccessful;
     }
-
+    
     private static bool TryLoadThemes(out string errorMessage)
+    {
+        errorMessage = "";
+        ColorThemes.Clear();
+        if (File.Exists(ThemesFilePath))
+        {
+            try
+            {
+                var themeList = JsonSerializer.Deserialize<Dictionary<string, ColorThemeJson>>(
+                    File.ReadAllText(ThemesFilePath));
+                if (themeList != null)
+                {
+                    foreach (var (themeName, themeValue) in themeList)
+                    {
+                        
+                    }
+                }
+            }
+            catch (JsonException e)
+            {
+                errorMessage = $"Could not parse color themes: {e.Message}";
+                Trace.WriteLine(errorMessage);
+                return false;
+            }
+            Trace.WriteLine("Loaded color themes.");
+            return true;
+        }
+        errorMessage = "Color theme file not found.";
+        Trace.WriteLine(errorMessage);
+        return false;
+    }
+
+    private static bool TryLoadOldThemes(out string errorMessage)
     {
         errorMessage = "";
         ColorThemes.Clear();
