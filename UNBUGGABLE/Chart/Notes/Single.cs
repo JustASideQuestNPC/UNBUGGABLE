@@ -9,6 +9,16 @@ namespace UNBUGGABLE;
 
 public class SingleNote : NoteBase
 {
+    private class StyleGroup
+    {
+        public required SolidColorBrush FillBrush;
+        public required SolidColorBrush OutlineBrush;
+        public required double OutlineThickness;
+        public required SolidColorBrush SelectedFillBrush;
+        public required SolidColorBrush SelectedOutlineBrush;
+        public required double SelectedOutlineThickness;
+    }
+    
     private static readonly List<Point> SpikeVertices =
     [
         new(-30, -16),
@@ -23,15 +33,45 @@ public class SingleNote : NoteBase
         new( 35, 30)
     ];
     
+    private static StyleGroup SingleStyles;
+    private static StyleGroup SpikeStyles;
+    
     public override NoteType Type => (Flags.W ? NoteType.SPIKE : NoteType.SINGLE);
     
     private readonly Geometry _spikeShape = new PolylineGeometry(SpikeVertices, true);
     private readonly Geometry _spikePreviewShape = new PolylineGeometry(SpikePreviewVertices, true);
     
-    private readonly SolidColorBrush _singleBrush =
-        App.Current.Resources["SingleNote"] as SolidColorBrush;
-    private readonly SolidColorBrush _spikeBrush =
-        App.Current.Resources["Spike"] as SolidColorBrush;
+    public static void UpdateStyles()
+    {
+        SingleStyles = new StyleGroup
+        {
+            FillBrush = (SolidColorBrush)App.Current.Resources["Notes.Single.FillColor"],
+            OutlineBrush = (SolidColorBrush)App.Current.Resources["Notes.Single.OutlineColor"],
+            OutlineThickness =
+                ((Thickness)App.Current.Resources["Notes.Single.OutlineThickness"]).Top,
+
+            SelectedFillBrush =
+                (SolidColorBrush)App.Current.Resources["Notes.Single.Selected.FillColor"],
+            SelectedOutlineBrush =
+                (SolidColorBrush)App.Current.Resources["Notes.Single.Selected.OutlineColor"],
+            SelectedOutlineThickness =
+                ((Thickness)App.Current.Resources["Notes.Single.Selected.OutlineThickness"]).Top
+        };
+        SpikeStyles = new StyleGroup
+        {
+            FillBrush = (SolidColorBrush)App.Current.Resources["Notes.Spike.FillColor"],
+            OutlineBrush = (SolidColorBrush)App.Current.Resources["Notes.Spike.OutlineColor"],
+            OutlineThickness =
+                ((Thickness)App.Current.Resources["Notes.Spike.OutlineThickness"]).Top,
+
+            SelectedFillBrush =
+                (SolidColorBrush)App.Current.Resources["Notes.Spike.Selected.FillColor"],
+            SelectedOutlineBrush =
+                (SolidColorBrush)App.Current.Resources["Notes.Spike.Selected.OutlineColor"],
+            SelectedOutlineThickness =
+                ((Thickness)App.Current.Resources["Notes.Spike.Selected.OutlineThickness"]).Top
+        };
+    }
 
     public override void Render(DrawingContext dc, bool selected)
     {
@@ -95,8 +135,11 @@ public class SingleNote : NoteBase
         }
         
             
-        var pen = selected ? new Pen(SelectedBrush, 4) : new Pen(OutlineBrush, 4);
-        dc.DrawRectangle(_singleBrush, pen, new Rect(x - 40, y - 12, 80, 24));
+        var pen = selected ?
+            new Pen(SingleStyles.SelectedOutlineBrush, SingleStyles.SelectedOutlineThickness) :
+            new Pen(SingleStyles.OutlineBrush, SingleStyles.OutlineThickness);
+        dc.DrawRectangle(selected ? SingleStyles.SelectedFillBrush : SingleStyles.FillBrush, pen,
+                         new Rect(x - 40, y - 12, 80, 24));
         
         RenderFlags(dc, x, y);
         RenderDebugTime(dc, x, y);
@@ -104,7 +147,7 @@ public class SingleNote : NoteBase
 
     private void RenderSinglePreview(DrawingContext dc, double y)
     {
-        dc.DrawEllipse(_singleBrush, new Pen(OutlineBrush, 6),
+        dc.DrawEllipse(SingleStyles.FillBrush, new Pen(SingleStyles.OutlineBrush, 6),
                        new Point(GamePreview.TimeToScreenCoords(Time), y), 30, 30);
     }
     
@@ -129,8 +172,11 @@ public class SingleNote : NoteBase
         shape.Transform = transform;
         
             
-        var pen = selected ? new Pen(SelectedBrush, 4) : new Pen(OutlineBrush, 4);
-        dc.DrawGeometry(_spikeBrush, pen, shape);
+        var pen = selected ?
+            new Pen(SpikeStyles.SelectedOutlineBrush, SpikeStyles.SelectedOutlineThickness) :
+            new Pen(SpikeStyles.OutlineBrush, SpikeStyles.OutlineThickness);
+        dc.DrawGeometry(selected ? SpikeStyles.SelectedFillBrush : SpikeStyles.FillBrush, pen,
+                        shape);
         
         RenderFlags(dc, x, y, new NoteFlags(Flags.C, Flags.F, false, Flags.N));
         RenderDebugTime(dc, x, y);
@@ -149,14 +195,15 @@ public class SingleNote : NoteBase
                                                       y + offset));
         shape.Transform = transform;
         
-        dc.DrawGeometry(_spikeBrush, new Pen(OutlineBrush, 6), shape);
+        dc.DrawGeometry(SpikeStyles.FillBrush, new Pen(SpikeStyles.OutlineBrush, 6), shape);
     }
     
     private double TimeToNoiszPreviewY(double time)
     {
         var rangeStart = (Lane == NoteLane.TOP ? -GamePreview.TopLaneY : GamePreview.BottomLaneY);
-        var y = Math.Clamp((Chart.CurrentTimeRaw - time) / 1000 * (GamePreview.PixelsPerSecond / 4.0) +
-                           rangeStart, 0, rangeStart);
+        var y =
+            Math.Clamp((Chart.CurrentTimeRaw - time) / 1000 * (GamePreview.PixelsPerSecond / 4.0) +
+                       rangeStart, 0, rangeStart);
         return (Lane == NoteLane.TOP ? -y : y);
     }
     

@@ -19,6 +19,13 @@ public class CameraChange : NoteBase
         new(-20.500, 5.973),
         new(-33.412, 10.920)
     ];
+
+    private static SolidColorBrush FillBrush;
+    private static SolidColorBrush OutlineBrush;
+    private static double OutlineThickness;
+    private static SolidColorBrush SelectedOutlineBrush;
+    private static SolidColorBrush SelectedFillBrush;
+    private static double SelectedOutlineThickness;
     
     public override NoteType Type =>
         (Flags.C ? NoteType.CAMERA_INSTANT : Flags.W ? NoteType.CAMERA_WIDE :
@@ -26,10 +33,21 @@ public class CameraChange : NoteBase
     
     public override NoteLane Lane => NoteLane.CAMERA;
     
-    private readonly SolidColorBrush _fillBrush =
-        App.Current.Resources["CameraChange"] as SolidColorBrush;
-    
     private readonly Geometry _shape = new PolylineGeometry(Vertices, true);
+
+    public static void UpdateStyles()
+    {
+        FillBrush = (SolidColorBrush)App.Current.Resources["Notes.Camera.FillColor"];
+        OutlineBrush = (SolidColorBrush)App.Current.Resources["Notes.Camera.OutlineColor"];
+        // thickness is always the same on all sides
+        OutlineThickness = ((Thickness)App.Current.Resources["Notes.Camera.OutlineThickness"]).Top;
+        SelectedFillBrush =
+            (SolidColorBrush)App.Current.Resources["Notes.Camera.Selected.FillColor"];
+        SelectedOutlineBrush =
+            (SolidColorBrush)App.Current.Resources["Notes.Camera.Selected.OutlineColor"];
+        SelectedOutlineThickness =
+            ((Thickness)App.Current.Resources["Notes.Camera.Selected.OutlineThickness"]).Top;
+    }
 
     public override void Render(DrawingContext dc, bool selected)
     {
@@ -44,8 +62,10 @@ public class CameraChange : NoteBase
         var shape = _shape.Clone();
         shape.Transform = new TranslateTransform(x, y);
         
-        var pen = selected ? new Pen(SelectedBrush, 4) : new Pen(OutlineBrush, 4);
-        dc.DrawGeometry(_fillBrush, pen, shape);
+        var pen = selected ?
+            new Pen(SelectedOutlineBrush, SelectedOutlineThickness) :
+            new Pen(OutlineBrush, OutlineThickness);
+        dc.DrawGeometry(selected ? SelectedFillBrush : FillBrush, pen, shape);
         
         RenderFlags(dc, x, y);
         

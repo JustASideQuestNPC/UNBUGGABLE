@@ -8,30 +8,89 @@ namespace UNBUGGABLE;
 
 public class HoldNote : NoteBase
 {
-    public override NoteType Type => (Flags.W ? NoteType.DOUBLE : NoteType.HOLD);
-    
-    private readonly SolidColorBrush _holdBrush =
-        App.Current.Resources["SingleNote"] as SolidColorBrush;
-    private readonly SolidColorBrush _doubleBrush =
-        App.Current.Resources["DoubleNote"] as SolidColorBrush;
-
-    private readonly SolidColorBrush _holdTailBrush;
-    private readonly SolidColorBrush _doubleTailBrush;
-
-    public HoldNote(NoteFlags? startingFlags = null) : base(startingFlags)
+    private class StyleGroup
     {
-        _holdTailBrush = new SolidColorBrush(_holdBrush.Color)
+        public required SolidColorBrush FillBrush;
+        public required SolidColorBrush OutlineBrush;
+        public required double OutlineThickness;
+        public required SolidColorBrush TailFillBrush;
+        public required SolidColorBrush TailOutlineBrush;
+        public required double TailOutlineThickness;
+        public required SolidColorBrush SelectedFillBrush;
+        public required SolidColorBrush SelectedOutlineBrush;
+        public required double SelectedOutlineThickness;
+        public required SolidColorBrush SelectedTailFillBrush;
+        public required SolidColorBrush SelectedTailOutlineBrush;
+        public required double SelectedTailOutlineThickness;
+    }
+
+    private static StyleGroup HoldStyles;
+    private static StyleGroup DoubleStyles;
+    
+    public override NoteType Type => (Flags.W ? NoteType.DOUBLE : NoteType.HOLD);
+
+    public static void UpdateStyles()
+    {
+        HoldStyles = new StyleGroup
         {
-            Opacity = 0.6
+            FillBrush = (SolidColorBrush)App.Current.Resources["Notes.Hold.FillColor"],
+            OutlineBrush = (SolidColorBrush)App.Current.Resources["Notes.Hold.OutlineColor"],
+            OutlineThickness =
+                ((Thickness)App.Current.Resources["Notes.Hold.OutlineThickness"]).Top,
+            TailFillBrush =
+                (SolidColorBrush)App.Current.Resources["Notes.Hold.TailFillColor"],
+            TailOutlineBrush =
+                (SolidColorBrush)App.Current.Resources["Notes.Hold.TailOutlineColor"],
+            TailOutlineThickness =
+                ((Thickness)App.Current.Resources["Notes.Hold.TailOutlineThickness"]).Top,
+
+            SelectedFillBrush =
+                (SolidColorBrush)App.Current.Resources["Notes.Hold.Selected.FillColor"],
+            SelectedOutlineBrush =
+                (SolidColorBrush)App.Current.Resources["Notes.Hold.Selected.OutlineColor"],
+            SelectedOutlineThickness =
+                ((Thickness)App.Current.Resources["Notes.Hold.Selected.OutlineThickness"]).Top,
+            SelectedTailFillBrush =
+                (SolidColorBrush)App.Current.Resources["Notes.Hold.Selected.TailFillColor"],
+            SelectedTailOutlineBrush =
+                (SolidColorBrush)App.Current.Resources[
+                    "Notes.Hold.Selected.TailOutlineColor"],
+            SelectedTailOutlineThickness =
+                ((Thickness)App.Current.Resources["Notes.Hold.Selected.TailOutlineThickness"]).Top,
         };
-        _doubleTailBrush = new SolidColorBrush(_doubleBrush.Color)
+        DoubleStyles = new StyleGroup
         {
-            Opacity = 0.6
+            FillBrush = (SolidColorBrush)App.Current.Resources["Notes.Double.FillColor"],
+            OutlineBrush = (SolidColorBrush)App.Current.Resources["Notes.Double.OutlineColor"],
+            OutlineThickness =
+                ((Thickness)App.Current.Resources["Notes.Double.OutlineThickness"]).Top,
+            TailFillBrush =
+                (SolidColorBrush)App.Current.Resources["Notes.Double.TailFillColor"],
+            TailOutlineBrush =
+                (SolidColorBrush)App.Current.Resources["Notes.Double.TailOutlineColor"],
+            TailOutlineThickness =
+                ((Thickness)App.Current.Resources["Notes.Double.TailOutlineThickness"]).Top,
+
+            SelectedFillBrush =
+                (SolidColorBrush)App.Current.Resources["Notes.Double.Selected.FillColor"],
+            SelectedOutlineBrush =
+                (SolidColorBrush)App.Current.Resources["Notes.Double.Selected.OutlineColor"],
+            SelectedOutlineThickness =
+                ((Thickness)App.Current.Resources["Notes.Double.Selected.OutlineThickness"]).Top,
+            SelectedTailFillBrush =
+                (SolidColorBrush)App.Current.Resources["Notes.Double.Selected.TailFillColor"],
+            SelectedTailOutlineBrush =
+                (SolidColorBrush)App.Current.Resources[
+                    "Notes.Double.Selected.TailOutlineColor"],
+            SelectedTailOutlineThickness =
+                ((Thickness)App.Current.Resources["Notes.Double.Selected.TailOutlineThickness"]).Top
         };
     }
 
     public override void Render(DrawingContext dc, bool selected)
     {
+        var styles = Type == NoteType.HOLD ? HoldStyles : DoubleStyles;
+        
         var x = NoteViewer.GetNoteX(Lane);
         var startY = NoteViewer.TimeToScreenCoords(Time);
         var endY = NoteViewer.TimeToScreenCoords(EndTime);
@@ -42,12 +101,16 @@ public class HoldNote : NoteBase
             return;
         }
         
-        var tailPen = selected ? new Pen(SelectedBrush, 2) : null;
-        dc.DrawRectangle(Type == NoteType.HOLD ? _holdTailBrush : _doubleTailBrush, tailPen,
+        var tailPen = selected ?
+            new Pen(styles.SelectedTailOutlineBrush, styles.SelectedTailOutlineThickness) : 
+            new Pen(styles.TailOutlineBrush, styles.TailOutlineThickness);
+        dc.DrawRectangle(selected ? styles.SelectedTailFillBrush : styles.TailFillBrush, tailPen,
                          new Rect(x - 16, startY, 32, endY - startY));
         
-        var pen = selected ? new Pen(SelectedBrush, 4) : new Pen(OutlineBrush, 4);
-        dc.DrawRectangle(Type == NoteType.HOLD ? _holdBrush : _doubleBrush, pen,
+        var pen = selected ?
+            new Pen(styles.SelectedOutlineBrush, styles.SelectedOutlineThickness) : 
+            new Pen(styles.OutlineBrush, styles.OutlineThickness);
+        dc.DrawRectangle(selected ? styles.SelectedFillBrush : styles.FillBrush, pen,
                          new Rect(x - 40, startY - 12, 80, 24));
         
         // overriding the flags hides the letter for a double note and does nothing to a hold note
@@ -111,8 +174,10 @@ public class HoldNote : NoteBase
         
         var endX = GamePreview.TimeToScreenCoords(EndTime);
         
-        dc.DrawLine(new Pen(_holdTailBrush, 20), new Point(startX, y), new Point(endX, y));
-        dc.DrawEllipse(_holdBrush, new Pen(OutlineBrush, 6), new Point(startX, y), 30, 30);
+        dc.DrawLine(new Pen(HoldStyles.TailFillBrush, 20), new Point(startX, y),
+                    new Point(endX, y));
+        dc.DrawEllipse(HoldStyles.TailFillBrush, new Pen(HoldStyles.OutlineBrush, 6),
+                       new Point(startX, y), 30, 30);
     }
     
     private void RenderDoublePreview(DrawingContext dc, double startY)
@@ -123,24 +188,18 @@ public class HoldNote : NoteBase
         var noteY = Utils.MapRanges(Math.Clamp(Chart.CurrentTimeRaw, Time, EndTime), Time, EndTime,
                               startY, endY);
         
-        var fillBrush = _doubleBrush;
-        var outlineBrush = OutlineBrush;
+        var fillBrush = DoubleStyles.FillBrush;
+        var outlineBrush = DoubleStyles.OutlineBrush;
         if (Time < Chart.CurrentTimeRaw)
         {
-            fillBrush = new SolidColorBrush(fillBrush.Color)
-            {
-                Opacity = Config.Settings.DoublePreviewAlpha
-            };
-            outlineBrush = new SolidColorBrush(outlineBrush.Color)
-            {
-                Opacity = Config.Settings.DoublePreviewAlpha
-            };
+            fillBrush = DoubleStyles.TailFillBrush;
+            outlineBrush = DoubleStyles.TailOutlineBrush;
         }
 
         if (Config.Settings.EnhancedPreview)
         {
             var endX = GamePreview.TimeToScreenCoords(EndTime);
-            dc.DrawEllipse(_doubleTailBrush, null, new Point(endX, endY), 20, 20);
+            dc.DrawEllipse(DoubleStyles.TailFillBrush, null, new Point(endX, endY), 20, 20);
         }
         dc.DrawEllipse(fillBrush, new Pen(outlineBrush, 6), new Point(startX, noteY), 30, 30);
     }

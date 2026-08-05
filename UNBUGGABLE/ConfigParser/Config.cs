@@ -88,7 +88,9 @@ public static class Config
     /// </summary>
     private const string ColorThemeListFileName = "configs/themes.json";
     
-    private static readonly Dictionary<string, Dictionary<string, Color>> ColorThemes = new();
+    private static readonly Dictionary<string, Dictionary<string, Color>> OldColorThemes = new();
+    
+    private static readonly Dictionary<string, ColorTheme> ColorThemes = new();
     
     // JSON types for setting and color theme objects
     private static readonly Dictionary<string, JsonValueKind> ColorThemePropertyTypes = new()
@@ -177,6 +179,10 @@ public static class Config
         {
             LoadError = !TryLoadConfig(out errorMessage);
         }
+        
+        ThemeManager.ApplyTheme(ColorThemes[Settings.ColorTheme]);
+        Trace.WriteLine($"applied theme \"{Settings.ColorTheme}\"");
+        
         LoadErrorMessage = errorMessage;
     }
 
@@ -458,8 +464,8 @@ public static class Config
             Trace.WriteLine(errorMessage);
         }
 
-        CurrentTheme = ColorThemes.TryGetValue(Settings.ColorTheme, out var theme) ?
-            theme : ColorThemes["default"];
+        CurrentTheme = OldColorThemes.TryGetValue(Settings.ColorTheme, out var theme) ?
+            theme : OldColorThemes["default"];
         
         Trace.WriteLine("Loaded config");
         Settings.PrintSettings();
@@ -504,7 +510,16 @@ public static class Config
                 {
                     foreach (var (themeName, themeValue) in themeList)
                     {
-                        var parsedTheme = new ColorTheme(themeValue);
+                        try
+                        {
+                            ColorThemes[themeName] = new ColorTheme(themeValue);
+                            Trace.WriteLine($"Loaded theme \"{themeName}\"");
+                        }
+                        catch (ColorThemeException e)
+                        {
+                            Trace.WriteLine(
+                                $"Could not parse color theme \"{themeName}\": {e.Message}");
+                        }
                     }
                 }
             }
@@ -525,7 +540,7 @@ public static class Config
     private static bool TryLoadOldThemes(out string errorMessage)
     {
         errorMessage = "";
-        ColorThemes.Clear();
+        OldColorThemes.Clear();
         
         var themeFilePath = Path.Combine(Environment.CurrentDirectory, ColorThemeListFileName);
         if (File.Exists(themeFilePath))
@@ -555,7 +570,7 @@ public static class Config
                                 var brushName = colorName[0].ToString().ToUpper() + colorName[1..];
                                 theme[$"{brushName}"] = brushColor;
                             }
-                            ColorThemes.Add(themeName, theme);
+                            OldColorThemes.Add(themeName, theme);
                             Trace.WriteLine($"Loaded theme \"{themeName}\"");
                         }
                     }

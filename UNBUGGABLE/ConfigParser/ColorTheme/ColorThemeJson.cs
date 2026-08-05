@@ -165,6 +165,12 @@ public class NoteViewerThemeJson : ElementThemeJson
         public double ArrowScale { get; set; } = 0;
     }
     
+    public class BreakpointThemeJson : LineThemeJson
+    {
+        [JsonRequired][JsonPropertyName("arrowScale")]
+        public double ArrowScale { get; set; } = 0;
+    }
+    
     [JsonRequired][JsonPropertyName("selectDragColor")]
     public string SelectDragColor { get; set; } = "";
     [JsonRequired][JsonPropertyName("deleteDragColor")]
@@ -180,8 +186,12 @@ public class NoteViewerThemeJson : ElementThemeJson
     public FullBeatSnapLineThemeJson FullBeatSnapLine { get; set; } = new();
     [JsonRequired][JsonPropertyName("subBeatSnapLine")]
     public LineThemeJson SubBeatSnapLine { get; set; } = new();
+    [JsonRequired][JsonPropertyName("currentTimeLine")]
+    public LineThemeJson CurrentTimeLine { get; set; } = new();
     [JsonRequired][JsonPropertyName("markers")]
     public MarkersThemeJson Markers { get; set; } = new();   
+    [JsonRequired][JsonPropertyName("breakpoint")]
+    public BreakpointThemeJson Breakpoint { get; set; } = new();  
 }
 
 public class GamePreviewThemeJson : ElementThemeJson
@@ -329,6 +339,8 @@ public class NoteThemesJson
     public InstantNoteThemeJson Freestyle { get; set; } = new();
     [JsonRequired][JsonPropertyName("mash")]
     public NonInstantNoteThemeJson Mash { get; set; } = new();
+    [JsonRequired][JsonPropertyName("camera")]
+    public InstantNoteThemeJson Camera { get; set; } = new();
     [JsonRequired][JsonPropertyName("cop1")]
     public NonInstantNoteThemeJson Cop1 { get; set; } = new();
     [JsonRequired][JsonPropertyName("cop2")]

@@ -13,8 +13,26 @@ public class FreestyleNote : NoteBase
     
     public override NoteLane Lane => NoteLane.CENTER;
     
-    private readonly SolidColorBrush _fillBrush =
-        App.Current.Resources["Freestyle"] as SolidColorBrush;
+    private static SolidColorBrush FillBrush;
+    private static SolidColorBrush OutlineBrush;
+    private static double OutlineThickness;
+    private static SolidColorBrush SelectedOutlineBrush;
+    private static SolidColorBrush SelectedFillBrush;
+    private static double SelectedOutlineThickness;
+    
+    public static void UpdateStyles()
+    {
+        FillBrush = (SolidColorBrush)App.Current.Resources["Notes.Freestyle.FillColor"];
+        OutlineBrush = (SolidColorBrush)App.Current.Resources["Notes.Freestyle.OutlineColor"];
+        OutlineThickness =
+            ((Thickness)App.Current.Resources["Notes.Freestyle.OutlineThickness"]).Top;
+        SelectedFillBrush =
+            (SolidColorBrush)App.Current.Resources["Notes.Freestyle.Selected.FillColor"];
+        SelectedOutlineBrush =
+            (SolidColorBrush)App.Current.Resources["Notes.Freestyle.Selected.OutlineColor"];
+        SelectedOutlineThickness =
+            ((Thickness)App.Current.Resources["Notes.Freestyle.Selected.OutlineThickness"]).Top;
+    }
     
     public override void Render(DrawingContext dc, bool selected)
     {
@@ -34,10 +52,11 @@ public class FreestyleNote : NoteBase
             rect = new Rect(x - 24, y - 12, 48, 24);
         }
         
-            
-        var pen = selected ? new Pen(SelectedBrush, 4) 
-            : new Pen(OutlineBrush, 4);
-        dc.DrawRectangle(_fillBrush, pen, rect);
+        
+        var pen = selected ?
+            new Pen(SelectedOutlineBrush, SelectedOutlineThickness) 
+            : new Pen(OutlineBrush, OutlineThickness);
+        dc.DrawRectangle(selected ? SelectedFillBrush : FillBrush, pen, rect);
         
         RenderFlags(dc, x, y);
         
@@ -59,7 +78,7 @@ public class FreestyleNote : NoteBase
             var rect = new RoundedRect(
                 new Rect(x - 30, GamePreview.TopLaneY, 60,
                          -GamePreview.TopLaneY + GamePreview.BottomLaneY), 30);
-            dc.DrawRectangle(_fillBrush, new Pen(OutlineBrush, 6), rect);
+            dc.DrawRectangle(FillBrush, new Pen(OutlineBrush, 6), rect);
             return;
         }
         
@@ -70,14 +89,15 @@ public class FreestyleNote : NoteBase
         {
             if (parentNote?.Time < Chart.CurrentTimeRaw)
             {
-                dc.DrawEllipse(_fillBrush, new Pen(OutlineBrush, 6), new Point(
-                                   GamePreview.TimeToScreenCoords(Chart.CurrentTimeRaw), 0), 30, 30);
+                dc.DrawEllipse(FillBrush, new Pen(OutlineBrush, 6),
+                               new Point(GamePreview.TimeToScreenCoords(Chart.CurrentTimeRaw), 0),
+                               30, 30);
             }
-            dc.DrawEllipse(_fillBrush, new Pen(OutlineBrush, 6), new Point(x, 0), 15, 15);
+            dc.DrawEllipse(FillBrush, new Pen(OutlineBrush, 6), new Point(x, 0), 15, 15);
         }
         else
         {
-            dc.DrawEllipse(_fillBrush, new Pen(OutlineBrush, 6), new Point(x, 0), 30, 30);
+            dc.DrawEllipse(FillBrush, new Pen(OutlineBrush, 6), new Point(x, 0), 30, 30);
         }
     }
 

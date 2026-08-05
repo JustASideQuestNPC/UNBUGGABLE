@@ -130,6 +130,8 @@ public class TopBarTheme(TopBarThemeJson json)
         public readonly Color HandleColor;
         public readonly double HandleWidth;
         public readonly double HandleHeight;
+        public readonly double TopThickness;
+        public readonly double BottomThickness;
 
         public SliderTheme(TopBarThemeJson.SliderThemeJson json)
         {
@@ -140,6 +142,8 @@ public class TopBarTheme(TopBarThemeJson json)
             
             HandleWidth = json.HandleWidth;
             HandleHeight = json.HandleHeight;
+            TopThickness = json.TopThickness;
+            BottomThickness = json.BottomThickness;
             
             if (HandleWidth <= 0)
             {
@@ -149,6 +153,16 @@ public class TopBarTheme(TopBarThemeJson json)
             if (HandleHeight <= 0)
             {
                 throw new ColorThemeException("topBar.sliders.handleHeight must be positive");
+            }
+
+            if (TopThickness < 0)
+            {
+                throw new ColorThemeException("topBar.sliders.topThickness cannot be negative");
+            }
+            
+            if (BottomThickness < 0)
+            {
+                throw new ColorThemeException("topBar.sliders.bottomThickness cannot be negative");
             }
         }
     }
@@ -301,17 +315,38 @@ public class NoteViewerTheme(NoteViewerThemeJson json) : ElementTheme(json, "not
         }
     }
     
+    public class BreakpointTheme : LineTheme
+    {
+        public readonly Color Color;
+        public readonly double ArrowScale;
+        
+        public BreakpointTheme(NoteViewerThemeJson.BreakpointThemeJson json) :
+            base(json, "noteViewer.breakpoint")
+        {
+            Color = ThemeUtils.ParseColor(json.Color, "noteViewer.breakpoint.color");
+            ArrowScale = json.ArrowScale;
+            if (ArrowScale < 0)
+            {
+                throw new ColorThemeException(
+                    "noteViewer.breakpoint.arrowScale cannot be negative");
+            }
+        }
+    }
+    
     public readonly Color SelectDragColor = ThemeUtils.ParseColor(json.SelectDragColor,
                                                                   "noteViewer.selectDragColor");
     public readonly Color DeleteDragColor = ThemeUtils.ParseColor(json.DeleteDragColor,
                                                                   "noteViewer.deleteDragColor");
     public readonly LaneNumberTheme LaneNumbers = new(json.LaneNumbers);
-    public readonly LabeledLineTheme BpmChanges = new(json.BpmChanges, "noteViewer.bpmChange");
-    public readonly LabeledLineTheme Labels = new(json.Labels, "noteViewer.label");
+    public readonly LabeledLineTheme BpmChange = new(json.BpmChanges, "noteViewer.bpmChange");
+    public readonly LabeledLineTheme Label = new(json.Labels, "noteViewer.label");
     public readonly FullBeatSnapLineTheme FullBeatSnapLine = new(json.FullBeatSnapLine);
     public readonly LineTheme SubBeatSnapLine = new(json.SubBeatSnapLine,
                                                     "noteViewer.subBeatSnapLine");
+    public readonly LineTheme CurrentTimeLine = new(json.CurrentTimeLine,
+                                                    "noteViewer.currentTimeLine");
     public readonly MarkersTheme Markers = new(json.Markers);
+    public readonly BreakpointTheme Breakpoint = new(json.Breakpoint);
 }
 
 public class GamePreviewTheme : ElementTheme
@@ -369,13 +404,13 @@ public class GamePreviewTheme : ElementTheme
 
         public readonly Color LineColor;
         public readonly double LineThickness;
-        public readonly TargetCirclesTheme TargetCircles;
+        public readonly TargetCirclesTheme Circles;
         
         public NoteTargetsTheme(GamePreviewThemeJson.NoteTargetsThemeJson json)
         {
             LineColor = ThemeUtils.ParseColor(json.LineColor, "gamePreview.noteTargets.lineColor");
             LineThickness = json.LineThickness;
-            TargetCircles = new TargetCirclesTheme(json.TargetCircles);
+            Circles = new TargetCirclesTheme(json.TargetCircles);
 
             if (LineThickness < 0)
             {
@@ -586,6 +621,7 @@ public class NoteThemes(NoteThemesJson json)
     public readonly NonInstantNoteTheme Hold = new(json.Hold, "notes.hold");
     public readonly NonInstantNoteTheme Double = new(json.Double, "notes.double");
     public readonly InstantNoteTheme Freestyle = new(json.Freestyle, "notes.freestyle");
+    public readonly InstantNoteTheme Camera = new (json.Camera, "notes.camera");
     public readonly NonInstantNoteTheme Mash = new(json.Mash, "notes.mash");
     public readonly NonInstantNoteTheme Cop1 = new(json.Cop1, "notes.cop1");
     public readonly NonInstantNoteTheme Cop2 = new(json.Cop2, "notes.cop2");
@@ -644,6 +680,6 @@ public class ColorTheme(ColorThemeJson json)
     public readonly GamePreviewTheme GamePreview = new(json.GamePreview);
     public readonly PlacementPriorityListTheme PlacementPriorityList =
         new(json.PlacementPriorityList);
-    public readonly NoteThemes NoteThemes = new(json.NoteThemes);
+    public readonly NoteThemes Notes = new(json.NoteThemes);
     public readonly DebugInfoTheme DebugInfo = new(json.DebugInfo);
 }

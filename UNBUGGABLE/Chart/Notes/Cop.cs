@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using Avalonia;
 using Avalonia.Media;
 using UNBUGGABLE.Resources;
@@ -10,6 +12,24 @@ namespace UNBUGGABLE;
 
 public class CopNote : NoteBase
 {
+    private class StyleGroup
+    {
+        public required SolidColorBrush FillBrush;
+        public required SolidColorBrush OutlineBrush;
+        public required double OutlineThickness;
+        public required SolidColorBrush TailFillBrush;
+        public required SolidColorBrush TailOutlineBrush;
+        public required double TailOutlineThickness;
+        public required SolidColorBrush SelectedFillBrush;
+        public required SolidColorBrush SelectedOutlineBrush;
+        public required double SelectedOutlineThickness;
+        public required SolidColorBrush SelectedTailFillBrush;
+        public required SolidColorBrush SelectedTailOutlineBrush;
+        public required double SelectedTailOutlineThickness;
+    }
+
+    private static List<StyleGroup> Styles = [];
+    
     private const double PreviewPixelsPerSecond = 200;
     
     private static readonly List<Point> FinisherStarVertices =
@@ -44,9 +64,45 @@ public class CopNote : NoteBase
     public bool IsFinisher => Flags.F;
     
     private readonly Geometry _finisherStar = new PolylineGeometry(FinisherStarVertices, true);
-    
-    private readonly SolidColorBrush _fillBrush;
-    private readonly SolidColorBrush _tailBrush;
+
+    private readonly StyleGroup _styles;
+
+    public static void UpdateStyles()
+    {
+        Styles.Clear();
+        for (var i = 1; i <= 4; ++i)
+        {
+            Styles.Add(new StyleGroup
+            {
+                FillBrush = (SolidColorBrush)App.Current.Resources[$"Notes.Cop{i}.FillColor"],
+                OutlineBrush = (SolidColorBrush)App.Current.Resources[$"Notes.Cop{i}.OutlineColor"],
+                OutlineThickness =
+                    ((Thickness)App.Current.Resources[$"Notes.Cop{i}.OutlineThickness"]).Top,
+                TailFillBrush =
+                    (SolidColorBrush)App.Current.Resources[$"Notes.Cop{i}.TailFillColor"],
+                TailOutlineBrush =
+                    (SolidColorBrush)App.Current.Resources[$"Notes.Cop{i}.TailOutlineColor"],
+                TailOutlineThickness =
+                    ((Thickness)App.Current.Resources[$"Notes.Cop{i}.TailOutlineThickness"]).Top,
+                
+                SelectedFillBrush =
+                    (SolidColorBrush)App.Current.Resources[$"Notes.Cop{i}.Selected.FillColor"],
+                SelectedOutlineBrush =
+                    (SolidColorBrush)App.Current.Resources[$"Notes.Cop{i}.Selected.OutlineColor"],
+                SelectedOutlineThickness =
+                    ((Thickness)App.Current.Resources[
+                        $"Notes.Cop{i}.Selected.OutlineThickness"]).Top,
+                SelectedTailFillBrush =
+                    (SolidColorBrush)App.Current.Resources[$"Notes.Cop{i}.Selected.TailFillColor"],
+                SelectedTailOutlineBrush =
+                    (SolidColorBrush)App.Current.Resources[
+                        $"Notes.Cop{i}.Selected.TailOutlineColor"],
+                SelectedTailOutlineThickness =
+                    ((Thickness)App.Current.Resources[
+                        $"Notes.Cop{i}.Selected.TailOutlineThickness"]).Top,
+            });
+        }
+    }
 
     public CopNote(NoteType type, int id, bool finisher = false)
     {
@@ -57,20 +113,7 @@ public class CopNote : NoteBase
             Flags.F = true;
         }
         
-        OutlineBrush = (SolidColorBrush)App.Current.Resources["NoteOutline"];
-        _fillBrush = (SolidColorBrush)App.Current.Resources[id switch
-        {
-            1 => "Cop1",
-            2 => "Cop2",
-            3 => "Cop3",
-            _ => "Cop4"
-        }];
-        _tailBrush = new SolidColorBrush(_fillBrush.Color)
-        {
-            Opacity = 0.6
-        };
-        
-        Typeface = new Typeface((FontFamily)App.Current.Resources["RobotoMonoBold"]);
+        _styles = Styles[CopId - 1];
     }
     
     public override void Render(DrawingContext dc, bool selected)
@@ -85,25 +128,32 @@ public class CopNote : NoteBase
             {
                 return;
             }
+            
+            var tailBrush = selected ? _styles.SelectedTailFillBrush : _styles.TailFillBrush;
+            var tailPen = selected ?
+                new Pen(_styles.SelectedTailOutlineBrush,
+                        _styles.SelectedTailOutlineThickness) :
+                new Pen(_styles.TailOutlineBrush, _styles.TailOutlineThickness);
 
             if (Type == NoteType.COP_MASH)
             {
                 var clip = dc.PushClip(new Rect(x - 24, startY, 48, endY - startY));
-                
-                dc.DrawLine(new Pen(_fillBrush, 8), new Point(x - 24, endY),
+
+                dc.DrawLine(new Pen(tailBrush, 8), new Point(x - 24, endY),
                             new Point(x + 24, endY));
                 for (var y = startY; y < endY; y += 32)
                 {
-                    dc.DrawLine(new Pen(_fillBrush, 5), new Point(x - 24, y),
+                    dc.DrawLine(new Pen(tailBrush, 5), new Point(x - 24, y),
                                 new Point(x + 24, y + 16));
-                    dc.DrawLine(new Pen(_fillBrush, 5), new Point(x - 24, y + 32),
+                    dc.DrawLine(new Pen(tailBrush, 5), new Point(x - 24, y + 32),
                                 new Point(x + 24, y + 16));
                 }
                 clip.Dispose();
             }
             else
             {
-                dc.DrawRectangle(_tailBrush, null, new Rect(x - 16, startY, 32, endY - startY));
+                
+                dc.DrawRectangle(tailBrush, tailPen, new Rect(x - 16, startY, 32, endY - startY));
             }
         }
         else if (startY < -50 || startY > NoteViewer.ViewerHeight + 50)
@@ -111,23 +161,30 @@ public class CopNote : NoteBase
             return;
         }
             
-        var pen = selected ? new Pen(SelectedBrush, 4) : new Pen(OutlineBrush, 4);
+        var fillBrush = selected ? _styles.SelectedFillBrush : _styles.FillBrush;
+        var pen = selected ? 
+            new Pen(_styles.SelectedOutlineBrush, _styles.SelectedOutlineThickness) :
+            new Pen(_styles.OutlineBrush, _styles.OutlineThickness);
         
         if (IsFinisher)
         {
             var shape = _finisherStar.Clone();
             shape.Transform = new TranslateTransform(x, startY);
-            dc.DrawGeometry(_fillBrush, pen, shape);
+            dc.DrawGeometry(fillBrush, pen, shape);
         }
         else
         {
-            dc.DrawRectangle(_fillBrush, pen, new Rect(x - 40, startY - 12, 80, 24));
+            dc.DrawRectangle(fillBrush, pen, new Rect(x - 40, startY - 12, 80, 24));
         }
         
-        var textColor = (SolidColorBrush)App.Current.Resources["TextPrimary"];
-        var textOutline = new Pen((SolidColorBrush)App.Current.Resources["TextDark"], 2);
+        var textColor = (SolidColorBrush)App.Current.Resources["Notes.Common.FlagTextColor"];
+        var textOutline = new Pen(
+            (SolidColorBrush)App.Current.Resources["Notes.Common.FlagTextOutlineColor"],
+            ((Thickness)App.Current.Resources["Notes.Common.FlagTextOutlineThickness"]).Top);
         var text = new FormattedText(CopId.ToString(), CultureInfo.CurrentCulture,
-                                     FlowDirection.LeftToRight, Typeface, 40, textColor);
+                                     FlowDirection.LeftToRight, Typeface,
+                                     (double)App.Current.Resources["Notes.Common.FlagTextSize"],
+                                     textColor);
         dc.DrawOutlinedText(text, new Point(x - text.Width / 2, startY - 2 - text.Height / 2),
                             textColor, textOutline);
         
@@ -168,7 +225,8 @@ public class CopNote : NoteBase
                 {
                     return (long)(Time - rangeStart);
                 }
-                if (EndTime > rangeStart && EndTime <= rangeEnd && Config.Settings.HitSounds.CopHoldEnd)
+                if (EndTime > rangeStart && EndTime <= rangeEnd &&
+                    Config.Settings.HitSounds.CopHoldEnd)
                 {
                     return (long)(EndTime - rangeStart);
                 }
@@ -178,7 +236,8 @@ public class CopNote : NoteBase
                 {
                     return (long)(Time - rangeStart);
                 }
-                if (EndTime > rangeStart && EndTime <= rangeEnd && Config.Settings.HitSounds.CopMashEnd)
+                if (EndTime > rangeStart && EndTime <= rangeEnd &&
+                    Config.Settings.HitSounds.CopMashEnd)
                 {
                     return (long)(EndTime - rangeStart);
                 }
@@ -240,8 +299,8 @@ public class CopNote : NoteBase
         }
         
         var y = TimeToPreviewCoords(Time);
-        dc.DrawLine(new Pen(_fillBrush, 6), new Point(x - 30, y), new Point(x + 30, y));
-        dc.DrawEllipse(null, new Pen(_fillBrush, 6), new Point(x, y), 18, 10);
+        dc.DrawLine(new Pen(_styles.FillBrush, 6), new Point(x - 30, y), new Point(x + 30, y));
+        dc.DrawEllipse(null, new Pen(_styles.FillBrush, 6), new Point(x, y), 18, 10);
     }
     
     private void RenderHoldPreview(DrawingContext dc, double x)
@@ -254,9 +313,10 @@ public class CopNote : NoteBase
         var startY = TimeToPreviewCoords(Time < Chart.CurrentTimeRaw ? Chart.CurrentTimeRaw : Time);
         var endY = TimeToPreviewCoords(EndTime);
         
-        dc.DrawLine(new Pen(_fillBrush, 6), new Point(x - 30, startY), new Point(x + 30, startY));
-        dc.DrawLine(new Pen(_fillBrush, 10), new Point(x, startY), new Point(x, endY));
-        dc.DrawLine(new Pen(_fillBrush, 6), new Point(x - 30, endY), new Point(x + 30, endY));
+        dc.DrawLine(new Pen(_styles.FillBrush, 6), new Point(x - 30, startY),
+                    new Point(x + 30, startY));
+        dc.DrawLine(new Pen(_styles.FillBrush, 10), new Point(x, startY), new Point(x, endY));
+        dc.DrawLine(new Pen(_styles.FillBrush, 6), new Point(x - 30, endY), new Point(x + 30, endY));
     }
     
     private void RenderMashPreview(DrawingContext dc, double x)
@@ -272,13 +332,14 @@ public class CopNote : NoteBase
         var clip = dc.PushClip(Lane == NoteLane.TOP ? new Rect(x - 30, endY, 60, startY - endY) :
                                    new Rect(x - 30, startY, 60, endY - startY));
         
-        dc.DrawLine(new Pen(_fillBrush, 6), new Point(x - 30, startY), new Point(x + 30, startY));
-        dc.DrawLine(new Pen(_fillBrush, 6), new Point(x - 30, endY), new Point(x + 30, endY));
+        dc.DrawLine(new Pen(_styles.FillBrush, 6), new Point(x - 30, startY),
+                    new Point(x + 30, startY));
+        dc.DrawLine(new Pen(_styles.FillBrush, 6), new Point(x - 30, endY), new Point(x + 30, endY));
         for (var y = startY; y < endY; y += 32)
         {
-            dc.DrawLine(new Pen(_fillBrush, 5), new Point(x - 24, y),
+            dc.DrawLine(new Pen(_styles.FillBrush, 5), new Point(x - 24, y),
                         new Point(x + 24, y + 16));
-            dc.DrawLine(new Pen(_fillBrush, 5), new Point(x - 24, y + 32),
+            dc.DrawLine(new Pen(_styles.FillBrush, 5), new Point(x - 24, y + 32),
                         new Point(x + 24, y + 16));
         }
         clip.Dispose();

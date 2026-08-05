@@ -9,8 +9,8 @@
 
     <!-- Add Styles Here -->
     <Style Selector="Button.SquareIconButton">
-        <Setter Property="Background" Value="Transparent" />
-        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+        <Setter Property="Background" Value="{DynamicResource TopBar.Buttons.BackgroundColor}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource TopBar.Buttons.OutlineColor}" />
         <Setter Property="BorderThickness" Value="2" />
         <Setter Property="CornerRadius" Value="4" />
         <Setter Property="Margin" Value="4" />

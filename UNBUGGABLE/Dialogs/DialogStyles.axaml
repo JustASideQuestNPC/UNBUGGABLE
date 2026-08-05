@@ -18,10 +18,10 @@
     </Style>
     
     <Style Selector="Border.Container">
-        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
-        <Setter Property="Background" Value="{DynamicResource WindowBackgroundPrimary}" />
-        <Setter Property="BorderThickness" Value="6" />
-        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Dialogs.OutlineColor}" />
+        <Setter Property="Background" Value="{DynamicResource Dialogs.BackgroundColor}" />
+        <Setter Property="BorderThickness" Value="{DynamicResource Dialogs.OutlineThickness}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Dialogs.CornerRadius}" />
         <Setter Property="Padding" Value="10" />
     </Style>
 

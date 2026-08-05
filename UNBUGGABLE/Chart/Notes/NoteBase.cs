@@ -90,9 +90,7 @@ public abstract partial class NoteBase
     /// </summary>
     public int CopId { get; set; } = 0;
     
-    protected SolidColorBrush OutlineBrush = (SolidColorBrush)App.Current.Resources["NoteOutline"];
-    protected SolidColorBrush SelectedBrush = (SolidColorBrush)App.Current.Resources["SelectedNoteOverlay"];
-    protected Typeface Typeface = new Typeface((FontFamily)App.Current.Resources["RobotoMonoBold"]);
+    protected Typeface Typeface = new((FontFamily)App.Current.Resources["RobotoMonoBold"]);
     
     /// <summary>
     /// Attempts to construct a note from a hit object string in a chart file.
@@ -372,13 +370,16 @@ public abstract partial class NoteBase
             (flags.F ? "F" : "") +
             (flags.W ? "W" : "");
         
-        var color = (SolidColorBrush)App.Current.Resources["TextPrimary"];
-        var outline = new Pen((SolidColorBrush)App.Current.Resources["TextDark"], 2);
-        var text = new FormattedText(flagString, CultureInfo.CurrentCulture,
-                                     FlowDirection.LeftToRight, Typeface, 40, color);
-        
+        var brush = (SolidColorBrush)App.Current.Resources["Notes.Common.FlagTextColor"];
+        var outline =
+            new Pen((SolidColorBrush)App.Current.Resources["Notes.Common.FlagTextOutlineColor"],
+                    ((Thickness)
+                        App.Current.Resources["Notes.Common.FlagTextOutlineThickness"]).Top);
+        var text = new FormattedText(
+            flagString, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, Typeface,
+            (double)App.Current.Resources["Notes.Common.FlagTextSize"], brush);
         dc.DrawOutlinedText(text, new Point(x - text.Width / 2, y - 2 - text.Height / 2),
-                            color, outline);
+                            brush, outline);
     }
 
     protected void RenderDebugTime(DrawingContext dc, double x, double y, double tailY = -1)
@@ -387,20 +388,27 @@ public abstract partial class NoteBase
         {
             return;
         }
-        var color = (SolidColorBrush)App.Current.Resources["TextPrimary"];
-        var outline = new Pen((SolidColorBrush)App.Current.Resources["TextDark"], 1);
         
-        var text = new FormattedText($"{Time}", CultureInfo.CurrentCulture,
-                                     FlowDirection.LeftToRight, Typeface, 20, color);
+        var brush =
+            (SolidColorBrush)App.Current.Resources["DebugInfo.NoteTimestampTextColor"];
+        var outline =
+            new Pen((SolidColorBrush)
+                    App.Current.Resources["DebugInfo.NoteTimestampTextOutlineColor"],
+                    ((Thickness)
+                        App.Current.Resources["DebugInfo.NoteTimestampTextOutlineThickness"]).Top);
+        var text = new FormattedText(
+            $"{Time}", CultureInfo.CurrentCulture, FlowDirection.LeftToRight, Typeface,
+            (double)App.Current.Resources["DebugInfo.NoteTimestampTextSize"], brush);
         dc.DrawOutlinedText(text, new Point(x - text.Width / 2, y - 14 - text.Height),
-                            color, outline);
+                            brush, outline);
 
         if (!Instant)
         {
-            var tailText = new FormattedText($"{EndTime}", CultureInfo.CurrentCulture,
-                                             FlowDirection.LeftToRight, Typeface, 20, color);
+            var tailText = new FormattedText(
+                $"{EndTime}", CultureInfo.CurrentCulture, FlowDirection.LeftToRight, Typeface,
+                (double)App.Current.Resources["DebugInfo.NoteTimestampTextSize"], brush);
             dc.DrawOutlinedText(tailText, new Point(x - text.Width / 2, tailY - 14 - text.Height),
-                                color, outline);
+                                brush, outline);
         }
     }
 

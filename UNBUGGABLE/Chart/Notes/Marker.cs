@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Media;
 using UNBUGGABLE.Resources;
@@ -8,27 +8,27 @@ namespace UNBUGGABLE;
 
 public class MarkerDummyNote : NoteBase
 {
+    private static List<SolidColorBrush> Brushes = [];
+    
     public override NoteType Type => NoteType.MARKER_DUMMY;
     public override NoteLane Lane => NoteLane.MARKER;
-    
-    private int _colorId;
-    public int ColorId
-    {
-        get => _colorId;
-        set
-        {
-            _colorId = value;
-            _fillBrush = (SolidColorBrush)App.Current.Resources[$"Marker{value + 1}"];
-        }
-    }
+
+    public int ColorId;
     
     private readonly Geometry _shape = new PolylineGeometry([
         new Point(-12, -10),
         new Point(  0,   0),
         new Point(-12,  10)
     ], true);
-    
-    private SolidColorBrush _fillBrush;
+
+    public static void UpdateStyles()
+    {
+        Brushes.Clear();
+        for (var i = 0; i < 3; ++i)
+        {
+            Brushes.Add((SolidColorBrush)App.Current.Resources[$"NoteViewer.Markers.Color{i + 1}"]);
+        }
+    }
 
     public MarkerDummyNote(long time, int colorId)
     {
@@ -45,8 +45,13 @@ public class MarkerDummyNote : NoteBase
             return;
         }
         
-        _shape.Transform = new TranslateTransform(147, y);
-        dc.DrawGeometry(_fillBrush, null, _shape);
+        _shape.Transform = new TransformGroup { Children =
+        {
+            new TranslateTransform(0, y),
+            new ScaleTransform((double)App.Current.Resources["NoteViewer.Markers.ArrowScale"],
+                               (double)App.Current.Resources["NoteViewer.Markers.ArrowScale"])
+        } };
+        dc.DrawGeometry(Brushes[ColorId], null, _shape);
     }
     
     public override void RenderPreview(DrawingContext dc) { }
