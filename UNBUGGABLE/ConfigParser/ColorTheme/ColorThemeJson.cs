@@ -1,17 +1,28 @@
 ﻿using System.Text.Json.Serialization;
 
 namespace UNBUGGABLE.Resources;
-
 public class MainWindowThemeJson
 {
+    public class EventIndicatorThemeJson
+    {
+        [JsonRequired][JsonPropertyName("backgroundColor")]
+        public string BackgroundColor { get; set; } = "";
+        [JsonRequired][JsonPropertyName("textColor")]
+        public string TextColor { get; set; } = "";
+        [JsonRequired][JsonPropertyName("textSize")]
+        public double TextSize { get; set; } = 0;
+    }
+
     [JsonRequired][JsonPropertyName("backgroundColor")]
-    public string Background { get; set; } = "";
+    public string BackgroundColor { get; set; } = "";
+    [JsonRequired][JsonPropertyName("eventIndicator")]
+    public EventIndicatorThemeJson EventIndicator { get; set; } = new();
 }
 
 public class ElementThemeJson
 {
     [JsonRequired][JsonPropertyName("backgroundColor")]
-    public string Background { get; set; } = "";
+    public string BackgroundColor { get; set; } = "";
     [JsonRequired][JsonPropertyName("outlineColor")]
     public string OutlineColor { get; set; } = "";
     [JsonRequired][JsonPropertyName("outlineThickness")]
@@ -20,14 +31,22 @@ public class ElementThemeJson
     public double CornerRadius { get; set; } = 0;
 }
 
+public class TextElementThemeJson : ElementThemeJson
+{
+    [JsonRequired][JsonPropertyName("textColor")]
+    public string TextColor { get; set; } = "";
+    [JsonRequired][JsonPropertyName("textSize")]
+    public double TextSize { get; set; } = 0;
+}
+
 public class ButtonThemeJson : ElementThemeJson
 {
     public class HoveredThemeJson
     {
         [JsonRequired][JsonPropertyName("backgroundColor")]
-        public string Background { get; set; } = "";
+        public string BackgroundColor { get; set; } = "";
         [JsonRequired][JsonPropertyName("outlineColor")]
-        public string Outline { get; set; } = "";
+        public string OutlineColor { get; set; } = "";
         [JsonRequired][JsonPropertyName("iconColor")]
         public string IconColor { get; set; } = "";
     }
@@ -49,26 +68,20 @@ public class TopBarThemeJson
         public string BottomColor { get; set; } = "";
         [JsonRequired][JsonPropertyName("iconColor")]
         public string IconColor { get; set; } = "";
-    }
-
-    public class TooltipThemeJson : ElementThemeJson
-    {
-        [JsonRequired][JsonPropertyName("textColor")]
-        public string TextColor { get; set; } = "";
-        [JsonRequired][JsonPropertyName("textSize")]
-        public double TextSize { get; set; } = 0;
-    }
-
-    public class ContextMenuThemeJson : ElementThemeJson
-    {
-        [JsonRequired][JsonPropertyName("textColor")]
-        public string TextColor { get; set; } = "";
-        [JsonRequired][JsonPropertyName("textSize")]
-        public double TextSize { get; set; } = 0;
+        [JsonRequired][JsonPropertyName("handleColor")]
+        public string HandleColor { get; set; } = "";
+        [JsonRequired][JsonPropertyName("topThickness")]
+        public double TopThickness { get; set; } = 0;
+        [JsonRequired][JsonPropertyName("bottomThickness")]
+        public double BottomThickness { get; set; } = 0;
+        [JsonRequired][JsonPropertyName("handleWidth")]
+        public double HandleWidth { get; set; } = 0;
+        [JsonRequired][JsonPropertyName("handleHeight")]
+        public double HandleHeight { get; set; } = 0;
     }
     
     [JsonRequired][JsonPropertyName("backgroundColor")]
-    public string Background { get; set; } = "";
+    public string BackgroundColor { get; set; } = "";
     
     [JsonRequired][JsonPropertyName("sliders")]
     public SliderThemeJson Sliders { get; set; } = new();
@@ -77,28 +90,16 @@ public class TopBarThemeJson
     public ButtonThemeJson Buttons { get; set; } = new();
     
     [JsonRequired][JsonPropertyName("tooltips")]
-    public TooltipThemeJson Tooltips { get; set; } = new();
+    public TextElementThemeJson Tooltips { get; set; } = new();
     
     [JsonRequired][JsonPropertyName("saveFileContextMenu")]
-    public ContextMenuThemeJson SaveFileContextMenu { get; set; } = new();
+    public TextElementThemeJson SaveFileContextMenu { get; set; } = new();
 }
 
-public class DialogThemeJson : ElementThemeJson
+public class DialogThemeJson : TextElementThemeJson
 {
-    public class InputBoxThemeJson : ElementThemeJson
-    {
-        [JsonRequired][JsonPropertyName("textColor")]
-        public string TextColor { get; set; } = "";
-        [JsonRequired][JsonPropertyName("textSize")]
-        public double TextSize { get; set; } = 0;
-    }
-    
-    [JsonRequired][JsonPropertyName("textColor")]
-    public string TextColor { get; set; } = "";
-    [JsonRequired][JsonPropertyName("textSize")]
-    public double TextSize { get; set; } = 0;
     [JsonRequired][JsonPropertyName("inputBoxes")]
-    public InputBoxThemeJson InputBoxes { get; set; } = new();
+    public TextElementThemeJson InputBoxes { get; set; } = new();
     [JsonRequired][JsonPropertyName("buttons")]
     public ButtonThemeJson Buttons { get; set; } = new();
 }
@@ -168,9 +169,9 @@ public class NoteViewerThemeJson : ElementThemeJson
     public string SelectDragColor { get; set; } = "";
     [JsonRequired][JsonPropertyName("deleteDragColor")]
     public string DeleteDragColor { get; set; } = "";
+    
     [JsonRequired][JsonPropertyName("laneNumbers")]
     public LaneNumberThemeJson LaneNumbers { get; set; } = new();
-    
     [JsonRequired][JsonPropertyName("bpmChange")]
     public LabeledLineThemeJson BpmChanges { get; set; } = new();   
     [JsonRequired][JsonPropertyName("label")]
@@ -229,12 +230,8 @@ public class GamePreviewThemeJson : ElementThemeJson
 
 public class PlacementPriorityListThemeJson : ElementThemeJson
 {
-    public class ListEntryThemeJson : ElementThemeJson
+    public class ListEntryThemeJson : TextElementThemeJson
     {
-        [JsonRequired][JsonPropertyName("textSize")]
-        public double TextSize { get; set; } = 0;
-        [JsonRequired][JsonPropertyName("textColor")]
-        public string TextColor { get; set; } = "";
         [JsonRequired][JsonPropertyName("reorderIconColor")]
         public string ReorderIconColor { get; set; } = "";   
     }
@@ -306,7 +303,7 @@ public class NonInstantNoteThemeJson
 
 public class NoteThemesJson
 {
-    public class CommonThemesJson
+    public class CommonThemeJson
     {
         [JsonRequired][JsonPropertyName("flagTextColor")]
         public string FlagTextColor { get; set; } = "";
@@ -319,7 +316,7 @@ public class NoteThemesJson
     }
     
     [JsonRequired][JsonPropertyName("common")]
-    public CommonThemesJson Common { get; set; } = new();
+    public CommonThemeJson Common { get; set; } = new();
     [JsonRequired][JsonPropertyName("single")]
     public InstantNoteThemeJson Single { get; set; } = new();
     [JsonRequired][JsonPropertyName("spike")]

@@ -459,7 +459,7 @@ public static class Config
         }
 
         CurrentTheme = ColorThemes.TryGetValue(Settings.ColorTheme, out var theme) ?
-            theme : ColorThemes["Default"];
+            theme : ColorThemes["default"];
         
         Trace.WriteLine("Loaded config");
         Settings.PrintSettings();
@@ -494,7 +494,6 @@ public static class Config
     private static bool TryLoadThemes(out string errorMessage)
     {
         errorMessage = "";
-        ColorThemes.Clear();
         if (File.Exists(ThemesFilePath))
         {
             try
@@ -505,7 +504,7 @@ public static class Config
                 {
                     foreach (var (themeName, themeValue) in themeList)
                     {
-                        
+                        var parsedTheme = new ColorTheme(themeValue);
                     }
                 }
             }
