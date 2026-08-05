@@ -448,10 +448,11 @@ public static partial class Chart
         }
         
         var nextLabel = _labels.FirstOrDefault(
-            l => l.Time > _currentTimeRaw && Math.Abs(l.Time - CurrentTimeRaw) > 1000);
+            l => l.Time - AdjustedOffset > _currentTimeRaw &&
+                 Math.Abs(l.Time - AdjustedOffset - CurrentTimeRaw) > 1000);
         if (nextLabel != null)
         {
-            CurrentTimeRaw = nextLabel.Time;
+            CurrentTimeRaw = nextLabel.Time - AdjustedOffset;
         }
         else
         {
@@ -470,10 +471,11 @@ public static partial class Chart
         }
         
         var previousLabel = _labels.LastOrDefault(
-            l => l.Time < _currentTimeRaw && Math.Abs(l.Time - CurrentTimeRaw) > 1000);
+            l => l.Time - AdjustedOffset < _currentTimeRaw &&
+                 Math.Abs(l.Time - AdjustedOffset - CurrentTimeRaw) > 1000);
         if (previousLabel != null)
         {
-            CurrentTimeRaw = previousLabel.Time;
+            CurrentTimeRaw = previousLabel.Time - AdjustedOffset;
         }
         else
         {
