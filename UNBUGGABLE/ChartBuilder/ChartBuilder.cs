@@ -178,15 +178,15 @@ public static class ChartBuilder
         
         return result.Item1;
     }
-    
-    public static async Task<bool> TryLoadChartFile(string path)
+
+    public static async Task<bool> TryLoadChartFile(string path, bool noErrorDialog = false)
     {
         var result = await Chart.TryLoadChartFile(path);
         if (result.Item1)
         {
             ChartBuilderCommandInvoker.Reset();
         }
-        else
+        else if (!noErrorDialog)
         {
             await new MessageDialog($"Chart loading failed: {result.Item2}").ShowAsync();
         }
@@ -201,11 +201,13 @@ public static class ChartBuilder
         var i = Environment.CommandLine.IndexOf(' ');
         if (i != -1)
         {
-            await TryLoadChartFile(Environment.CommandLine[(i + 1)..]);
+            // creating a dialog if the chart doesn't load here will crash because the dialog host
+            // doesn't exist yet
+            await TryLoadChartFile(Environment.CommandLine[(i + 1)..], true);
         }
         else if (UserData.LastOpenedChartFile != "")
         {
-            await TryLoadChartFile(UserData.LastOpenedChartFile);
+            await TryLoadChartFile(UserData.LastOpenedChartFile, true);
         }
     }
 
@@ -582,6 +584,11 @@ public static class ChartBuilder
     public static void RemoveBreakpoint(bool showEventIndicator = true)
     {
         BreakpointTime = -1000;
+        if (!Config.Settings.EnableBreakpoints || !Config.PracticeModInstalled)
+        {
+            return;
+        }
+        
         if (showEventIndicator)
         {
             App.MainWindowViewModel.ShowEventIndicator("Breakpoint deleted.");
@@ -596,6 +603,29 @@ public static class ChartBuilder
             lines.RemoveAt(index);
         }
         File.WriteAllLines(Config.PracticeModConfigPath, lines);
+    }
+
+    public static void CheckExistingBreakpoint()
+    {
+        if (!Config.Settings.EnableBreakpoints || !Config.PracticeModInstalled)
+        {
+            return;
+        }
+        
+        var lines = File.ReadAllLines(Config.PracticeModConfigPath).ToList();
+        var index = lines.FindIndex(
+            l => l.StartsWith($"{Chart.Metadata.SongName.ToLowerInvariant()}:"));
+        if (index != -1 && long.TryParse(lines[index].Split(':')[1], out var time))
+        {
+            BreakpointTime = time;
+            App.MainWindowViewModel.BreakpointTimeText = TimeSpan.FromMilliseconds(BreakpointTime)
+                                                                 .ToString(@"mm\:ss\.fff");
+            Trace.WriteLine($"Found existing breakpoint at {BreakpointTime}");
+        }
+        else
+        {
+            RemoveBreakpoint(false);
+        }
     }
 
     public static void AddMarker(int type)
@@ -648,29 +678,6 @@ public static class ChartBuilder
         }
         
         ChartBuilderCommandInvoker.Execute(new SetFlagsCommand(flag, newValue, notes));
-    }
-
-    public static void CheckExistingBreakpoint()
-    {
-        if (!Config.Settings.EnableBreakpoints || !Config.PracticeModInstalled)
-        {
-            return;
-        }
-        
-        var lines = File.ReadAllLines(Config.PracticeModConfigPath).ToList();
-        var index = lines.FindIndex(
-            l => l.StartsWith($"{Chart.Metadata.SongName.ToLowerInvariant()}:"));
-        if (index != -1 && long.TryParse(lines[index].Split(':')[1], out var time))
-        {
-            BreakpointTime = time;
-            App.MainWindowViewModel.BreakpointTimeText = TimeSpan.FromMilliseconds(BreakpointTime)
-                                                                 .ToString(@"mm\:ss\.fff");
-            Trace.WriteLine($"Found existing breakpoint at {BreakpointTime}");
-        }
-        else
-        {
-            RemoveBreakpoint(false);
-        }
     }
 
     public static void NudgeNoteHeads(int distance)

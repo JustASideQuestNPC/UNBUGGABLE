@@ -21,7 +21,8 @@ public class CameraChange : NoteBase
     ];
     
     public override NoteType Type =>
-        (Flags.C ? NoteType.CAMERA_INSTANT : Flags.W ? NoteType.CAMERA_WIDE :
+        (Flags.C && Flags.W ? NoteType.CAMERA_SWAP_AND_ZOOM :
+            Flags.C ? NoteType.CAMERA_INSTANT : Flags.W ? NoteType.CAMERA_ZOOM :
             NoteType.CAMERA_SWAP);
     
     public override NoteLane Lane => NoteLane.CAMERA;
@@ -50,6 +51,30 @@ public class CameraChange : NoteBase
         RenderFlags(dc, x, y);
         
         RenderDebugTime(dc, x, y);
+    }
+
+    public override string ToHitObjectString(bool isFirstNote, bool isStandardFile)
+    {
+        // swap and zoom is actually two camera notes that are stacked on top of each other
+        if (Type == NoteType.CAMERA_SWAP_AND_ZOOM)
+        {
+            var swapNote = new CameraChange
+            {
+                Time = Time,
+                // the swap note doesn't have the clap flag because i'm using that flag as an
+                // indicator in the UI
+                Flags = new NoteFlags(false, Flags.F, false)
+            };
+            var zoomNote = new CameraChange
+            {
+                Time = Time,
+                Flags = new NoteFlags(false, Flags.F, true)
+            };
+            return $"{swapNote.ToHitObjectString(isFirstNote, isStandardFile)}\n" +
+                   $"{zoomNote.ToHitObjectString(false, isStandardFile)}";
+        }
+        
+        return base.ToHitObjectString(isFirstNote, isStandardFile);
     }
 
     public override void RenderPreview(DrawingContext dc) { }

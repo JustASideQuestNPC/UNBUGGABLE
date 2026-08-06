@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using Avalonia;
 using Avalonia.Media;
 
@@ -9,6 +11,11 @@ namespace UNBUGGABLE;
 
 public static class Utils
 {
+    public static readonly JsonSerializerOptions JsonSerializerOptions = new()
+    {
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
+    
     public static void DrawOutlinedText(this DrawingContext dc, FormattedText text, Point origin,
         IBrush fill, Pen outline)
     {

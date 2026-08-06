@@ -59,8 +59,9 @@ public class PlacementPriorityListEntry : ViewModelBase
                 NoteType.FREESTYLE => "Freestyle",
                 NoteType.MASH => "Mash",
                 NoteType.CAMERA_SWAP => "Camera Swap",
-                NoteType.CAMERA_WIDE => "Camera Zoom In/Out",
+                NoteType.CAMERA_ZOOM => "Camera Zoom In/Out",
                 NoteType.CAMERA_INSTANT => "Instant Camera Swap",
+                NoteType.CAMERA_SWAP_AND_ZOOM => "Camera Swap and Zoom",
                 NoteType.COP_SINGLE => $"{laneName} Cop Single",
                 NoteType.COP_HOLD => $"{laneName} Cop Hold",
                 _ => $"{laneName} Cop Mash" // markers will never be in the list

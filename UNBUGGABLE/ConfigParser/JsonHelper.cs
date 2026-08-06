@@ -72,7 +72,8 @@ public static class JsonHelper
             }
             
             var outputData = RecursiveMergeObjects(file1Data, file2Data);
-            File.WriteAllText(outputPath, outputData.ToString());
+            File.WriteAllText(outputPath,
+                              JsonSerializer.Serialize(outputData, Utils.JsonSerializerOptions));
             return true;
         }
         catch (JsonException e)

@@ -105,7 +105,8 @@ public class GamePreview : Control
             {
                 break;
             }
-            if (note.Type is NoteType.CAMERA_SWAP or NoteType.CAMERA_INSTANT)
+            if (note.Type is NoteType.CAMERA_SWAP or NoteType.CAMERA_INSTANT or
+                NoteType.CAMERA_SWAP_AND_ZOOM)
             {
                 fromRight = !fromRight;
             }
@@ -248,32 +249,27 @@ public class GamePreview : Control
         var currentNoteZoomedOut = false;
         foreach (var note in Chart.Notes)
         {
-            switch (note.Type)
+            if (note.Type is NoteType.CAMERA_ZOOM or NoteType.CAMERA_SWAP_AND_ZOOM)
             {
-                case NoteType.CAMERA_WIDE:
+                currentNoteZoomedOut = !currentNoteZoomedOut;
+                if (note.Time < Chart.CurrentTimeRaw)
                 {
-                    currentNoteZoomedOut = !currentNoteZoomedOut;
-                    if (note.Time < Chart.CurrentTimeRaw)
-                    {
-                        viewableZoomedOut = currentNoteZoomedOut;
-                    }
-
-                    break;
+                    viewableZoomedOut = currentNoteZoomedOut;
                 }
-                case NoteType.CAMERA_SWAP or NoteType.CAMERA_INSTANT:
-                {
-                    CurrentNotesFromRight = !CurrentNotesFromRight;
-                    if (note.Time < Chart.CurrentTimeRaw)
-                    {
-                        viewableNotesFromRight = CurrentNotesFromRight;
-                    }
-
-                    break;
-                }
-                default:
-                    note.RenderPreview(dc);
-                    break;
             }
+
+            if (note.Type is NoteType.CAMERA_SWAP or NoteType.CAMERA_INSTANT or
+                NoteType.CAMERA_SWAP_AND_ZOOM)
+            {
+                CurrentNotesFromRight = !CurrentNotesFromRight;
+                if (note.Time < Chart.CurrentTimeRaw)
+                {
+                    viewableNotesFromRight = CurrentNotesFromRight;
+                }
+            }
+            
+            // camera notes have an empty RenderPreview() method
+            note.RenderPreview(dc);
         }
 
         double viewableX, viewableY, viewableWidth, viewableHeight;

@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
@@ -567,7 +568,6 @@ public static partial class Chart
         _notes = [];
         _labels = [];
         ChartBuilder.ClearSelection();
-        ChartBuilder.RemoveBreakpoint(false);
             
         _bpmRegions = [new BpmRegion(0, 60)];
         RebuildSnapLineSets();
@@ -1645,7 +1645,24 @@ public static partial class Chart
                                                     out var noteErrorMessage);
             if (note != null)
             {
-                AddNote(note);
+                // merge stacked camera notes into a single note with both flags
+                if (NonMarkerNotes.Count > 0 && note.Type == NoteType.CAMERA_ZOOM)
+                {
+                    var prevNote = NonMarkerNotes[^1];
+                    if (prevNote.Type == NoteType.CAMERA_SWAP && prevNote.Time == note.Time)
+                    {
+                        prevNote.Flags.C = true;
+                        prevNote.Flags.W = true;
+                    }
+                    else
+                    {
+                        AddNote(note);
+                    }
+                }
+                else
+                {
+                    AddNote(note);
+                }
             }
             else if (noteErrorMessage != "marker")
             {
@@ -1724,7 +1741,8 @@ public static partial class Chart
             {"SongLength", Length / 1000},
             {"CoverArt", Metadata.CoverArtistName}
         };
-        await writer.WriteLineAsync($"Tags:{tags.ToJsonString()}");
+        await writer.WriteLineAsync(
+            $"Tags:{JsonSerializer.Serialize(tags, Utils.JsonSerializerOptions)}");
     }
     
     private static async Task WriteTimingPoints(StreamWriter writer)
@@ -1734,8 +1752,11 @@ public static partial class Chart
         var first = true;
         foreach (var bpmRegion in _bpmRegions)
         {
+            var time = bpmRegion == _bpmRegions[0] ? bpmRegion.StartTime :
+                bpmRegion.StartTime + Metadata.ChartOffset;
+            
             // why does this use 9 decimal places???
-            var line = $"{bpmRegion.StartTime},{bpmRegion.MsPerBeat:0.000000000}";
+            var line = $"{time},{bpmRegion.MsPerBeat:0.000000000}";
             // more osu stuff, presumably
             line += ",4,2,0,100,1" + (first ? ",0" : ",8");
             first = false;
