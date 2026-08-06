@@ -448,12 +448,15 @@ public static partial class Chart
             return;
         }
         
+        // skip labels within the next snap - this may end up jumping past the next label (but that
+        // shouldn't be an issue unless you have multiple labels within a single beat) but prevents
+        // an infinite loop if the next label isn't quite on a snap line
         var nextLabel = _labels.FirstOrDefault(
-            l => l.Time - AdjustedOffset > _currentTimeRaw &&
-                 Math.Abs(l.Time - AdjustedOffset - CurrentTimeRaw) > 1000);
+            l => l.Time - Metadata.ChartOffset > GetNextSnapTime());
         if (nextLabel != null)
         {
-            CurrentTimeRaw = nextLabel.Time - AdjustedOffset;
+            //Trace.WriteLine($"Moving to label {_labels.IndexOf(nextLabel)} at {nextLabel.Time - Metadata.ChartOffset} (raw {CurrentTimeRaw}, {CurrentTime})");
+            CurrentTimeRaw = nextLabel.Time - Metadata.ChartOffset;
         }
         else
         {
@@ -471,12 +474,15 @@ public static partial class Chart
             return;
         }
         
+        // skip labels within the previous snap - this may end up jumping past the actual previous
+        // label (but that shouldn't be an issue unless you have multiple labels within a single
+        // beat) but prevents an infinite loop if the previous label isn't quite on a snap line
         var previousLabel = _labels.LastOrDefault(
-            l => l.Time - AdjustedOffset < _currentTimeRaw &&
-                 Math.Abs(l.Time - AdjustedOffset - CurrentTimeRaw) > 1000);
+            l => l.Time - Metadata.ChartOffset < GetPreviousSnapTime());
         if (previousLabel != null)
         {
-            CurrentTimeRaw = previousLabel.Time - AdjustedOffset;
+            //Trace.WriteLine($"Moving to label {_labels.IndexOf(previousLabel)} at {previousLabel.Time - Metadata.ChartOffset} (raw {CurrentTimeRaw}, {CurrentTime})");
+            CurrentTimeRaw = previousLabel.Time - Metadata.ChartOffset;
         }
         else
         {

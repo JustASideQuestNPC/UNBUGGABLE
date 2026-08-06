@@ -370,8 +370,8 @@ public class NoteViewer : Control
         BpmRegion? hoveredRegion = null;
         foreach (var bpmRegion in Chart.BpmRegions)
         {
-            var rangeStart = TimeToScreenCoords(bpmRegion.StartTime) - 75;
-            var rangeEnd = TimeToScreenCoords(bpmRegion.StartTime) + 75;
+            var rangeStart = TimeToScreenCoords(bpmRegion.StartTime - Chart.AdjustedOffset) - 75;
+            var rangeEnd = TimeToScreenCoords(bpmRegion.StartTime - Chart.AdjustedOffset) + 75;
             if (ChartBuilder.MousePosition.Y > rangeStart &&
                 ChartBuilder.MousePosition.Y < rangeEnd)
             {
@@ -400,8 +400,8 @@ public class NoteViewer : Control
         Chart.Label? hoveredLabel = null;
         foreach (var label in Chart.Labels)
         {
-            var rangeStart = TimeToScreenCoords(label.Time) - 75;
-            var rangeEnd = TimeToScreenCoords(label.Time) + 75;
+            var rangeStart = TimeToScreenCoords(label.Time - Chart.AdjustedOffset) - 75;
+            var rangeEnd = TimeToScreenCoords(label.Time - Chart.AdjustedOffset) + 75;
             if (ChartBuilder.MousePosition.Y > rangeStart &&
                 ChartBuilder.MousePosition.Y < rangeEnd)
             {
