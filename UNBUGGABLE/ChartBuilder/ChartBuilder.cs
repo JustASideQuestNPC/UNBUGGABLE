@@ -109,7 +109,7 @@ public static class ChartBuilder
         {
             if (InputManager.CtrlPressed)
             {
-                SelectedNotes.AddRange(notes);
+                SelectedNotes.AddRange(notes.Where(n => !SelectedNotes.Contains(n)).ToList());
             }
             else
             {
@@ -126,7 +126,8 @@ public static class ChartBuilder
                 if (InputManager.CtrlPressed)
                 {
                     SelectedNotes.AddRange(Chart.NonMarkerNotes.Where(
-                                               n => !n.Instant && n.MouseOverTail()).ToList());
+                                               n => !n.Instant && n.MouseOverTail() &&
+                                                    !SelectedNotes.Contains(n)).ToList());
                 }
                 else
                 {
@@ -149,7 +150,10 @@ public static class ChartBuilder
                 {
                     if (InputManager.CtrlPressed)
                     {
-                        SelectedNotes.Add(note);
+                        if (!SelectedNotes.Remove(note))
+                        {
+                            SelectedNotes.Add(note);
+                        }
                     }
                     else
                     {
