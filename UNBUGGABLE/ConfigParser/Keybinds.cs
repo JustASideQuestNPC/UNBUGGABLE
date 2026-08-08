@@ -47,6 +47,8 @@ public class Keybinds
     public List<string> PlaceCenterLane { get; set; } = ["d6"];
     [JsonRequired][JsonPropertyName("selectAll")]
     public List<string> SelectAll { get; set; } = ["ctrl+a"];
+    [JsonRequired][JsonPropertyName("selectAllNonMarker")]
+    public List<string> SelectNonMarker { get; set; } = ["ctrl+a"];
     [JsonRequired][JsonPropertyName("selectAllTopLane")]
     public List<string> SelectTopLane { get; set; } = ["alt+d3"];
     [JsonRequired][JsonPropertyName("selectAllBottomLane")]
@@ -68,7 +70,7 @@ public class Keybinds
     [JsonRequired][JsonPropertyName("mirrorSelection")]
     public List<string> MirrorSelection { get; set; } = ["ctrl+m"];
     [JsonRequired][JsonPropertyName("moveSelectionForward")]
-    public List<string>MoveSelectionForward { get; set; } = ["shift+down"];
+    public List<string> MoveSelectionForward { get; set; } = ["shift+down"];
     [JsonRequired][JsonPropertyName("moveSelectionBack")]
     public List<string> MoveSelectionBack { get; set; } = ["shift+up"];
     [JsonRequired][JsonPropertyName("setFinishFlag")]

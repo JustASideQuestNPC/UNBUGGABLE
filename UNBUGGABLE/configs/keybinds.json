@@ -76,6 +76,9 @@
     "selectAll": [
         "ctrl+a"
     ],
+    "selectAllNonMarker": [
+        "ctrl+shift+a"
+    ],
     "selectAllTopLane": [
         "alt+d3"
     ],

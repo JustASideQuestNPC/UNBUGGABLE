@@ -65,6 +65,6 @@ public static class UserData
         };
         
         var path = Path.Combine(Environment.CurrentDirectory, DataFilePath);
-        File.WriteAllText(path, data.ToString());
+        File.WriteAllText(path, JsonSerializer.Serialize(data, Utils.JsonSerializerOptions));
     }
 }

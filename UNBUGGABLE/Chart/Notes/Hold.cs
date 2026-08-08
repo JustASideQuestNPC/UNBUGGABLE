@@ -106,6 +106,13 @@ public class HoldNote : NoteBase
             new Pen(styles.TailOutlineBrush, styles.TailOutlineThickness);
         dc.DrawRectangle(selected ? styles.SelectedTailFillBrush : styles.TailFillBrush, tailPen,
                          new Rect(x - 16, startY, 32, endY - startY));
+
+        // also show where doubles will land
+        if (Type == NoteType.DOUBLE)
+        {
+            var endX = NoteViewer.GetNoteX(Lane == NoteLane.TOP ? NoteLane.BOTTOM : NoteLane.TOP);
+            dc.DrawRectangle(_doubleTailBrush, tailPen, new Rect(endX - 40, endY - 12, 80, 24));
+        }
         
         var pen = selected ?
             new Pen(styles.SelectedOutlineBrush, styles.SelectedOutlineThickness) : 

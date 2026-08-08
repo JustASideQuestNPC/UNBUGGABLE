@@ -407,7 +407,16 @@ public class NudgeNotesCommand(List<(NoteBase, int, int)> nudges) : ICommand
         foreach (var nudge in nudges)
         {
             nudge.Item1.Time += nudge.Item2;
-            nudge.Item1.EndTime += nudge.Item3;
+            // nudging the tail will nudge the head of non-instant notes -- this makes lining up
+            // spike telegraphs and end chords much easier
+            if (nudge.Item1.Instant)
+            {
+                nudge.Item1.Time += nudge.Item3;
+            }
+            else
+            {
+                nudge.Item1.EndTime += nudge.Item3;
+            }
         }
         App.MainWindowViewModel.UpdatePriorityListEntries(Chart.GetNotesAtTime(Chart.CurrentTime));
     }
@@ -417,7 +426,14 @@ public class NudgeNotesCommand(List<(NoteBase, int, int)> nudges) : ICommand
         foreach (var nudge in nudges)
         {
             nudge.Item1.Time -= nudge.Item2;
-            nudge.Item1.EndTime -= nudge.Item3;
+            if (nudge.Item1.Instant)
+            {
+                nudge.Item1.Time -= nudge.Item3;
+            }
+            else
+            {
+                nudge.Item1.EndTime -= nudge.Item3;
+            }
         }
         App.MainWindowViewModel.UpdatePriorityListEntries(Chart.GetNotesAtTime(Chart.CurrentTime));
     }
