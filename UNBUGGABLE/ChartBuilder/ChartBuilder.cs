@@ -240,6 +240,11 @@ public static class ChartBuilder
         SelectedNotes = Chart.Notes.ToList();
     }
 
+    public static void SelectNonMarker()
+    {
+        SelectedNotes = Chart.NonMarkerNotes.ToList();
+    }
+
     public static void SelectLane(NoteLane lane)
     {
         SelectedNotes = Chart.Notes.Where(n => n.Lane == lane).ToList();

@@ -12,6 +12,14 @@ public class SelectAllAction(List<string> keybinds) : InputActionBase(keybinds)
     }
 }
 
+public class SelectNonMarkerAction(List<string> keybinds) : InputActionBase(keybinds)
+{
+    public override async Task OnPress()
+    {
+        ChartBuilder.SelectNonMarker();
+    }
+}
+
 public class SelectLaneAction(List<string> keybinds, NoteLane lane) : InputActionBase(keybinds)
 {
     public override async Task OnPress()

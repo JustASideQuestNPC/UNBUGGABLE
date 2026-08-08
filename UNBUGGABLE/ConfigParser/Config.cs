@@ -216,6 +216,7 @@ public static class Config
                                     VerifyKeybindStrings(keybinds.PlaceCameraLane) &&
                                     VerifyKeybindStrings(keybinds.PlaceCenterLane) &&
                                     VerifyKeybindStrings(keybinds.SelectAll) &&
+                                    VerifyKeybindStrings(keybinds.SelectNonMarker) &&
                                     VerifyKeybindStrings(keybinds.SelectTopLane) &&
                                     VerifyKeybindStrings(keybinds.SelectBottomLane) &&
                                     VerifyKeybindStrings(keybinds.SelectCameraLane) &&
@@ -300,6 +301,7 @@ public static class Config
             new NudgeAction(Keybinds.NudgeTailForward, false, 1),
             new NudgeAction(Keybinds.NudgeTailBack, false, -1),
             new SelectAllAction(Keybinds.SelectAll),
+            new SelectNonMarkerAction(Keybinds.SelectNonMarker),
             new SelectLaneAction(Keybinds.SelectTopLane, NoteLane.TOP),
             new SelectLaneAction(Keybinds.SelectBottomLane, NoteLane.BOTTOM),
             new SelectLaneAction(Keybinds.SelectCameraLane, NoteLane.CAMERA),
