@@ -25,7 +25,8 @@
         <StyleInclude Source="WindowStyles.axaml" />
         <StyleInclude Source="/Dialogs/DialogStyles.axaml" />
     </Window.Styles>
-    <dialogs:ReactiveDialogHost CloseOnClickAway="True" DialogMargin="0">
+    <dialogs:ReactiveDialogHost CloseOnClickAway="True" DialogMargin="0"
+                                Background="Transparent" OverlayBackground="Transparent">
         <DockPanel Name="Container">
             <StackPanel DockPanel.Dock="Top" Name="TopButtonBar" Orientation="Horizontal"
                         Margin="0 0" Background="{DynamicResource WindowBackgroundPrimary}"

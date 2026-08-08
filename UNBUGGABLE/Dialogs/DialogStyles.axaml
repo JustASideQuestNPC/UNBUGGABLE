@@ -9,12 +9,12 @@
     </Design.PreviewWith>
     
     <Styles.Resources>
-        <SolidColorBrush x:Key="ComboBoxFlyoutPresenterBackground">Red</SolidColorBrush>
-        <SolidColorBrush x:Key="ThemeBackgroundBrush">Red</SolidColorBrush>
+        <SolidColorBrush x:Key="ComboBoxFlyoutPresenterBackground">Transparent</SolidColorBrush>
+        <SolidColorBrush x:Key="ThemeBackgroundBrush">Transparent</SolidColorBrush>
     </Styles.Resources>
     
     <Style Selector="dialogs|BaseDialog">
-        <Setter Property="Background" Value="{DynamicResource Transparent}" />
+        <Setter Property="Background" Value="Transparent" />
     </Style>
     
     <Style Selector="Border.Container">
@@ -26,37 +26,42 @@
     </Style>
 
     <Style Selector="Border.Container Button.SquareIconButton">
-        <Setter Property="Background" Value="Transparent" />
-        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
-        <Setter Property="BorderThickness" Value="2" />
-        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Background" Value="{DynamicResource Dialogs.Buttons.BackgroundColor}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Dialogs.Buttons.OutlineColor}" />
+        <Setter Property="BorderThickness" Value="{DynamicResource Dialogs.Buttons.OutlineThickness}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Dialogs.Buttons.CornerRadius}" />
         <Setter Property="Margin" Value="4" />
         <Setter Property="VerticalAlignment" Value="Stretch" />
         <Setter Property="Width" Value="{Binding $self.Bounds.Height}" />
     </Style>
     <Style Selector="Border.Container Button.SquareIconButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource WindowBackgroundSecondary}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+        <Setter Property="Background" Value="{DynamicResource Dialogs.Buttons.Hovered.BackgroundColor}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Dialogs.Buttons.Hovered.OutlineColor}" />
     </Style>
-    <Style Selector="Border.Container Button.SquareIconButton ToolTip">
-        <Setter Property="Foreground" Value="{DynamicResource TextDark}" />
-        <Setter Property="Background" Value="{DynamicResource WindowBackgroundPrimary}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
-        <Setter Property="BorderThickness" Value="2" />
-        <Setter Property="FontFamily" Value="{DynamicResource RobotoMono}" />
-        <Setter Property="FontSize" Value="16" />
-        <Setter Property="ShowDelay" Value="150" />
-    </Style>
-    <Style Selector="Border.Container materialIcons|MaterialIcon">
-        <Setter Property="Foreground" Value="{DynamicResource Accent}" />
+    <Style Selector="Border.Container Button.SquareIconButton materialIcons|MaterialIcon">
+        <Setter Property="Foreground" Value="{DynamicResource Dialogs.Buttons.IconColor}" />
         <Setter Property="VerticalAlignment" Value="Stretch" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="Margin" Value="0" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="IconSize" Value="20" />
     </Style>
+    <Style Selector="Border.Container Button.SquareIconButton:pointerover materialIcons|MaterialIcon">
+        <Setter Property="Foreground" Value="{DynamicResource Dialogs.Buttons.Hovered.IconColor}" />
+    </Style>
     <Style Selector="Border.Container Button.SquareIconButton:disabled materialIcons|MaterialIcon">
         <Setter Property="Opacity" Value="0.5" />
+    </Style>
+    
+    <Style Selector="Border.Container Button.SquareIconButton ToolTip">
+        <Setter Property="Foreground" Value="{DynamicResource Dialogs.Tooltips.TextColor}" />
+        <Setter Property="Background" Value="{DynamicResource Dialogs.Tooltips.BackgroundColor}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Dialogs.Tooltips.OutlineColor}" />
+        <Setter Property="BorderThickness" Value="{DynamicResource Dialogs.Tooltips.OutlineThickness}" />
+        <Setter Property="FontFamily" Value="{DynamicResource RobotoMono}" />
+        <Setter Property="FontSize" Value="{DynamicResource Dialogs.Tooltips.TextSize}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Dialogs.Tooltips.CornerRadius}" />
+        <Setter Property="ShowDelay" Value="150" />
     </Style>
         
     <Style Selector="Border.Container TextBlock">
@@ -65,166 +70,125 @@
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="TextTrimming" Value="CharacterEllipsis" />
         <Setter Property="TextWrapping" Value="Wrap" />
-        <Setter Property="FontSize" Value="22" />
-        <Setter Property="Foreground" Value="{DynamicResource TextDark}" />
+        <Setter Property="FontSize" Value="{DynamicResource Dialogs.TextSize}" />
+        <Setter Property="Foreground" Value="{DynamicResource Dialogs.TextColor}" />
     </Style>
     
     <Style Selector="Border.Container TextBox">
         <Setter Property="FontFamily" Value="{StaticResource RobotoMono}" />
-        <Setter Property="Foreground" Value="{DynamicResource TextDark}" />
-        <Setter Property="Background" Value="{DynamicResource WindowBackgroundSecondary}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
-        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="Foreground" Value="{DynamicResource Dialogs.InputBoxes.TextColor}" />
+        <Setter Property="Background" Value="{DynamicResource Dialogs.InputBoxes.BackgroundColor}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Dialogs.InputBoxes.OutlineColor}" />
+        <Setter Property="BorderThickness" Value="{DynamicResource Dialogs.InputBoxes.OutlineThickness}" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="VerticalAlignment" Value="Stretch" />
         <Setter Property="Margin" Value="0" />
         <Setter Property="Padding" Value="3" />
-        <Setter Property="FontSize" Value="18" />
-    </Style>
-    <Style Selector="Border.Container TextBox:focus-within">
-        <Setter Property="Foreground" Value="{DynamicResource TextDark}" />
-        <Setter Property="CaretBrush" Value="{DynamicResource TextDark}" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="VerticalAlignment" Value="Stretch" />
-        <Setter Property="Padding" Value="3" />
-        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
-        <Setter Property="BorderThickness" Value="2" />
-    </Style>
-    <Style Selector="Border.Container TextBox:pointerover">
-        <Setter Property="Foreground" Value="{DynamicResource TextDark}" />
-        <Setter Property="CaretBrush" Value="{DynamicResource TextDark}" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="VerticalAlignment" Value="Stretch" />
-        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
-    </Style>
-    <Style Selector="Border.Container TextBox:focus-within /template/ Border">
-        <Setter Property="Background" Value="{DynamicResource WindowBackgroundSecondary}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
-    </Style>
-    <Style Selector="Border.Container TextBox:pointerover /template/ Border">
-        <Setter Property="Background" Value="{DynamicResource WindowBackgroundSecondary}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+        <Setter Property="FontSize" Value="{DynamicResource Dialogs.InputBoxes.TextSize}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Dialogs.InputBoxes.CornerRadius}" />
     </Style>
     
-    <Style Selector="Border.Container TextBox.NumberBox">
-        <Setter Property="FontFamily" Value="{StaticResource RobotoMono}" />
-        <Setter Property="Foreground" Value="{DynamicResource TextDark}" />
-        <Setter Property="Background" Value="{DynamicResource WindowBackgroundSecondary}" />
-        <!-- <Setter Property="BorderBrush" Value="{DynamicResource Accent}" /> -->
-        <!-- <Setter Property="BorderThickness" Value="2" /> -->
-        <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="VerticalAlignment" Value="Stretch" />
-        <Setter Property="Margin" Value="0" />
-        <Setter Property="Padding" Value="3" />
-        <Setter Property="FontSize" Value="18" />
-    </Style>
-    <Style Selector="Border.Container TextBox.NumberBox:focus-within">
-        <Setter Property="Foreground" Value="{DynamicResource TextDark}" />
+    <Style Selector="Border.Container TextBox:focus-within">
+        <Setter Property="Foreground" Value="{DynamicResource Dialogs.InputBoxes.TextColor}" />
+        <Setter Property="CaretBrush" Value="{DynamicResource Dialogs.InputBoxes.TextColor}" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="VerticalAlignment" Value="Stretch" />
         <Setter Property="Padding" Value="3" />
-        <!-- <Setter Property="BorderBrush" Value="{DynamicResource Accent}" /> -->
-        <!-- <Setter Property="BorderThickness" Value="2" /> -->
+        <Setter Property="BorderBrush" Value="{DynamicResource Dialogs.InputBoxes.OutlineColor}" />
+        <Setter Property="BorderThickness" Value="{DynamicResource Dialogs.InputBoxes.OutlineThickness}" />
     </Style>
-    <Style Selector="Border.Container TextBox.NumberBox:pointerover">
-        <Setter Property="Foreground" Value="{DynamicResource TextDark}" />
+    <Style Selector="Border.Container TextBox:pointerover">
+        <Setter Property="Foreground" Value="{DynamicResource Dialogs.InputBoxes.TextColor}" />
+        <Setter Property="CaretBrush" Value="{DynamicResource Dialogs.InputBoxes.TextColor}" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
-        <!-- <Setter Property="VerticalAlignment" Value="Stretch" /> -->
-        <!-- <Setter Property="BorderBrush" Value="{DynamicResource Accent}" /> -->
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Dialogs.InputBoxes.OutlineColor}" />
     </Style>
-    <Style Selector="Border.Container TextBox.NumberBox:focus-within /template/ Border">
-        <!-- <Setter Property="Background" Value="{DynamicResource WindowBackgroundSecondary}" /> -->
-        <!-- <Setter Property="BorderBrush" Value="{DynamicResource Accent}" /> -->
+    <Style Selector="Border.Container TextBox:focus-within /template/ Border">
+        <Setter Property="Background" Value="{DynamicResource Dialogs.InputBoxes.BackgroundColor}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Dialogs.InputBoxes.OutlineColor}" />
     </Style>
-    <Style Selector="Border.Container TextBox.NumberBox:pointerover /template/ Border">
-        <!-- <Setter Property="Background" Value="{DynamicResource WindowBackgroundSecondary}" /> -->
-        <!-- <Setter Property="BorderBrush" Value="{DynamicResource Accent}" /> -->
+    <Style Selector="Border.Container TextBox:pointerover /template/ Border">
+        <Setter Property="Background" Value="{DynamicResource Dialogs.InputBoxes.BackgroundColor}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Dialogs.InputBoxes.OutlineColor}" />
     </Style>
     
     <Style Selector="Border.Container NumericUpDown">
         <Setter Property="FontFamily" Value="{StaticResource RobotoMono}" />
-        <Setter Property="Foreground" Value="{DynamicResource TextDark}" />
-        <Setter Property="Background" Value="{DynamicResource WindowBackgroundSecondary}" />
-        <!-- <Setter Property="BorderBrush" Value="{DynamicResource Accent}" /> -->
-        <!-- <Setter Property="BorderThickness" Value="2" /> -->
+        <Setter Property="Foreground" Value="{DynamicResource Dialogs.InputBoxes.TextColor}" />
+        <Setter Property="Background" Value="{DynamicResource Dialogs.InputBoxes.BackgroundColor}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Dialogs.InputBoxes.CornerRadius}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Dialogs.InputBoxes.OutlineColor}" />
+        <Setter Property="BorderThickness" Value="{DynamicResource Dialogs.InputBoxes.OutlineThickness}" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="VerticalAlignment" Value="Stretch" />
         <Setter Property="Margin" Value="0" />
         <Setter Property="Padding" Value="3" />
-        <Setter Property="FontSize" Value="18" />
+        <Setter Property="FontSize" Value="{DynamicResource Dialogs.InputBoxes.TextSize}" />
     </Style>
     <Style Selector="Border.Container NumericUpDown:focus-within">
-        <Setter Property="Foreground" Value="{DynamicResource TextDark}" />
+        <Setter Property="Foreground" Value="{DynamicResource Dialogs.InputBoxes.TextColor}" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="VerticalAlignment" Value="Stretch" />
         <Setter Property="Padding" Value="3" />
-        <!-- <Setter Property="BorderBrush" Value="{DynamicResource Accent}" /> -->
-        <!-- <Setter Property="BorderThickness" Value="2" /> -->
     </Style>
     <Style Selector="Border.Container NumericUpDown:pointerover">
-        <Setter Property="Foreground" Value="{DynamicResource TextDark}" />
+        <Setter Property="Foreground" Value="{DynamicResource Dialogs.InputBoxes.TextColor}" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
-        <!-- <Setter Property="VerticalAlignment" Value="Stretch" /> -->
-        <!-- <Setter Property="BorderBrush" Value="{DynamicResource Accent}" /> -->
-    </Style>
-    <Style Selector="Border.Container NumericUpDown:focus-within /template/ Border">
-        <!-- <Setter Property="Background" Value="{DynamicResource WindowBackgroundSecondary}" /> -->
-        <!-- <Setter Property="BorderBrush" Value="{DynamicResource Accent}" /> -->
-    </Style>
-    <Style Selector="Border.Container NumericUpDown:pointerover /template/ Border">
-        <!-- <Setter Property="Background" Value="{DynamicResource WindowBackgroundSecondary}" /> -->
-        <!-- <Setter Property="BorderBrush" Value="{DynamicResource Accent}" /> -->
     </Style>
     
     <Style Selector="Border.Container ComboBox">
         <Setter Property="FontFamily" Value="{StaticResource RobotoMono}" />
-        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
-        <Setter Property="Background" Value="{DynamicResource WindowBackgroundSecondary}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
-        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="Foreground" Value="{DynamicResource Dialogs.InputBoxes.TextColor}" />
+        <Setter Property="Background" Value="{DynamicResource Dialogs.InputBoxes.BackgroundColor}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Dialogs.InputBoxes.CornerRadius}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Dialogs.InputBoxes.OutlineColor}" />
+        <Setter Property="BorderThickness" Value="{DynamicResource Dialogs.InputBoxes.OutlineThickness}" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="VerticalAlignment" Value="Stretch" />
     </Style>
     
     <Style Selector="Border.Container ComboBox:dropdownopen /template/ Popup#PART_Popup > Border">
-        <Setter Property="Background" Value="{DynamicResource WindowBackgroundSecondary}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+        <Setter Property="Background" Value="{DynamicResource Dialogs.InputBoxes.BackgroundColor}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Dialogs.InputBoxes.OutlineColor}" />
         <Setter Property="BorderThickness" Value="2" />
     </Style>
     
     <Style Selector="Border.Container ComboBoxItem">
         <Setter Property="FontFamily" Value="{StaticResource RobotoMono}" />
-        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+        <Setter Property="Foreground" Value="{DynamicResource Dialogs.InputBoxes.TextColor}" />
+        <Setter Property="FontSize" Value="{DynamicResource Dialogs.InputBoxes.TextSize}" />
     </Style>
     
     <Style Selector="dialogs|ThreefoldDialog">
-        <Setter Property="Background" Value="{DynamicResource WindowBackgroundPrimary}" />
-        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Dialogs.OutlineColor}" />
+        <Setter Property="Background" Value="{DynamicResource Dialogs.BackgroundColor}" />
+        <Setter Property="BorderThickness" Value="{DynamicResource Dialogs.OutlineThickness}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Dialogs.CornerRadius}" />
         <Setter Property="Padding" Value="5" />
-        <Setter Property="BorderThickness" Value="4" />
-        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
         <Setter Property="Margin" Value="0" />
         <Setter Property="FontFamily" Value="{DynamicResource RobotoMono}" />
-        <Setter Property="Foreground" Value="{DynamicResource TextDark}" />
-        <Setter Property="FontSize" Value="16" />
+        <Setter Property="Foreground" Value="{DynamicResource Dialogs.TextColor}" />
+        <Setter Property="FontSize" Value="{DynamicResource Dialogs.TextSize}" />
         <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="MaxWidth" Value="450" />
     </Style>
     
     <Style Selector="dialogs|ThreefoldDialog Button">
-        <Setter Property="Foreground" Value="{DynamicResource TextDark}" />
-        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="Foreground" Value="{DynamicResource Dialogs.TextColor}" />
+        <Setter Property="Background" Value="{DynamicResource Dialogs.Buttons.BackgroundColor}" />
         <Setter Property="FontFamily" Value="{DynamicResource RobotoMono}" />
-        <!-- <Setter Property="FontSize" Value="15" /> -->
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="Padding" Value="3" />
-        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
-        <Setter Property="BorderThickness" Value="2" />
-        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Dialogs.Buttons.OutlineColor}" />
+        <Setter Property="BorderThickness" Value="{DynamicResource Dialogs.Buttons.OutlineThickness}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Dialogs.Buttons.CornerRadius}" />
         <Setter Property="Margin" Value="4" />
     </Style>
     <Style Selector="dialogs|ThreefoldDialog Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource WindowBackgroundSecondary}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+        <Setter Property="Background" Value="{DynamicResource Dialogs.Buttons.BackgroundColor}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Dialogs.Buttons.OutlineColor}" />
     </Style>
 </Styles>

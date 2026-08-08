@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using Avalonia;
 using Avalonia.Media;
 using UNBUGGABLE.Resources;
@@ -47,7 +48,7 @@ public class MarkerDummyNote : NoteBase
         
         _shape.Transform = new TransformGroup { Children =
         {
-            new TranslateTransform(0, y),
+            new TranslateTransform(147, y),
             new ScaleTransform((double)App.Current.Resources["NoteViewer.Markers.ArrowScale"],
                                (double)App.Current.Resources["NoteViewer.Markers.ArrowScale"])
         } };

@@ -127,6 +127,8 @@ public partial class MainWindowViewModel : ViewModelBase
             SaveButtonToolTip = value ? "Save" : "Cannot save until metadata is set";
         }
     }
+    
+    public bool DialogOverlayVisible => App.DialogIsOpen;
 
     public MainWindowViewModel()
     {

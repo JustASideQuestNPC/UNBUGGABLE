@@ -38,7 +38,7 @@ public class HoldNote : NoteBase
             OutlineThickness =
                 ((Thickness)App.Current.Resources["Notes.Hold.OutlineThickness"]).Top,
             TailFillBrush =
-                (SolidColorBrush)App.Current.Resources["Notes.Hold.TailFillColor"],
+                (SolidColorBrush)App.Current.Resources["Notes.Hold.TailColor"],
             TailOutlineBrush =
                 (SolidColorBrush)App.Current.Resources["Notes.Hold.TailOutlineColor"],
             TailOutlineThickness =
@@ -51,7 +51,7 @@ public class HoldNote : NoteBase
             SelectedOutlineThickness =
                 ((Thickness)App.Current.Resources["Notes.Hold.Selected.OutlineThickness"]).Top,
             SelectedTailFillBrush =
-                (SolidColorBrush)App.Current.Resources["Notes.Hold.Selected.TailFillColor"],
+                (SolidColorBrush)App.Current.Resources["Notes.Hold.Selected.TailColor"],
             SelectedTailOutlineBrush =
                 (SolidColorBrush)App.Current.Resources[
                     "Notes.Hold.Selected.TailOutlineColor"],
@@ -65,7 +65,7 @@ public class HoldNote : NoteBase
             OutlineThickness =
                 ((Thickness)App.Current.Resources["Notes.Double.OutlineThickness"]).Top,
             TailFillBrush =
-                (SolidColorBrush)App.Current.Resources["Notes.Double.TailFillColor"],
+                (SolidColorBrush)App.Current.Resources["Notes.Double.TailColor"],
             TailOutlineBrush =
                 (SolidColorBrush)App.Current.Resources["Notes.Double.TailOutlineColor"],
             TailOutlineThickness =
@@ -78,7 +78,7 @@ public class HoldNote : NoteBase
             SelectedOutlineThickness =
                 ((Thickness)App.Current.Resources["Notes.Double.Selected.OutlineThickness"]).Top,
             SelectedTailFillBrush =
-                (SolidColorBrush)App.Current.Resources["Notes.Double.Selected.TailFillColor"],
+                (SolidColorBrush)App.Current.Resources["Notes.Double.Selected.TailColor"],
             SelectedTailOutlineBrush =
                 (SolidColorBrush)App.Current.Resources[
                     "Notes.Double.Selected.TailOutlineColor"],
@@ -111,7 +111,7 @@ public class HoldNote : NoteBase
         if (Type == NoteType.DOUBLE)
         {
             var endX = NoteViewer.GetNoteX(Lane == NoteLane.TOP ? NoteLane.BOTTOM : NoteLane.TOP);
-            dc.DrawRectangle(_doubleTailBrush, tailPen, new Rect(endX - 40, endY - 12, 80, 24));
+            dc.DrawRectangle(styles.TailFillBrush, tailPen, new Rect(endX - 40, endY - 12, 80, 24));
         }
         
         var pen = selected ?
@@ -183,7 +183,7 @@ public class HoldNote : NoteBase
         
         dc.DrawLine(new Pen(HoldStyles.TailFillBrush, 20), new Point(startX, y),
                     new Point(endX, y));
-        dc.DrawEllipse(HoldStyles.TailFillBrush, new Pen(HoldStyles.OutlineBrush, 6),
+        dc.DrawEllipse(HoldStyles.FillBrush, new Pen(HoldStyles.OutlineBrush, 6),
                        new Point(startX, y), 30, 30);
     }
     

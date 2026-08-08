@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Avalonia.Media;
 
@@ -17,6 +19,24 @@ public static partial class ThemeUtils
         {
             throw new ColorThemeException($"Invalid hex color for key {keyName}: {hex}");
         }
+        
+        // for some godawful reason, avalonia uses #aarrggbb instead of #rrggbbaa, so now i have to
+        // shuffle around the characters myself
+        var colors = hex[1..].ToList();
+        if (colors.Count == 4)
+        {
+            colors.Insert(0, colors[3]);
+            colors.RemoveAt(4);
+        }
+        else if (colors.Count == 8)
+        {
+            colors.Insert(0, colors[7]);
+            colors.RemoveAt(8);
+            colors.Insert(0, colors[7]);
+            colors.RemoveAt(8);
+        }
+
+        hex = $"#{string.Join("", colors)}";
         return Color.Parse(hex);
     }
 }

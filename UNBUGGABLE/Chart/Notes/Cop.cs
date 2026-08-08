@@ -79,7 +79,7 @@ public class CopNote : NoteBase
                 OutlineThickness =
                     ((Thickness)App.Current.Resources[$"Notes.Cop{i}.OutlineThickness"]).Top,
                 TailFillBrush =
-                    (SolidColorBrush)App.Current.Resources[$"Notes.Cop{i}.TailFillColor"],
+                    (SolidColorBrush)App.Current.Resources[$"Notes.Cop{i}.TailColor"],
                 TailOutlineBrush =
                     (SolidColorBrush)App.Current.Resources[$"Notes.Cop{i}.TailOutlineColor"],
                 TailOutlineThickness =
@@ -93,7 +93,7 @@ public class CopNote : NoteBase
                     ((Thickness)App.Current.Resources[
                         $"Notes.Cop{i}.Selected.OutlineThickness"]).Top,
                 SelectedTailFillBrush =
-                    (SolidColorBrush)App.Current.Resources[$"Notes.Cop{i}.Selected.TailFillColor"],
+                    (SolidColorBrush)App.Current.Resources[$"Notes.Cop{i}.Selected.TailColor"],
                 SelectedTailOutlineBrush =
                     (SolidColorBrush)App.Current.Resources[
                         $"Notes.Cop{i}.Selected.TailOutlineColor"],

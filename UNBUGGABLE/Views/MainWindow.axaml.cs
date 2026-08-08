@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using DialogHostAvalonia;
 using UNBEATABLEChartEditor.Dialogs;
 using UNBEATABLEChartEditor.Input;
 using UNBUGGABLE.Resources;
@@ -59,5 +60,15 @@ public partial class MainWindow : Window
     private void OnWindowLoseFocus(object? sender, RoutedEventArgs e)
     {
         InputManager.ResetInputStates();
+    }
+
+    private void OnDialogOpened(object sender, DialogOpenedEventArgs eventArgs)
+    {
+        App.DialogIsOpen = true;
+    }
+    
+    private void OnDialogClosed(object sender, DialogOpenedEventArgs eventArgs)
+    {
+        App.DialogIsOpen = false;
     }
 }
