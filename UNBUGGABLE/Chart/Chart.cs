@@ -1496,7 +1496,7 @@ public static partial class Chart
                         Trace.WriteLine($"Flavor text: {Metadata.FlavorText}");
                         hasFlavorTextTag = true;
                         
-                        Metadata.CoverArtistName = Regex.Unescape(match.Groups[3].Value);
+                        Metadata.CoverArtistName = Regex.Unescape(match.Groups[4].Value);
                         Trace.WriteLine($"Cover artist: {Metadata.CoverArtistName}");
                         hasCoverArtTag = true;
                     }
