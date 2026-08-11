@@ -323,6 +323,12 @@ public class NoteViewer : Control
                     new Point(150, Config.Settings.CurrentTimePosition),
                     new Point(ViewerWidth, Config.Settings.CurrentTimePosition));
         
+        // render markers early so they don't cover up label names or BPM numbers
+        foreach (var note in Chart.MarkerNotes)
+        {
+            note.Render(dc, ChartBuilder.SelectedNotes.Contains(note));
+        }
+        
         foreach (var bpmRegion in Chart.BpmRegions)
         {
             RenderBpmChange(dc, bpmRegion);
@@ -375,7 +381,7 @@ public class NoteViewer : Control
             RenderBreakpoint(dc);
         }
         
-        foreach (var note in Chart.Notes)
+        foreach (var note in Chart.NonMarkerNotes)
         {
             note.Render(dc, ChartBuilder.SelectedNotes.Contains(note));
         }
@@ -496,9 +502,12 @@ public class NoteViewer : Control
         
         var text = new FormattedText(bpmRegion.Bpm.ToString("0.00"), CultureInfo.CurrentCulture,
                                      FlowDirection.LeftToRight, _numberTypeface,
-                                     _bpmChangeStyle.TextSize, _bpmChangeStyle.Color);
+                                     _bpmChangeStyle.TextSize, _bpmChangeStyle.Color)
+        {
+            MaxTextWidth = 122
+        };
         
-        dc.DrawText(text, new Point(135 - text.Width, y - 2 - text.Height / 2));
+        dc.DrawText(text, new Point(137 - text.Width, y - 2 - text.Height / 2));
         dc.DrawLine(new Pen(_bpmChangeStyle.Color, _bpmChangeStyle.Thickness), new Point(150, y),
                     new Point(ViewerWidth, y));
     }
@@ -516,11 +525,11 @@ public class NoteViewer : Control
                                               _labelStyle.TextSize,
                                               _labelStyle.Color)
         {
-            MaxTextWidth = 120
+            MaxTextWidth = 122
         };
         
         dc.DrawText(formattedText,
-                    new Point(135 - formattedText.Width, y - 2 - formattedText.Height / 2));
+                    new Point(137 - formattedText.Width, y - 2 - formattedText.Height / 2));
         dc.DrawLine(new Pen(_labelStyle.Color, _labelStyle.Thickness), new Point(150, y),
                     new Point(ViewerWidth, y));
     }

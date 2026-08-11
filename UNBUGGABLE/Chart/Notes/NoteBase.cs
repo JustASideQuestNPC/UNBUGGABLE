@@ -129,7 +129,7 @@ public abstract partial class NoteBase
         {
             if (laneNumber == 128)
             {
-                Chart.TryAddMarker(noteTime, 0);
+                Chart.TryAddMarker(noteTime);
                 errorMessage = "marker";
                 return null;
             }

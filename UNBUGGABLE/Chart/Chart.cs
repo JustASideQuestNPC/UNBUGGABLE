@@ -843,15 +843,17 @@ public static partial class Chart
     /// Adds a marker to the chart if one doesn't already exist at that time. This is only used
     /// during chart file loading.
     /// </summary>
-    /// <param name="time">The time of the marker, in milliseconds.</param>
-    /// <param name="type">From 0-2, determines the color of the marker. The default types are
-    ///     green, yellow, and purple, in that order.</param>
-    public static void TryAddMarker(long time, int type)
+    public static void TryAddMarker(long time)
     {
-        if (GetNotesAtTime(time).Find(note => note.Item1 is MarkerDummyNote)
-                                .Item1 is not MarkerDummyNote)
+        var marker = MarkerNotes.FirstOrDefault(n => n.Time == time);
+        if (marker == null)
         {
-            AddNote(new MarkerDummyNote(time, type));
+            AddNote(new MarkerDummyNote(time)
+            {
+                Color1 = true,
+                Color2 = false,
+                Color3 = false
+            });
         }
     }
 
@@ -996,6 +998,41 @@ public static partial class Chart
         }
         
         UnsavedChanges = true;
+    }
+
+    public static void AddOrUpdateMarker(long time, bool color1, bool color2, bool color3)
+    {
+        var existing = MarkerNotes.FirstOrDefault(n => n.Time == time);
+        if (existing != null)
+        {
+            var m = (MarkerDummyNote)existing;
+            if (color1)
+            {
+                m.Color1 = !m.Color1;
+            }
+            else if (color2)
+            {
+                m.Color2 = !m.Color2;
+            }
+            else if (color3)
+            {
+                m.Color3 = !m.Color3;
+            }
+
+            if (m is { Color1: false, Color2: false, Color3: false })
+            {
+                RemoveNote(existing);
+            }
+        }
+        else
+        {
+            AddNote(new MarkerDummyNote(time)
+            {
+                Color1 = color1,
+                Color2 = color2,
+                Color3 = color3
+            });
+        }
     }
 
     /// <summary>
@@ -1427,10 +1464,35 @@ public static partial class Chart
                 foreach (var marker in markerData)
                 {
                     var split = marker.Split('`');
-                    if (double.TryParse(split[0], out var time))
+                    if (long.TryParse(split[0], out var time))
                     {
-                        // Trace.WriteLine($"Adding marker at {time} with type {split[1]}");
-                        TryAddMarker((long)Math.Round(time), int.Parse(split[1]));
+                        // for compatibility with pre 0.13 charts with 1-color markers
+                        var color1 = false;
+                        var color2 = false;
+                        var color3 = false;
+                        if (split[1].Length == 1)
+                        {
+                            switch (split[1])
+                            {
+                                case "0":
+                                    color1 = true;
+                                    break;
+                                case "1":
+                                    color2 = true;
+                                    break;
+                                case "2":
+                                    color3 = true;
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            color1 = split[1][0] == '1';
+                            color2 = split[1][1] == '1';
+                            color3 = split[1][2] == '1';
+                        }
+                        
+                        AddOrUpdateMarker(time, color1, color2, color3);
                     }
                     else
                     {
@@ -1721,7 +1783,11 @@ public static partial class Chart
         List<string> markerStrings = [];
         foreach (var marker in MarkerNotes)
         {
-            markerStrings.Add($"{marker.Time}`{(marker as MarkerDummyNote).ColorId}");
+            var m = (MarkerDummyNote)(marker);
+            var colorStatesString = (m.Color1 ? "1" : "0") +
+                                    (m.Color2 ? "1" : "0") +
+                                    (m.Color3 ? "1" : "0");
+            markerStrings.Add($"{m.Time}`{colorStatesString}");
         }
         
         await writer.WriteLineAsync("Markers:");

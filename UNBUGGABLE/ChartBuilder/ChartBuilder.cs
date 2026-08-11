@@ -638,17 +638,7 @@ public static class ChartBuilder
 
     public static void AddMarker(int type)
     {
-        if (Chart.GetNote(Chart.CurrentTime, NoteLane.MARKER) is { } marker)
-        {
-            Trace.WriteLine("Delete marker");
-            ChartBuilderCommandInvoker.Execute(new DeleteNotesCommand([marker]));
-        }
-        else
-        {
-            ChartBuilderCommandInvoker.Execute(new AddNotesCommand([
-                new MarkerDummyNote(Chart.CurrentTime, type)
-            ]));
-        }
+        ChartBuilderCommandInvoker.Execute(new UpdateMarkerCommand(Chart.CurrentTime, type));
     }
 
     public static void SetNoteFlags(char flag)

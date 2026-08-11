@@ -438,3 +438,19 @@ public class NudgeNotesCommand(List<(NoteBase, int, int)> nudges) : ICommand
         App.MainWindowViewModel.UpdatePriorityListEntries(Chart.GetNotesAtTime(Chart.CurrentTime));
     }
 }
+
+public class UpdateMarkerCommand(long time, int type) : ICommand
+{
+    public string Name => "Update Marker";
+
+    public void Execute()
+    {
+        Chart.AddOrUpdateMarker(time, type == 0, type == 1, type == 2);
+    }
+
+    public void Undo()
+    {
+        // this stays the same because AddOrUpdateMarker toggles colors rather than setting them
+        Chart.AddOrUpdateMarker(time, type == 0, type == 1, type == 2);
+    }
+}

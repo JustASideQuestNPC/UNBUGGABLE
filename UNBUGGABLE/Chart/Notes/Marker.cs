@@ -9,32 +9,59 @@ namespace UNBUGGABLE;
 
 public class MarkerDummyNote : NoteBase
 {
-    private static List<SolidColorBrush> Brushes = [];
+    private static readonly List<SolidColorBrush> Brushes = [];
+    private static readonly List<TransformGroup> Transforms = [];
     
     public override NoteType Type => NoteType.MARKER_DUMMY;
     public override NoteLane Lane => NoteLane.MARKER;
 
-    public int ColorId;
+    public bool Color1
+    {
+        get => _colorStates[0];
+        set => _colorStates[0] = value;
+    }
+    public bool Color2
+    {
+        get => _colorStates[1];
+        set => _colorStates[1] = value;
+    }
+    public bool Color3
+    {
+        get => _colorStates[2];
+        set => _colorStates[2] = value;
+    }
+
+    private readonly List<bool> _colorStates = [false, false, false];
     
     private readonly Geometry _shape = new PolylineGeometry([
         new Point(-12, -10),
-        new Point(  0,   0),
-        new Point(-12,  10)
+        new Point(0, 0),
+        new Point(-12, 10)
     ], true);
 
     public static void UpdateStyles()
     {
         Brushes.Clear();
+        Transforms.Clear();
+        var arrowScale = (double)App.Current.Resources["NoteViewer.Markers.ArrowScale"];
         for (var i = 0; i < 3; ++i)
         {
+            var offset = 147 - i * 6 * arrowScale;
             Brushes.Add((SolidColorBrush)App.Current.Resources[$"NoteViewer.Markers.Color{i + 1}"]);
+            Transforms.Add(new TransformGroup
+            {
+                Children =
+                {
+                    new ScaleTransform(arrowScale, arrowScale),
+                    new TranslateTransform(offset, 0)
+                }
+            });
         }
     }
 
-    public MarkerDummyNote(long time, int colorId)
+    public MarkerDummyNote(long time)
     {
         Time = time;
-        ColorId = colorId;
     }
     
     // markers can never be selected
@@ -45,14 +72,20 @@ public class MarkerDummyNote : NoteBase
         {
             return;
         }
-        
-        _shape.Transform = new TransformGroup { Children =
+
+        var transformIndex = 0;
+        for (var i = 0; i < _colorStates.Count; ++i)
         {
-            new TranslateTransform(147, y),
-            new ScaleTransform((double)App.Current.Resources["NoteViewer.Markers.ArrowScale"],
-                               (double)App.Current.Resources["NoteViewer.Markers.ArrowScale"])
-        } };
-        dc.DrawGeometry(Brushes[ColorId], null, _shape);
+            if (_colorStates[i])
+            {
+                _shape.Transform = new TransformGroup { Children =
+                {
+                    Transforms[transformIndex++],
+                    new TranslateTransform(i, y),
+                } };
+                dc.DrawGeometry(Brushes[i], null, _shape);
+            }
+        }
     }
     
     public override void RenderPreview(DrawingContext dc) { }
@@ -65,9 +98,9 @@ public class MarkerDummyNote : NoteBase
         }
         
         var offset = (long)(Time - rangeStart);
-        if ((ColorId == 0 && Config.Settings.HitSounds.Marker1) ||
-            (ColorId == 1 && Config.Settings.HitSounds.Marker2) ||
-            (ColorId == 2 && Config.Settings.HitSounds.Marker3))
+        if ((_colorStates[0] && Config.Settings.HitSounds.Marker1) ||
+            (_colorStates[1] && Config.Settings.HitSounds.Marker2) ||
+            (_colorStates[2] && Config.Settings.HitSounds.Marker3))
         {
             return offset;
         }
@@ -86,5 +119,6 @@ public class MarkerDummyNote : NoteBase
         return "";
     }
 
-    public override string ToString() => $"Marker: Type={ColorId} Time={Time}ms";
+    public override string ToString() => $"Marker: Colors={string.Join(",", _colorStates)} " +
+                                         $"Time={Time}ms";
 }
