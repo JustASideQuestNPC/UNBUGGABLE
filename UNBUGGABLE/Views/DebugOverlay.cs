@@ -12,9 +12,20 @@ public class DebugOverlay : Control
 {
     private double _width;
     private double _height;
-    
-    private SolidColorBrush _textBackground = new(Colors.Black, 0.5);
-    private readonly Typeface _typeface = new((FontFamily)App.Current.Resources["RobotoMono"]);
+
+    private static SolidColorBrush BackgroundBrush;
+    private static SolidColorBrush TextBrush;
+    private static double TextSize;
+    private static readonly Typeface Typeface =
+        new((FontFamily)App.Current.Resources["RobotoMono"]);
+
+    public static void UpdateStyles()
+    {
+        BackgroundBrush =
+            (SolidColorBrush)App.Current.Resources["DebugInfo.OverlayBackgroundColor"];
+        TextBrush = (SolidColorBrush)App.Current.Resources["DebugInfo.OverlayTextColor"];
+        TextSize = (double)App.Current.Resources["DebugInfo.OverlayTextSize"];
+    }
 
     public override void Render(DrawingContext dc)
     {
@@ -69,9 +80,9 @@ public class DebugOverlay : Control
         {
             var column1Text = new FormattedText(string.Join('\n', column1Strings),
                                                 CultureInfo.CurrentCulture,
-                                                FlowDirection.LeftToRight, _typeface, 14,
-                                                Brushes.White);
-            dc.DrawRectangle(_textBackground, null, new Rect(0, 0, column1Text.Width + 6,
+                                                FlowDirection.LeftToRight, Typeface, TextSize,
+                                                TextBrush);
+            dc.DrawRectangle(BackgroundBrush, null, new Rect(0, 0, column1Text.Width + 6, 
                                                              column1Text.Height - 4));
             dc.DrawText(column1Text, new Point(0, -12));
         }

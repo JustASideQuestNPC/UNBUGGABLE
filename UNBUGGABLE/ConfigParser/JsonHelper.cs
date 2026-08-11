@@ -89,6 +89,13 @@ public static class JsonHelper
 
         foreach (var (key, value) in obj1)
         {
+            // skip anything that isn't in the updated file -- in practice, this skips configs that
+            // existed in a previous updated and have since been removed
+            if (!obj2.ContainsKey(key))
+            {
+                continue;
+            }
+            
             if (value is JsonObject overrideObj &&
                 result[key] is JsonObject defaultObj)
             {

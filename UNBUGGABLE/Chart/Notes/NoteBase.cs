@@ -298,7 +298,7 @@ public abstract partial class NoteBase
         return new Rect(x - 40, y - 12, 80, 24).ContainsPoint(ChartBuilder.MousePosition);
     }
 
-    public bool MouseOverTail()
+    public virtual bool MouseOverTail()
     {
         var x = NoteViewer.GetNoteX(Lane);
         var startY = NoteViewer.TimeToScreenCoords(Time);

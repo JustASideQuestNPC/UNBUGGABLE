@@ -3,6 +3,7 @@ using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using UNBUGGABLE.Views;
 
 namespace UNBUGGABLE.Resources;
 
@@ -167,6 +168,22 @@ public static class ThemeManager
         _themeColors["NoteViewer.DeleteDragColor"] = new SolidColorBrush();
         _resources["NoteViewer.DeleteDragColor"] =
             _themeColors["NoteViewer.DeleteDragColor"];
+        
+        _themeColors["NoteViewer.NoteLanes.TopColor"] = new SolidColorBrush();
+        _resources["NoteViewer.NoteLanes.TopColor"] =
+            _themeColors["NoteViewer.NoteLanes.TopColor"];
+        
+        _themeColors["NoteViewer.NoteLanes.BottomColor"] = new SolidColorBrush();
+        _resources["NoteViewer.NoteLanes.BottomColor"] =
+            _themeColors["NoteViewer.NoteLanes.BottomColor"];
+        
+        _themeColors["NoteViewer.NoteLanes.CenterColor"] = new SolidColorBrush();
+        _resources["NoteViewer.NoteLanes.CenterColor"] =
+            _themeColors["NoteViewer.NoteLanes.CenterColor"];
+        
+        _themeColors["NoteViewer.NoteLanes.CameraColor"] = new SolidColorBrush();
+        _resources["NoteViewer.NoteLanes.CameraColor"] =
+            _themeColors["NoteViewer.NoteLanes.CameraColor"];
         
         _themeColors["NoteViewer.LaneNumbers.Color"] = new SolidColorBrush();
         _resources["NoteViewer.LaneNumbers.Color"] =
@@ -664,6 +681,14 @@ public static class ThemeManager
             theme.NoteViewer.SelectDragColor;
         _themeColors["NoteViewer.DeleteDragColor"].Color =
             theme.NoteViewer.DeleteDragColor;
+        _themeColors["NoteViewer.NoteLanes.TopColor"].Color =
+            theme.NoteViewer.NoteLanes.TopColor;
+        _themeColors["NoteViewer.NoteLanes.BottomColor"].Color =
+            theme.NoteViewer.NoteLanes.BottomColor;
+        _themeColors["NoteViewer.NoteLanes.CenterColor"].Color =
+            theme.NoteViewer.NoteLanes.CenterColor;
+        _themeColors["NoteViewer.NoteLanes.CameraColor"].Color =
+            theme.NoteViewer.NoteLanes.CameraColor;
         _themeColors["NoteViewer.LaneNumbers.Color"].Color =
             theme.NoteViewer.LaneNumbers.Color;
         _themeColors["NoteViewer.LaneNumbers.OutlineColor"].Color =
@@ -926,6 +951,14 @@ public static class ThemeManager
             new CornerRadius(theme.NoteViewer.CornerRadius);
         _resources["NoteViewer.LaneNumbers.OutlineThickness"] =
             new Thickness(theme.NoteViewer.LaneNumbers.OutlineThickness);
+        _resources["NoteViewer.NoteLanes.TopWidth"] =
+            theme.NoteViewer.NoteLanes.TopWidth;
+        _resources["NoteViewer.NoteLanes.BottomWidth"] =
+            theme.NoteViewer.NoteLanes.BottomWidth;
+        _resources["NoteViewer.NoteLanes.CenterWidth"] =
+            theme.NoteViewer.NoteLanes.CenterWidth;
+        _resources["NoteViewer.NoteLanes.CameraWidth"] =
+            theme.NoteViewer.NoteLanes.CameraWidth;
         _resources["NoteViewer.LaneNumbers.TextSize"] =
             theme.NoteViewer.LaneNumbers.TextSize;
         _resources["NoteViewer.FullBeatSnapLine.Thickness"] =
@@ -1067,5 +1100,8 @@ public static class ThemeManager
         MarkerDummyNote.UpdateStyles();
         MashNote.UpdateStyles();
         SingleNote.UpdateStyles();
+        DebugOverlay.UpdateStyles();
+        GamePreview.UpdateStyles();
+        NoteViewer.UpdateStyles();
     }
 }

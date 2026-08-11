@@ -127,8 +127,6 @@ public partial class MainWindowViewModel : ViewModelBase
             SaveButtonToolTip = value ? "Save" : "Cannot save until metadata is set";
         }
     }
-    
-    public bool DialogOverlayVisible => App.DialogIsOpen;
 
     public MainWindowViewModel()
     {
@@ -316,6 +314,32 @@ public partial class MainWindowViewModel : ViewModelBase
         }
         
         Trace.WriteLine($"Lane order: {string.Join(",", orderedLaneNames)}");
+    }
+    
+    [RelayCommand]
+    private void OpenConfigFolder()
+    {
+        if (App.TopLevel == null)
+        {
+            Console.WriteLine("No top level window!");
+            return;
+        }
+
+        var startFolder = Directory.CreateDirectory(Environment.CurrentDirectory + "/configs/");
+        Process.Start("explorer.exe", startFolder.FullName);
+    }
+    
+    [RelayCommand]
+    private void OpenThemesFolder()
+    {
+        if (App.TopLevel == null)
+        {
+            Console.WriteLine("No top level window!");
+            return;
+        }
+
+        var startFolder = Directory.CreateDirectory(Environment.CurrentDirectory + "/themes/");
+        Process.Start("explorer.exe", startFolder.FullName);
     }
     
     [RelayCommand]
@@ -551,8 +575,9 @@ public partial class MainWindowViewModel : ViewModelBase
         Config.TryReloadConfig();
         if (Config.LoadError)
         {
-            await new MessageDialog($"Error loading config:\n{Config.LoadErrorMessage}")
-                .ShowAsync();
+            var dialog = new MessageDialog("One or more errors occured while loading config " +
+                                           "files. Check the log file for a detailed error list.");
+            await dialog.ShowAsync();
         }
         else
         {

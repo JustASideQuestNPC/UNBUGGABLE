@@ -30,24 +30,56 @@ public class GamePreview : Control
     
     public const int PixelsPerSecond = 650;
 
-    private static readonly List<Point> DirectionIndicatorVertices =
-    [
-        new(22, -40),
-        new(-22, 0),
-        new(22, 40)
-    ];
-    
-    private readonly SolidColorBrush _viewableAreaBrush =
-        (SolidColorBrush)App.Current.Resources["ViewableArea"];
-    private readonly SolidColorBrush _accentBrush =
-        (SolidColorBrush)App.Current.Resources["Accent"];
-    private readonly SolidColorBrush _subBeatLineBrush =
-        (SolidColorBrush)App.Current.Resources["SubBeatSnapLine"];
-    private readonly SolidColorBrush _editorBackgroundBrush =
-        (SolidColorBrush)App.Current.Resources["EditorBackground"];
-    private readonly SolidColorBrush _directionIndicatorBrush;
-    private readonly Geometry _directionIndicatorShape =
-        new PolylineGeometry(DirectionIndicatorVertices, true);
+    private static readonly Geometry _directionIndicatorShape = new PolylineGeometry([
+        new Point(22, -40),
+        new Point(-22, 0),
+        new Point(22, 40)
+    ], true);
+
+    private static SolidColorBrush _backgroundBrush;
+    private static SolidColorBrush _outlineBrush;
+    private static SolidColorBrush _copBrush;
+    private static SolidColorBrush _viewableAreaOutlineBrush;
+    private static SolidColorBrush _cameraArrowBrush;
+    private static SolidColorBrush _noteTargetLineBrush;
+    private static SolidColorBrush _noteTargetCircleFillBrush;
+    private static SolidColorBrush _noteTargetCircleOutlineBrush;
+
+    private static double _cornerRadius;
+    private static double _outlineThickness;
+    private static double _viewableAreaOutlineThickness;
+    private static double _cameraArrowScale;
+    private static double _noteTargetLineThickness;
+    private static double _noteTargetCircleOutlineThickness;
+    private static double _noteTargetCircleRadius;
+
+    public static void UpdateStyles()
+    {
+        _backgroundBrush = (SolidColorBrush)App.Current.Resources["GamePreview.BackgroundColor"];
+        _outlineBrush = (SolidColorBrush)App.Current.Resources["GamePreview.OutlineColor"];
+        _copBrush = (SolidColorBrush)App.Current.Resources["GamePreview.CopColor"];
+        _viewableAreaOutlineBrush =
+            (SolidColorBrush)App.Current.Resources["GamePreview.ViewableArea.OutlineColor"];
+        _cameraArrowBrush = (SolidColorBrush)App.Current.Resources["GamePreview.CameraArrowColor"];
+        _noteTargetLineBrush =
+            (SolidColorBrush)App.Current.Resources["GamePreview.NoteTargets.LineColor"];
+        _noteTargetCircleFillBrush =
+            (SolidColorBrush)App.Current.Resources["GamePreview.NoteTargets.Circles.FillColor"];
+        _noteTargetCircleOutlineBrush =
+            (SolidColorBrush)App.Current.Resources["GamePreview.NoteTargets.Circles.OutlineColor"];
+        
+        _cornerRadius = ((CornerRadius)App.Current.Resources["GamePreview.CornerRadius"]).TopLeft;
+        _outlineThickness = ((Thickness)App.Current.Resources["GamePreview.OutlineThickness"]).Top;
+        _viewableAreaOutlineThickness =
+            ((Thickness)App.Current.Resources["GamePreview.ViewableArea.OutlineThickness"]).Top;
+        _noteTargetLineThickness =
+            (double)App.Current.Resources["GamePreview.NoteTargets.LineThickness"];
+        _noteTargetCircleOutlineThickness = ((Thickness)
+            App.Current.Resources["GamePreview.NoteTargets.Circles.OutlineThickness"]).Top;
+        _noteTargetCircleRadius =
+            (double)App.Current.Resources["GamePreview.NoteTargets.Circles.Radius"];
+        _cameraArrowScale = (double)App.Current.Resources["GamePreview.CameraArrowScale"];
+    }
     
     /// <summary>
     /// Given a time in milliseconds, returns the x coordinate of that time.
@@ -56,14 +88,6 @@ public class GamePreview : Control
     {
         var x = ((time - Chart.CurrentTimeRaw) / 1000) * PixelsPerSecond + NoteTargetX;
         return (CurrentNotesFromRight ? x : -x);
-    }
-
-    public GamePreview()
-    {
-        _directionIndicatorBrush = new SolidColorBrush(_viewableAreaBrush.Color)
-        {
-            Opacity = 0.5,
-        };
     }
     
     public override void Render(DrawingContext dc)
@@ -74,24 +98,31 @@ public class GamePreview : Control
         TopLaneY = -PreviewHeight / 2 + 75;
         BottomLaneY = PreviewHeight / 2 - 75;
         
-        var clip = dc.PushClip(new Rect(0, 0, Bounds.Size.Width, Bounds.Size.Height));
+        var clip = dc.PushClip(
+            new RoundedRect(new Rect(0, 0, Bounds.Size.Width, Bounds.Size.Height), _cornerRadius));
         
         var positionOffset = dc.PushTransform(new Matrix(1, 0, 0, 1, PreviewWidth / 2,
                                                          PreviewHeight / 2));
-        dc.DrawRectangle(_editorBackgroundBrush, null, new Rect(0, 0, PreviewWidth, PreviewHeight));
+        dc.DrawRectangle(_backgroundBrush, null, new Rect(0, 0, PreviewWidth, PreviewHeight));
+        
+        var linePen = new Pen(_noteTargetLineBrush, _noteTargetLineThickness);
+        var circlePen = new Pen(_noteTargetCircleOutlineBrush, _noteTargetCircleOutlineThickness);
         
         // left line/note targets
-        dc.DrawLine(new Pen(_subBeatLineBrush, 2), new Point(-NoteTargetX, -PreviewHeight / 2),
+        dc.DrawLine(linePen, new Point(-NoteTargetX, -PreviewHeight / 2),
                     new Point(-NoteTargetX, PreviewHeight / 2));
-        dc.DrawEllipse(null, new Pen(_accentBrush, 5), new Point(-NoteTargetX, TopLaneY), 30, 30);
-        dc.DrawEllipse(null, new Pen(_accentBrush, 5), new Point(-NoteTargetX, BottomLaneY), 30,
-                       30);
+        dc.DrawEllipse(_noteTargetCircleFillBrush, circlePen, new Point(-NoteTargetX, TopLaneY),
+                       _noteTargetCircleRadius, _noteTargetCircleRadius);
+        dc.DrawEllipse(_noteTargetCircleFillBrush, circlePen, new Point(-NoteTargetX, BottomLaneY),
+                       _noteTargetCircleRadius, _noteTargetCircleRadius);
         
         // right line/note targets
-        dc.DrawLine(new Pen(_subBeatLineBrush, 2), new Point(NoteTargetX, -PreviewHeight / 2),
+        dc.DrawLine(linePen, new Point(NoteTargetX, -PreviewHeight / 2),
                     new Point(NoteTargetX, PreviewHeight / 2));
-        dc.DrawEllipse(null, new Pen(_accentBrush, 5), new Point(NoteTargetX, TopLaneY), 30, 30);
-        dc.DrawEllipse(null, new Pen(_accentBrush, 5), new Point(NoteTargetX, BottomLaneY), 30, 30);
+        dc.DrawEllipse(_noteTargetCircleFillBrush, circlePen, new Point(NoteTargetX, TopLaneY),
+                       _noteTargetCircleRadius, _noteTargetCircleRadius);
+        dc.DrawEllipse(_noteTargetCircleFillBrush, circlePen, new Point(NoteTargetX, BottomLaneY),
+                       _noteTargetCircleRadius, _noteTargetCircleRadius);
         
         // get cop states because the cop sprite gets rendered below notes
         Cop1State = CopState.DEAD;
@@ -224,10 +255,10 @@ public class GamePreview : Control
         {
             var rect = new RoundedRect(
                 new Rect(-NoteTargetX - 120, TopLaneY + 20, 60, -TopLaneY + BottomLaneY - 40), 15);
-            dc.DrawRectangle(_editorBackgroundBrush, new Pen(_accentBrush, 5), rect);
-            dc.DrawEllipse(_accentBrush, null, new Point(-NoteTargetX - 78, TopLaneY + 45), 6, 6);
-            dc.DrawEllipse(_accentBrush, null, new Point(-NoteTargetX - 102, TopLaneY + 45), 6, 6);
-            dc.DrawArc(null, new Pen(_accentBrush, 5), new Point(-NoteTargetX - 90, TopLaneY + 55),
+            dc.DrawRectangle(Brushes.Transparent, new Pen(_copBrush, 5), rect);
+            dc.DrawEllipse(_copBrush, null, new Point(-NoteTargetX - 78, TopLaneY + 45), 6, 6);
+            dc.DrawEllipse(_copBrush, null, new Point(-NoteTargetX - 102, TopLaneY + 45), 6, 6);
+            dc.DrawArc(null, new Pen(_copBrush, 5), new Point(-NoteTargetX - 90, TopLaneY + 55),
                        20, 30, 20, 160);
         }
         if (Cop1State == CopState.RIGHT || Cop2State == CopState.RIGHT ||
@@ -235,10 +266,10 @@ public class GamePreview : Control
         {
             var rect = new RoundedRect(
                 new Rect(NoteTargetX + 60, TopLaneY + 20, 60, -TopLaneY + BottomLaneY - 40), 15);
-            dc.DrawRectangle(_editorBackgroundBrush, new Pen(_accentBrush, 5), rect);
-            dc.DrawEllipse(_accentBrush, null, new Point(NoteTargetX + 78, TopLaneY + 45), 6, 6);
-            dc.DrawEllipse(_accentBrush, null, new Point(NoteTargetX + 102, TopLaneY + 45), 6, 6);
-            dc.DrawArc(null, new Pen(_accentBrush, 5), new Point(NoteTargetX + 90, TopLaneY + 55),
+            dc.DrawRectangle(Brushes.Transparent, new Pen(_copBrush, 5), rect);
+            dc.DrawEllipse(_copBrush, null, new Point(NoteTargetX + 78, TopLaneY + 45), 6, 6);
+            dc.DrawEllipse(_copBrush, null, new Point(NoteTargetX + 102, TopLaneY + 45), 6, 6);
+            dc.DrawArc(null, new Pen(_copBrush, 5), new Point(NoteTargetX + 90, TopLaneY + 55),
                        20, 30, 20, 160);
         }
         
@@ -295,22 +326,32 @@ public class GamePreview : Control
             viewableHeight = PreviewHeight - 60;
         }
         
-        dc.DrawRectangle(null, new Pen(_viewableAreaBrush, 5),
+        dc.DrawRectangle(null, new Pen(_viewableAreaOutlineBrush, _viewableAreaOutlineThickness),
                          new Rect(viewableX, viewableY, viewableWidth, viewableHeight));
 
         if (viewableZoomedOut && Config.Settings.EnhancedPreview)
         {
             var shape = _directionIndicatorShape.Clone();
+            var transform = new TransformGroup
+            {
+                Children =
+                {
+                    new ScaleTransform(_cameraArrowScale, _cameraArrowScale)
+                }
+            };
             if (viewableNotesFromRight)
             {
-                shape.Transform = new RotateTransform(180);
+                transform.Children.Add(new RotateTransform(180));
             }
-            dc.DrawGeometry(_directionIndicatorBrush, null, shape);
+            shape.Transform = transform;
+            
+            dc.DrawGeometry(_cameraArrowBrush, null, shape);
         }
         
         positionOffset.Dispose();
-        dc.DrawRectangle(null, new Pen(_accentBrush, 5),
-                         new Rect(0, 0, PreviewWidth, PreviewHeight));
+        // dc.DrawRectangle(null, new Pen(_outlineBrush, _outlineThickness),
+        //                  new RoundedRect(new Rect(0, 0, PreviewWidth, PreviewHeight),
+        //                                  _cornerRadius));
         
         clip.Dispose();
     }

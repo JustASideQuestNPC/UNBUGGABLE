@@ -123,6 +123,26 @@ public class LineThemeJson
     public double Thickness { get; set; } = 0;
 }
 
+public class NoteLaneThemesJson
+{
+    [JsonRequired][JsonPropertyName("topColor")]
+    public string TopColor { get; set; } = "";
+    [JsonRequired][JsonPropertyName("topWidth")]
+    public double TopWidth { get; set; } = 0;
+    [JsonRequired][JsonPropertyName("bottomColor")]
+    public string BottomColor { get; set; } = "";
+    [JsonRequired][JsonPropertyName("bottomWidth")]
+    public double BottomWidth { get; set; } = 0;
+    [JsonRequired][JsonPropertyName("centerColor")]
+    public string CenterColor { get; set; } = "";
+    [JsonRequired][JsonPropertyName("centerWidth")]
+    public double CenterWidth { get; set; } = 0;
+    [JsonRequired][JsonPropertyName("cameraColor")]
+    public string CameraColor { get; set; } = "";
+    [JsonRequired][JsonPropertyName("cameraWidth")]
+    public double CameraWidth { get; set; } = 0;
+}
+
 public class NoteViewerThemeJson : ElementThemeJson
 {
     public class LaneNumberThemeJson
@@ -176,6 +196,8 @@ public class NoteViewerThemeJson : ElementThemeJson
     [JsonRequired][JsonPropertyName("deleteDragColor")]
     public string DeleteDragColor { get; set; } = "";
     
+    [JsonRequired][JsonPropertyName("noteLanes")]
+    public NoteLaneThemesJson NoteLanes { get; set; } = new();
     [JsonRequired][JsonPropertyName("laneNumbers")]
     public LaneNumberThemeJson LaneNumbers { get; set; } = new();
     [JsonRequired][JsonPropertyName("bpmChange")]

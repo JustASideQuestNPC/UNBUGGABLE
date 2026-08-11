@@ -13,7 +13,8 @@ public static class Utils
 {
     public static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        WriteIndented = true
     };
     
     public static void DrawOutlinedText(this DrawingContext dc, FormattedText text, Point origin,

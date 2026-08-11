@@ -87,6 +87,24 @@ public class HoldNote : NoteBase
         };
     }
 
+    public override bool MouseOverTail()
+    {
+        if (base.MouseOverTail())
+        {
+            return true;
+        }
+
+        if (Type == NoteType.DOUBLE && Config.Settings.EnhancedPreview)
+        {
+            return new Rect(
+                NoteViewer.GetNoteX(Lane == NoteLane.TOP ? NoteLane.BOTTOM : NoteLane.TOP) - 40,
+                NoteViewer.TimeToScreenCoords(EndTime) - 12, 80,
+                24).ContainsPoint(ChartBuilder.MousePosition);
+        }
+
+        return false;
+    }
+
     public override void Render(DrawingContext dc, bool selected)
     {
         var styles = Type == NoteType.HOLD ? HoldStyles : DoubleStyles;
@@ -108,7 +126,7 @@ public class HoldNote : NoteBase
                          new Rect(x - 16, startY, 32, endY - startY));
 
         // also show where doubles will land
-        if (Type == NoteType.DOUBLE)
+        if (Type == NoteType.DOUBLE && Config.Settings.EnhancedPreview)
         {
             var endX = NoteViewer.GetNoteX(Lane == NoteLane.TOP ? NoteLane.BOTTOM : NoteLane.TOP);
             dc.DrawRectangle(styles.TailFillBrush, tailPen, new Rect(endX - 40, endY - 12, 80, 24));

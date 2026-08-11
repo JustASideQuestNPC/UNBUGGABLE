@@ -11,7 +11,7 @@
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/icon.ico"
         Title="UNBUGGABLE"
-        Background="{DynamicResource EditorBackground}"
+        Background="{DynamicResource MainWindow.BackgroundColor}"
         Width="1600" Height="900" LostFocus="OnWindowLoseFocus">
 
     <Design.DataContext>
@@ -29,12 +29,20 @@
                                 Background="Transparent" OverlayBackground="Transparent">
         <DockPanel Name="Container">
             <StackPanel DockPanel.Dock="Top" Name="TopButtonBar" Orientation="Horizontal"
-                        Margin="0 0" Background="{DynamicResource WindowBackgroundPrimary}"
+                        Margin="0 0" Background="{DynamicResource TopBar.BackgroundColor}"
                         Height="50">
                 
                 <Button Classes="SquareIconButton" ToolTip.Tip="Reload Config File"
                         Command="{Binding TryReloadConfigCommand}" Focusable="False">
                     <materialIcons:MaterialIcon Kind="Reload" />
+                    <Button.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Open config folder"
+                                      Command="{Binding OpenConfigFolderCommand}" />
+                            <MenuItem Header="Open themes folder"
+                                      Command="{Binding OpenThemesFolderCommand}" />
+                        </ContextMenu>
+                    </Button.ContextMenu>
                 </Button>
                     
                 <Panel Classes="Spacer" />
@@ -81,7 +89,7 @@
                     <ToolTip.Tip>Music Volume</ToolTip.Tip>
                 </Slider>
                 <Panel Classes="Spacer" Width="5" />
-                <TextBlock FontSize="15" Foreground="{DynamicResource Accent}"
+                <TextBlock FontSize="15" Foreground="{DynamicResource TopBar.Sliders.IconColor}"
                            Text="{Binding #MusicVolumeSlider.Value, StringFormat=\{0:000\}%}" />
                 
                 <Panel Classes="Spacer" />
@@ -95,7 +103,7 @@
                     <ToolTip.Tip>SFX Volume</ToolTip.Tip>
                 </Slider>
                 <Panel Classes="Spacer" Width="5" />
-                <TextBlock FontSize="15" Foreground="{DynamicResource Accent}"
+                <TextBlock FontSize="15" Foreground="{DynamicResource TopBar.Sliders.IconColor}"
                            Text="{Binding #SfxVolumeSlider.Value, StringFormat={}{0:000}%}" />
                 <Panel Classes="Spacer" Width="5" />
                 
@@ -110,7 +118,7 @@
                     <ToolTip.Tip>Playback Speed</ToolTip.Tip>
                 </Slider>
                 <Panel Classes="Spacer" Width="5" />
-                <TextBlock FontSize="15" Foreground="{DynamicResource Accent}"
+                <TextBlock FontSize="15" Foreground="{DynamicResource TopBar.Sliders.IconColor}"
                            Text="{Binding #PlaySpeedSlider.Value, StringFormat={}{0:000}%}" />
                 <Panel Classes="Spacer" Width="5" />
                 <Button Classes="SquareIconButton" ToolTip.Tip="Reset to 100% Speed"
@@ -156,19 +164,27 @@
                                 <Grid RowDefinitions="Auto Auto Auto Auto"
                                       ColumnDefinitions="Auto Auto" ColumnSpacing="10">
                                     <TextBlock Grid.Row="0" Grid.Column="0" Classes="BigText"
-                                               Foreground="{DynamicResource Cop1}">1:</TextBlock>
+                                               Foreground="{DynamicResource Notes.Cop1.FillColor}">
+                                        1:
+                                    </TextBlock>
                                     <TextBlock Grid.Row="0" Grid.Column="1" Classes="BigText" 
                                                Text="{Binding Cop1State}" />
                                     <TextBlock Grid.Row="1" Grid.Column="0" Classes="BigText"
-                                               Foreground="{DynamicResource Cop2}">2:</TextBlock>
+                                               Foreground="{DynamicResource Notes.Cop2.FillColor}">
+                                        2:
+                                    </TextBlock>
                                     <TextBlock Grid.Row="1" Grid.Column="1" Classes="BigText" 
                                                Text="{Binding Cop2State}" />
                                     <TextBlock Grid.Row="2" Grid.Column="0" Classes="BigText"
-                                               Foreground="{DynamicResource Cop3}">3:</TextBlock>
+                                               Foreground="{DynamicResource Notes.Cop3.FillColor}">
+                                        3:
+                                    </TextBlock>
                                     <TextBlock Grid.Row="2" Grid.Column="1" Classes="BigText" 
                                                Text="{Binding Cop3State}" />
                                     <TextBlock Grid.Row="3" Grid.Column="0" Classes="BigText"
-                                               Foreground="{DynamicResource Cop4}">4:</TextBlock>
+                                               Foreground="{DynamicResource Notes.Cop4.FillColor}">
+                                        4:
+                                    </TextBlock>
                                     <TextBlock Grid.Row="3" Grid.Column="1" Classes="BigText" 
                                                Text="{Binding Cop4State}" />
                                 </Grid>
@@ -218,10 +234,15 @@
                             </StackPanel>
                         </StackPanel>
                         
-                        <Border Grid.Column="2" BorderBrush="{DynamicResource Accent}"
-                                BorderThickness="4" Padding="0" Margin="0">
+                        <Border Grid.Column="2"
+                                BorderBrush="{DynamicResource PlacementPriorityList.OutlineColor}"
+                                BorderThickness="{DynamicResource PlacementPriorityList.OutlineThickness}"
+                                CornerRadius="{DynamicResource PlacementPriorityList.CornerRadius}"
+                                Padding="0" Margin="0">
                             <StackPanel Orientation="Vertical">
-                                <TextBlock Classes="SmallText" Margin="10 5 0 0">
+                                <TextBlock Classes="SmallText" Margin="10 5 0 0"
+                                           Foreground="{DynamicResource PlacementPriorityList.TitleColor}"
+                                           FontSize="{DynamicResource PlacementPriorityList.TitleSize}">
                                     placement priority
                                 </TextBlock>
                                 <ScrollViewer>
@@ -248,17 +269,20 @@
                                         <ListBox.ItemTemplate>
                                             <DataTemplate>
                                                 <Border Padding="0 2"
-                                                        BorderBrush="{DynamicResource Accent}"
-                                                        BorderThickness="2" CornerRadius="4"
-                                                        Background="{DynamicResource EditorBackground}">
+                                                        BorderBrush="{DynamicResource PlacementPriorityList.ListEntries.OutlineColor}"
+                                                        BorderThickness="{DynamicResource PlacementPriorityList.ListEntries.OutlineThickness}"
+                                                        CornerRadius="{DynamicResource PlacementPriorityList.ListEntries.CornerRadius}"
+                                                        Background="{DynamicResource PlacementPriorityList.ListEntries.BackgroundColor}">
                                                     <Grid Margin="0" ColumnDefinitions="*, 25"
                                                           RowDefinitions="Auto">
                                                         <TextBlock Classes="BigText"
                                                                    Margin="5 0"
+                                                                   Foreground="{DynamicResource PlacementPriorityList.ListEntries.TextColor}"
+                                                                   FontSize="{DynamicResource PlacementPriorityList.ListEntries.TextSize}"
                                                                    Text="{Binding DisplayName}" />
                                                         <materialIcons:MaterialIcon Grid.Column="1"
                                                                 Kind="ReorderHorizontal"
-                                                                Foreground="{DynamicResource Accent}"
+                                                                Foreground="{DynamicResource PlacementPriorityList.ListEntries.ReorderIconColor}"
                                                                 VerticalAlignment="Stretch"
                                                                 HorizontalAlignment="Stretch" />
                                                     </Grid>
@@ -273,14 +297,18 @@
                     
                     <!-- Placeholder for custom graphics renderers. -->
                     <!-- Song Preview -->
-                    <Border Grid.Row="1" Grid.Column="1" BorderBrush="{DynamicResource Accent}"
-                            BorderThickness="4">
+                    <Border Grid.Row="1" Grid.Column="1"
+                            BorderBrush="{DynamicResource GamePreview.OutlineColor}"
+                            BorderThickness="{DynamicResource GamePreview.OutlineThickness}"
+                            CornerRadius="{DynamicResource GamePreview.CornerRadius}">
                         <views:GamePreview Name="GamePreview" />
                     </Border>
                     
                     <!-- Note Placement -->
                     <Border Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" 
-                            BorderBrush="{DynamicResource Accent}" BorderThickness="4"
+                            BorderBrush="{DynamicResource NoteViewer.OutlineColor}"
+                            BorderThickness="{DynamicResource NoteViewer.OutlineThickness}"
+                            CornerRadius="{DynamicResource NoteViewer.CornerRadius}"
                             PointerMoved="OnNoteViewerPointerMove"
                             PointerPressed="OnNoteViewerPointerPress"
                             PointerReleased="OnNoteViewerPointerRelease">

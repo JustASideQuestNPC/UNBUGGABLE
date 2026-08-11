@@ -121,19 +121,11 @@ public static class ChartBuilder
         // tail selection only works if you don't drag select
         if (notes.Count == 0 && Config.Settings.HoldTailSelect != "none")
         {
+            List<NoteBase> clickedNotes = [];
             if (Config.Settings.HoldTailSelect == "all")
             {
-                if (InputManager.CtrlPressed)
-                {
-                    SelectedNotes.AddRange(Chart.NonMarkerNotes.Where(
-                                               n => !n.Instant && n.MouseOverTail() &&
-                                                    !SelectedNotes.Contains(n)).ToList());
-                }
-                else
-                {
-                    SelectedNotes = Chart.NonMarkerNotes.Where(n => !n.Instant && n.MouseOverTail())
-                                         .ToList();
-                }
+                clickedNotes = Chart.NonMarkerNotes.Where(n => !n.Instant && n.MouseOverTail())
+                                    .ToList();
             }
             else
             {
@@ -148,17 +140,24 @@ public static class ChartBuilder
                 
                 if (note != null)
                 {
-                    if (InputManager.CtrlPressed)
-                    {
-                        if (!SelectedNotes.Remove(note))
-                        {
-                            SelectedNotes.Add(note);
-                        }
-                    }
-                    else
-                    {
-                        SelectedNotes = [note];
-                    }
+                    clickedNotes.Add(note);
+                }
+            }
+
+            if (clickedNotes.Count > 0)
+            {
+                if (RightMouseDrag)
+                {
+                    ChartBuilderCommandInvoker.Execute(new DeleteNotesCommand(clickedNotes));
+                }
+                else if (InputManager.CtrlPressed)
+                {
+                    SelectedNotes.AddRange(clickedNotes.Where(n => !SelectedNotes.Contains(n))
+                                                       .ToList());
+                }
+                else
+                {
+                    SelectedNotes = clickedNotes;
                 }
             }
         }
@@ -750,15 +749,10 @@ public static class ChartBuilder
             flag == 'n'
                 ? $"Noisz spawn {(newValue ? "locked" : "unlocked")}"
                 : $"{char.ToUpper(flag)} flag {(newValue ? "locked" : "unlocked")}");
-        var lockedFlagsText = (LockedFlags.N ? "N" : "") +
-                              (LockedFlags.C ? "C" : "") +
-                              (LockedFlags.F ? "F" : "") +
-                              (LockedFlags.W ? "W" : "");
-        if (lockedFlagsText != "")
-        {
-            lockedFlagsText = "none";
-        }
-        App.MainWindowViewModel.LockedFlagsText = lockedFlagsText;
+        App.MainWindowViewModel.LockedFlagsText = (LockedFlags.N ? "N" : "") +
+                                                  (LockedFlags.C ? "C" : "") +
+                                                  (LockedFlags.F ? "F" : "") +
+                                                  (LockedFlags.W ? "W" : "");
     }
 
     private static void CheckForNoteOperation(NoteLane lane, long start, long end)

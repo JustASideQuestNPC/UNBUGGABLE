@@ -278,6 +278,11 @@ public static partial class Chart
     
     private static bool _canAutosave = false;
     
+    private static readonly JsonSerializerOptions MetadataJsonSerializerOptions = new()
+    {
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
+    
     [GeneratedRegex(@"[0-9]+,[0-9]+.[0-9]+,[0-9]+,[0-9]+,[0-9]+,[0-9]+,[0-9]+,[0-9]+")]
     private static partial Regex TimingPointRegex();
 
@@ -1747,8 +1752,10 @@ public static partial class Chart
             {"SongLength", Length / 1000},
             {"CoverArt", Metadata.CoverArtistName}
         };
+        // this has to use its own serializer options because chart files don't load if the tag json
+        // is pretty printed
         await writer.WriteLineAsync(
-            $"Tags:{JsonSerializer.Serialize(tags, Utils.JsonSerializerOptions)}");
+            $"Tags:{JsonSerializer.Serialize(tags, MetadataJsonSerializerOptions)}");
     }
     
     private static async Task WriteTimingPoints(StreamWriter writer)

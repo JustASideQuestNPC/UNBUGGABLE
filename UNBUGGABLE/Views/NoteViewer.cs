@@ -12,6 +12,17 @@ using UNBUGGABLE.Resources;
 
 namespace UNBUGGABLE.Views;
 
+internal class LineStyle
+{
+    public SolidColorBrush Color;
+    public double Thickness;
+}
+
+internal class LabeledLineStyle : LineStyle
+{
+    public double TextSize;
+}
+
 public class NoteViewer : Control
 {
     public static double ViewerWidth => 560;
@@ -26,95 +37,120 @@ public class NoteViewer : Control
     // how many pixels a single second is on the viewer at 1.0 zoom
     private const int PixelsPerSecond = 150;
 
-    private readonly SolidColorBrush _singleNoteBackgroundBrush;
-    private readonly SolidColorBrush _freestyleBackgroundBrush;
-    private readonly SolidColorBrush _cameraSwapBackgroundBrush;
-    private readonly SolidColorBrush _currentTimeLineBrush;
-    private readonly SolidColorBrush _subBeatLineBrush;
-    private readonly SolidColorBrush _fullBeatLineBrush;
-    private readonly SolidColorBrush _selectDragOverlayBrush;
-    private readonly SolidColorBrush _deleteDragOverlayBrush;
+    private static SolidColorBrush _backgroundBrush;
+    private static SolidColorBrush _outlineBrush;
+    private static SolidColorBrush _selectDragBrush;
+    private static SolidColorBrush _deleteDragBrush;
+    private static SolidColorBrush _laneNumberFillBrush;
+    private static SolidColorBrush _laneNumberOutlineBrush;
     
-    private readonly SolidColorBrush _breakpointBrush =
-        (SolidColorBrush)App.Current.Resources["Breakpoint"];
-    private readonly SolidColorBrush _editorBackgroundBrush =
-        (SolidColorBrush)App.Current.Resources["EditorBackground"];
-    private readonly SolidColorBrush _accentBrush =
-        (SolidColorBrush)App.Current.Resources["Accent"];
-    private readonly SolidColorBrush _bpmChangeBrush =
-        (SolidColorBrush)App.Current.Resources["BpmChange"];
-    private readonly SolidColorBrush _laneNumberFillBrush =
-        (SolidColorBrush)App.Current.Resources["TextPrimary"];
-    private readonly SolidColorBrush _labelBrush = (SolidColorBrush)App.Current.Resources["Label"];
+    private static SolidColorBrush _topLaneBackgroundBrush;
+    private static SolidColorBrush _centerLaneBackgroundBrush;
+    private static SolidColorBrush _bottomLaneBackgroundBrush;
+    private static SolidColorBrush _cameraLaneBackgroundBrush;
     
-    private readonly Pen _textOutlinePen;
+    private static double _topLaneWidth;
+    private static double _bottomLaneWidth;
+    private static double _centerLaneWidth;
+    private static double _cameraLaneWidth;
 
-    private readonly Typeface _numberTypeface =
+    private static double _outlineThickness;
+    private static double _laneNumberOutlineThickness;
+    private static double _laneNumberTextSize;
+    private static double _breakpointArrowScale;
+    private static double _cornerRadius;
+
+    private static LabeledLineStyle _fullBeatSnapLineStyle;
+    private static LabeledLineStyle _bpmChangeStyle;
+    private static LabeledLineStyle _labelStyle;
+    private static LineStyle _subBeatSnapLineStyle;
+    private static LineStyle _currentTimeLineStyle;
+    private static LineStyle _breakpointLineStyle;
+
+    private static Typeface _numberTypeface =
         new((FontFamily)App.Current.Resources["RobotoMonoBold"]);
-    private readonly Typeface _beatLineTypeface =
-        new((FontFamily)App.Current.Resources["RobotoMono"]);
+    private static Typeface _beatLineTypeface = new((FontFamily)App.Current.Resources["RobotoMono"]);
     
-    private readonly Geometry _breakpointShape = new PolylineGeometry([
+    private static Geometry _breakpointShape = new PolylineGeometry([
         new Point(-12, -10),
         new Point(  0,  0),
         new Point(-12,  10)
     ], true);
-    
-    public NoteViewer()
-    {
-        var singleNoteBrush = (SolidColorBrush)App.Current.Resources["SingleNote"];
-        _singleNoteBackgroundBrush = new SolidColorBrush(singleNoteBrush.Color)
-        {
-            Opacity = 0.1
-        };
-        
-        var freestyleBrush = (SolidColorBrush)App.Current.Resources["Freestyle"];
-        _freestyleBackgroundBrush = new SolidColorBrush(freestyleBrush.Color)
-        {
-            Opacity = 0.1
-        };
-        
-        var cameraSwapBrush = (SolidColorBrush)App.Current.Resources["CameraChange"];
-        _cameraSwapBackgroundBrush = new SolidColorBrush(cameraSwapBrush.Color)
-        {
-            Opacity = 0.1
-        };
-        
-        var fullBeatLineBrush = (SolidColorBrush)App.Current.Resources["FullBeatSnapLine"];
-        _fullBeatLineBrush = new SolidColorBrush(fullBeatLineBrush.Color)
-        {
-            Opacity = 0.6
-        };
-        
-        var subBeatLineBrush = (SolidColorBrush)App.Current.Resources["SubBeatSnapLine"];
-        _subBeatLineBrush = new SolidColorBrush(subBeatLineBrush.Color)
-        {
-            Opacity = 0.6
-        };
-        
-        var currentTimeLineBrush = (SolidColorBrush)App.Current.Resources["CurrentTimeLine"];
-        _currentTimeLineBrush = new SolidColorBrush(currentTimeLineBrush.Color)
-        {
-            Opacity = 0.4
-        };
-        
-        var selectDragOverlayBrush = (SolidColorBrush)App.Current.Resources["SelectDragOverlay"];
-        _selectDragOverlayBrush = new SolidColorBrush(selectDragOverlayBrush.Color)
-        {
-            Opacity = 0.4
-        };
-        
-        var deleteDragOverlayBrush = (SolidColorBrush)App.Current.Resources["DeleteDragOverlay"];
-        _deleteDragOverlayBrush = new SolidColorBrush(deleteDragOverlayBrush.Color)
-        {
-            Opacity = 0.4
-        };
-        
-        _textOutlinePen = new Pen((SolidColorBrush)App.Current.Resources["TextDark"], 2);
-        
-        UpdateNoteColumnPositions();
-    }
 
+    public static void UpdateStyles()
+    {
+        UpdateNoteColumnPositions();
+        
+        _backgroundBrush = (SolidColorBrush)App.Current.Resources["NoteViewer.BackgroundColor"];
+        _outlineBrush = (SolidColorBrush)App.Current.Resources["NoteViewer.OutlineColor"];
+        _selectDragBrush = (SolidColorBrush)App.Current.Resources["NoteViewer.SelectDragColor"];
+        _deleteDragBrush = (SolidColorBrush)App.Current.Resources["NoteViewer.DeleteDragColor"];
+        _laneNumberFillBrush =
+            (SolidColorBrush)App.Current.Resources["NoteViewer.LaneNumbers.Color"];
+        _laneNumberOutlineBrush =
+            (SolidColorBrush)App.Current.Resources["NoteViewer.LaneNumbers.OutlineColor"];
+        
+        _topLaneBackgroundBrush =
+            (SolidColorBrush)App.Current.Resources["NoteViewer.NoteLanes.TopColor"];
+        _bottomLaneBackgroundBrush =
+            (SolidColorBrush)App.Current.Resources["NoteViewer.NoteLanes.BottomColor"];
+        _centerLaneBackgroundBrush =
+            (SolidColorBrush)App.Current.Resources["NoteViewer.NoteLanes.CenterColor"];
+        _cameraLaneBackgroundBrush =
+            (SolidColorBrush)App.Current.Resources["NoteViewer.NoteLanes.CameraColor"];
+        
+        _outlineThickness =
+            ((Thickness)App.Current.Resources["NoteViewer.OutlineThickness"]).Top;
+        _laneNumberOutlineThickness =
+            ((Thickness)App.Current.Resources["NoteViewer.LaneNumbers.OutlineThickness"]).Top;
+        _laneNumberTextSize =
+            (double)App.Current.Resources["NoteViewer.LaneNumbers.TextSize"];
+        _breakpointArrowScale = (double)App.Current.Resources["NoteViewer.Breakpoint.ArrowScale"];
+        
+        // corner radius is always the same on all corners
+        _cornerRadius = ((CornerRadius)App.Current.Resources["NoteViewer.CornerRadius"]).TopLeft;
+        
+        _topLaneWidth = (double)App.Current.Resources["NoteViewer.NoteLanes.TopWidth"];
+        _bottomLaneWidth = (double)App.Current.Resources["NoteViewer.NoteLanes.BottomWidth"];
+        _centerLaneWidth = (double)App.Current.Resources["NoteViewer.NoteLanes.CenterWidth"];
+        _cameraLaneWidth = (double)App.Current.Resources["NoteViewer.NoteLanes.CameraWidth"];
+
+        _fullBeatSnapLineStyle = new LabeledLineStyle
+        {
+            Color = (SolidColorBrush)App.Current.Resources["NoteViewer.FullBeatSnapLine.Color"],
+            Thickness = (double)App.Current.Resources["NoteViewer.FullBeatSnapLine.Thickness"],
+            TextSize = (double)App.Current.Resources["NoteViewer.FullBeatSnapLine.TextSize"]
+        };
+        _bpmChangeStyle = new LabeledLineStyle
+        {
+            Color = (SolidColorBrush)App.Current.Resources["NoteViewer.BpmChange.Color"],
+            Thickness = (double)App.Current.Resources["NoteViewer.BpmChange.LineThickness"],
+            TextSize = (double)App.Current.Resources["NoteViewer.BpmChange.TextSize"]
+        };
+        _labelStyle = new LabeledLineStyle
+        {
+            Color = (SolidColorBrush)App.Current.Resources["NoteViewer.Label.Color"],
+            Thickness = (double)App.Current.Resources["NoteViewer.Label.LineThickness"],
+            TextSize = (double)App.Current.Resources["NoteViewer.Label.TextSize"]
+        };
+
+        _subBeatSnapLineStyle = new LineStyle
+        {
+            Color = (SolidColorBrush)App.Current.Resources["NoteViewer.SubBeatSnapLine.Color"],
+            Thickness = (double)App.Current.Resources["NoteViewer.SubBeatSnapLine.Thickness"]
+        };
+        _currentTimeLineStyle = new LineStyle
+        {
+            Color = (SolidColorBrush)App.Current.Resources["NoteViewer.CurrentTimeLine.Color"],
+            Thickness = (double)App.Current.Resources["NoteViewer.CurrentTimeLine.Thickness"]
+        };
+        _breakpointLineStyle = new LineStyle
+        {
+            Color = (SolidColorBrush)App.Current.Resources["NoteViewer.Breakpoint.Color"],
+            Thickness = (double)App.Current.Resources["NoteViewer.Breakpoint.Thickness"]
+        };
+    }
+    
     public static void UpdateNoteColumnPositions()
     {
         List<int> columnXPositions = [208, 306, 404, 502];
@@ -236,19 +272,23 @@ public class NoteViewer : Control
     {
         ViewerHeight = Bounds.Size.Height;
         
-        var clip = dc.PushClip(new Rect(0, 0, Bounds.Size.Width, Bounds.Size.Height));
+        var clip = dc.PushClip(
+            new RoundedRect(new Rect(0, 0, Bounds.Size.Width, Bounds.Size.Height), _cornerRadius));
         
-        dc.DrawRectangle(_editorBackgroundBrush, null, new Rect(0, 0, ViewerWidth, ViewerHeight));
+        dc.DrawRectangle(_backgroundBrush, null, new Rect(0, 0, ViewerWidth, ViewerHeight));
         
         // note lanes
-        dc.DrawRectangle(_singleNoteBackgroundBrush, null,
-                         new Rect(_topLaneX - 16, 0, 32, ViewerHeight));
-        dc.DrawRectangle(_freestyleBackgroundBrush, null,
-                         new Rect(_centerLaneX - 16, 0, 32, ViewerHeight));
-        dc.DrawRectangle(_singleNoteBackgroundBrush, null,
-                         new Rect(_bottomLaneX - 16, 0, 32, ViewerHeight));
-        dc.DrawRectangle(_cameraSwapBackgroundBrush, null,
-                         new Rect(_cameraLaneX - 16, 0, 32, ViewerHeight));
+        dc.DrawRectangle(_topLaneBackgroundBrush, null,
+                         new Rect(_topLaneX - _topLaneWidth / 2, 0, _topLaneWidth, ViewerHeight));
+        dc.DrawRectangle(_bottomLaneBackgroundBrush, null,
+                         new Rect(_bottomLaneX - _bottomLaneWidth / 2, 0, _bottomLaneWidth,
+                                  ViewerHeight));
+        dc.DrawRectangle(_centerLaneBackgroundBrush, null,
+                         new Rect(_centerLaneX - _centerLaneWidth / 2, 0, _centerLaneWidth,
+                                  ViewerHeight));
+        dc.DrawRectangle(_cameraLaneBackgroundBrush, null,
+                         new Rect(_cameraLaneX - _cameraLaneWidth / 2, 0, _cameraLaneWidth,
+                                  ViewerHeight));
         
         // full beat lines
         // Trace.WriteLine(Chart.SongLoaded);
@@ -266,7 +306,7 @@ public class NoteViewer : Control
                                                                          visibleRangeEnd))
             {
                 var adjustedTime = subBeatTime - visibleRangeStart;
-                dc.DrawLine(new Pen(_subBeatLineBrush, 3),
+                dc.DrawLine(new Pen(_subBeatSnapLineStyle.Color, _subBeatSnapLineStyle.Thickness),
                             new Point(150, adjustedTime * scaledPixelsPerMs),
                             new Point(ViewerWidth, adjustedTime * scaledPixelsPerMs));
             }
@@ -279,7 +319,7 @@ public class NoteViewer : Control
         }
         
         // current time
-        dc.DrawLine(new Pen(_currentTimeLineBrush, 8),
+        dc.DrawLine(new Pen(_currentTimeLineStyle.Color, _currentTimeLineStyle.Thickness),
                     new Point(150, Config.Settings.CurrentTimePosition),
                     new Point(ViewerWidth, Config.Settings.CurrentTimePosition));
         
@@ -298,36 +338,37 @@ public class NoteViewer : Control
         var bottomLaneKeybind = Utils.GetReadableKeybindString(Config.Keybinds.PlaceBottomLane[0]);
         var centerLaneKeybind = Utils.GetReadableKeybindString(Config.Keybinds.PlaceCenterLane[0]);
         var cameraLaneKeybind = Utils.GetReadableKeybindString(Config.Keybinds.PlaceCameraLane[0]);
+        var laneNumberPen = new Pen(_laneNumberOutlineBrush, _laneNumberOutlineThickness);
         
         // brush color doesn't matter because it's ignored by DrawOutlinedText
         var topLaneText = new FormattedText(topLaneKeybind, CultureInfo.CurrentCulture,
-                                            FlowDirection.LeftToRight, _numberTypeface, 40,
-                                            Brushes.White);
+                                            FlowDirection.LeftToRight, _numberTypeface,
+                                            _laneNumberTextSize, Brushes.White);
         var centerLaneText = new FormattedText(centerLaneKeybind, CultureInfo.CurrentCulture,
-                                               FlowDirection.LeftToRight, _numberTypeface, 40,
-                                               Brushes.White);
+                                               FlowDirection.LeftToRight, _numberTypeface,
+                                               _laneNumberTextSize, Brushes.White);
         var bottomLaneText = new FormattedText(bottomLaneKeybind, CultureInfo.CurrentCulture,
-                                               FlowDirection.LeftToRight, _numberTypeface, 40,
-                                               Brushes.White);
+                                               FlowDirection.LeftToRight, _numberTypeface,
+                                               _laneNumberTextSize, Brushes.White);
         var cameraLaneText = new FormattedText(cameraLaneKeybind, CultureInfo.CurrentCulture,
-                                               FlowDirection.LeftToRight, _numberTypeface, 40,
-                                               Brushes.White);
+                                               FlowDirection.LeftToRight, _numberTypeface,
+                                               _laneNumberTextSize, Brushes.White);
         dc.DrawOutlinedText(topLaneText, new Point(_topLaneX - topLaneText.Width / 2,
                                                    Config.Settings.CurrentTimePosition - 2 -
                                                    topLaneText.Height / 2),
-                            _laneNumberFillBrush, _textOutlinePen);
+                            _laneNumberFillBrush, laneNumberPen);
         dc.DrawOutlinedText(centerLaneText, new Point(_centerLaneX - centerLaneText.Width / 2,
                                                       Config.Settings.CurrentTimePosition - 2 -
                                                       centerLaneText.Height / 2),
-                            _laneNumberFillBrush, _textOutlinePen);
+                            _laneNumberFillBrush, laneNumberPen);
         dc.DrawOutlinedText(bottomLaneText, new Point(_bottomLaneX - bottomLaneText.Width / 2,
                                                       Config.Settings.CurrentTimePosition - 2 -
                                                       bottomLaneText.Height / 2),
-                            _laneNumberFillBrush, _textOutlinePen);
+                            _laneNumberFillBrush, laneNumberPen);
         dc.DrawOutlinedText(cameraLaneText, new Point(_cameraLaneX - cameraLaneText.Width / 2,
                                                       Config.Settings.CurrentTimePosition - 2 -
                                                       cameraLaneText.Height / 2),
-                            _laneNumberFillBrush, _textOutlinePen);
+                            _laneNumberFillBrush, laneNumberPen);
 
         if (ChartBuilder.BreakpointTime != -1000)
         {
@@ -348,14 +389,14 @@ public class NoteViewer : Control
             var bottom = Math.Max(startY, ChartBuilder.MousePosition.Y);
             var left = Math.Min(ChartBuilder.MouseDragStart.Value.X, ChartBuilder.MousePosition.X);
             var right = Math.Max(ChartBuilder.MouseDragStart.Value.X, ChartBuilder.MousePosition.X);
-            dc.DrawRectangle(ChartBuilder.RightMouseDrag ? _deleteDragOverlayBrush :
-                                  _selectDragOverlayBrush, null,
-                             new Rect(left, top, right - left, bottom - top));
+            dc.DrawRectangle(ChartBuilder.RightMouseDrag ? _deleteDragBrush : _selectDragBrush,
+                             null, new Rect(left, top, right - left, bottom - top));
         }
-        
-        dc.DrawRectangle(null, new Pen(_accentBrush, 5),
-                         new Rect(0, 0, ViewerWidth, ViewerHeight));
-        dc.DrawLine(new Pen(_accentBrush, 5), new Point(150, 0), new Point(150, ViewerHeight));
+
+        var outlinePen = new Pen(_outlineBrush, _outlineThickness);
+        // dc.DrawRectangle(null, outlinePen,
+        //                  new RoundedRect(new Rect(0, 0, ViewerWidth, ViewerHeight), _cornerRadius));
+        dc.DrawLine(outlinePen, new Point(150, 0), new Point(150, ViewerHeight));
         
         clip.Dispose();
     }
@@ -433,11 +474,13 @@ public class NoteViewer : Control
         var index = snapLine.Item2;
         
         var y = (time - visibleRangeStart) * scaledPixelsPerMs;
-        dc.DrawLine(new Pen(_fullBeatLineBrush, 3), new Point(150, y), new Point(ViewerWidth, y));
+        dc.DrawLine(new Pen(_fullBeatSnapLineStyle.Color, _fullBeatSnapLineStyle.Thickness),
+                    new Point(150, y), new Point(ViewerWidth, y));
         
         var beatNumberText = new FormattedText(index.ToString(), CultureInfo.CurrentCulture,
-                                               FlowDirection.RightToLeft, _beatLineTypeface, 16,
-                                               _fullBeatLineBrush);
+                                               FlowDirection.RightToLeft, _beatLineTypeface,
+                                               _fullBeatSnapLineStyle.TextSize,
+                                               _fullBeatSnapLineStyle.Color);
         dc.DrawText(beatNumberText, new Point(ViewerWidth - beatNumberText.Width - 10,
                                               y - beatNumberText.Height - 2));
     }
@@ -452,11 +495,12 @@ public class NoteViewer : Control
         }
         
         var text = new FormattedText(bpmRegion.Bpm.ToString("0.00"), CultureInfo.CurrentCulture,
-                                     FlowDirection.LeftToRight, _numberTypeface, 22,
-                                     _bpmChangeBrush);
+                                     FlowDirection.LeftToRight, _numberTypeface,
+                                     _bpmChangeStyle.TextSize, _bpmChangeStyle.Color);
         
         dc.DrawText(text, new Point(135 - text.Width, y - 2 - text.Height / 2));
-        dc.DrawLine(new Pen(_bpmChangeBrush, 5), new Point(150, y), new Point(ViewerWidth, y));
+        dc.DrawLine(new Pen(_bpmChangeStyle.Color, _bpmChangeStyle.Thickness), new Point(150, y),
+                    new Point(ViewerWidth, y));
     }
     
     private void RenderLabel(DrawingContext dc, Chart.Label label)
@@ -468,15 +512,17 @@ public class NoteViewer : Control
         }
 
         var formattedText = new FormattedText(label.Text, CultureInfo.CurrentCulture,
-                                              FlowDirection.LeftToRight, _numberTypeface, 22,
-                                              _labelBrush)
+                                              FlowDirection.LeftToRight, _numberTypeface,
+                                              _labelStyle.TextSize,
+                                              _labelStyle.Color)
         {
             MaxTextWidth = 120
         };
         
         dc.DrawText(formattedText,
                     new Point(135 - formattedText.Width, y - 2 - formattedText.Height / 2));
-        dc.DrawLine(new Pen(_labelBrush, 5), new Point(150, y), new Point(ViewerWidth, y));
+        dc.DrawLine(new Pen(_labelStyle.Color, _labelStyle.Thickness), new Point(150, y),
+                    new Point(ViewerWidth, y));
     }
 
     private void RenderBreakpoint(DrawingContext dc)
@@ -487,9 +533,17 @@ public class NoteViewer : Control
             return;
         }
         
-        _breakpointShape.Transform = new TranslateTransform(147, y);
-        dc.DrawGeometry(_breakpointBrush, null, _breakpointShape);
-        dc.DrawLine(new Pen(_breakpointBrush, 3), new Point(150, y), new Point(ViewerWidth, y));
+        _breakpointShape.Transform = new TransformGroup
+        {
+            Children =
+            {
+                new ScaleTransform(_breakpointArrowScale, _breakpointArrowScale),
+                new TranslateTransform(147, y)
+            }
+        };
+        dc.DrawGeometry(_breakpointLineStyle.Color, null, _breakpointShape);
+        dc.DrawLine(new Pen(_breakpointLineStyle.Color, _breakpointLineStyle.Thickness),
+                    new Point(150, y), new Point(ViewerWidth, y));
     }
 
     private void RenderPlacingNotes(DrawingContext dc)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -6,18 +7,20 @@ using Avalonia.Media;
 
 namespace UNBUGGABLE.Resources;
 
-public class ColorThemeException(string message) : Exception(message);
+// public class ColorThemeException(string message) : Exception(message);
 
 public static partial class ThemeUtils
 {
     [GeneratedRegex("^#(?:(?:[\\da-fA-F]{3}){1,2}|(?:[\\da-fA-F]{4}){1,2})$")]
     private static partial Regex HexColorRegex();
     
-    public static Color ParseColor(string hex, string keyName)
+    public static Color ParseColor(string hex, string keyName, ref List<string> errorMessages)
     {
         if (!HexColorRegex().IsMatch(hex))
         {
-            throw new ColorThemeException($"Invalid hex color for key {keyName}: {hex}");
+            errorMessages.Add($"Invalid hex color for key {keyName}: {hex}");
+            // what color we return here doesn't matter because the theme will get discarded anyway
+            return Colors.Transparent;
         }
         
         // for some godawful reason, avalonia uses #aarrggbb instead of #rrggbbaa, so now i have to
@@ -41,7 +44,7 @@ public static partial class ThemeUtils
     }
 }
 
-public class MainWindowTheme(MainWindowThemeJson json)
+public class MainWindowTheme(MainWindowThemeJson json, ref List<string> errorMessages)
 {
     public class EventIndicatorTheme
     {
@@ -49,24 +52,28 @@ public class MainWindowTheme(MainWindowThemeJson json)
         public readonly Color TextColor;
         public readonly double TextSize;
         
-        public EventIndicatorTheme(MainWindowThemeJson.EventIndicatorThemeJson json)
+        public EventIndicatorTheme(MainWindowThemeJson.EventIndicatorThemeJson json,
+            ref List<string> errorMessages)
         {
             BackgroundColor = ThemeUtils.ParseColor(json.BackgroundColor,
-                                                      "mainWindow.eventIndicator.backgroundColor");
+                                                    "mainWindow.eventIndicator.backgroundColor",
+                                                    ref errorMessages);
             TextColor = ThemeUtils.ParseColor(json.TextColor,
-                                              "mainWindow.eventIndicator.textColor");
+                                              "mainWindow.eventIndicator.textColor",
+                                              ref errorMessages);
             TextSize = json.TextSize;
             if (TextSize <= 0)
             {
-                throw new ColorThemeException(
-                    "mainWindow.eventIndicator.textSize must be positive");
+                errorMessages.Add("mainWindow.eventIndicator.textSize must be positive");
             }
         }
     }
     
     public readonly Color BackgroundColor = ThemeUtils.ParseColor(json.BackgroundColor,
-                                                                  "mainWindow.backgroundColor");
-    public readonly EventIndicatorTheme EventIndicator = new(json.EventIndicator);
+                                                                  "mainWindow.backgroundColor",
+                                                                  ref errorMessages);
+    public readonly EventIndicatorTheme EventIndicator = new(json.EventIndicator,
+                                                             ref errorMessages);
 }
 
 public class ElementTheme
@@ -76,21 +83,23 @@ public class ElementTheme
     public readonly double OutlineThickness;
     public readonly double CornerRadius;
 
-    protected ElementTheme(ElementThemeJson json, string keyName)
+    protected ElementTheme(ElementThemeJson json, string keyName, ref List<string> errorMessages)
     {
-        BackgroundColor = ThemeUtils.ParseColor(json.BackgroundColor, $"{keyName}.backgroundColor");
-        OutlineColor = ThemeUtils.ParseColor(json.OutlineColor, $"{keyName}.outlineColor");
+        BackgroundColor = ThemeUtils.ParseColor(json.BackgroundColor, $"{keyName}.backgroundColor",
+                                                ref errorMessages);
+        OutlineColor = ThemeUtils.ParseColor(json.OutlineColor, $"{keyName}.outlineColor",
+                                             ref errorMessages);
         OutlineThickness = json.OutlineThickness;
         CornerRadius = json.CornerRadius;
         
         if (OutlineThickness < 0)
         {
-            throw new ColorThemeException($"{keyName}.outlineThickness cannot be negative");
+            errorMessages.Add($"{keyName}.outlineThickness cannot be negative");
         }
         
         if (CornerRadius < 0)
         {
-            throw new ColorThemeException($"{keyName}.cornerRadius cannot be negative");
+            errorMessages.Add($"{keyName}.cornerRadius cannot be negative");
         }
     }
 }
@@ -100,13 +109,15 @@ public class TextElementTheme : ElementTheme
     public readonly Color TextColor;
     public readonly double TextSize;
         
-    public TextElementTheme(TextElementThemeJson json, string keyName) : base(json, keyName)
+    public TextElementTheme(TextElementThemeJson json, string keyName,
+        ref List<string> errorMessages) : base(json, keyName, ref errorMessages)
     {
-        TextColor = ThemeUtils.ParseColor(json.TextColor, $"{keyName}.textColor");
+        TextColor = ThemeUtils.ParseColor(json.TextColor, $"{keyName}.textColor",
+                                          ref errorMessages);
         TextSize = json.TextSize;
         if (TextSize <= 0)
         {
-            throw new ColorThemeException($"{keyName}.textSize must be positive");
+            errorMessages.Add($"{keyName}.textSize must be positive");
         }
     }
 }
@@ -120,27 +131,32 @@ public class ButtonTheme : ElementTheme
         public readonly Color IconColor = icon;
     }
     
-    public ButtonTheme(ButtonThemeJson json, string keyName) : base(json, keyName)
+    public ButtonTheme(ButtonThemeJson json, string keyName, ref List<string> errorMessages) :
+        base(json, keyName, ref errorMessages)
     {
-        IconColor = ThemeUtils.ParseColor(json.IconColor, $"{keyName}.iconColor");
+        IconColor = ThemeUtils.ParseColor(json.IconColor, $"{keyName}.iconColor",
+                                          ref errorMessages);
         
         Hovered = new HoveredTheme(
             json.Hovered.BackgroundColor != "" ?
                 ThemeUtils.ParseColor(json.Hovered.BackgroundColor,
-                                      $"{keyName}.selected.backgroundColor") : BackgroundColor,
+                                      $"{keyName}.selected.backgroundColor", ref errorMessages) :
+                BackgroundColor,
             json.Hovered.OutlineColor != "" ?
                 ThemeUtils.ParseColor(json.Hovered.OutlineColor,
-                                      $"{keyName}.selected.outlineColor") : OutlineColor,
+                                      $"{keyName}.selected.outlineColor", ref errorMessages) :
+                OutlineColor,
             json.Hovered.IconColor != "" ?
                 ThemeUtils.ParseColor(json.Hovered.IconColor,
-                                      $"{keyName}.selected.iconColor") : IconColor);
+                                      $"{keyName}.selected.iconColor", ref errorMessages) :
+                IconColor);
     }
 
     public readonly Color IconColor;
     public readonly HoveredTheme Hovered;
 }
 
-public class TopBarTheme(TopBarThemeJson json)
+public class TopBarTheme(TopBarThemeJson json, ref List<string> errorMessages)
 {
     public class SliderTheme
     {
@@ -153,12 +169,16 @@ public class TopBarTheme(TopBarThemeJson json)
         public readonly double TopThickness;
         public readonly double BottomThickness;
 
-        public SliderTheme(TopBarThemeJson.SliderThemeJson json)
+        public SliderTheme(TopBarThemeJson.SliderThemeJson json, ref List<string> errorMessages)
         {
-            TopColor = ThemeUtils.ParseColor(json.TopColor, "topBar.sliders.topColor");
-            BottomColor = ThemeUtils.ParseColor(json.BottomColor, "topBar.sliders.bottomColor");
-            IconColor = ThemeUtils.ParseColor(json.IconColor, "topBar.sliders.iconColor");
-            HandleColor = ThemeUtils.ParseColor(json.HandleColor, "topBar.sliders.handleColor");
+            TopColor = ThemeUtils.ParseColor(json.TopColor, "topBar.sliders.topColor",
+                                             ref errorMessages);
+            BottomColor = ThemeUtils.ParseColor(json.BottomColor, "topBar.sliders.bottomColor",
+                                                ref errorMessages);
+            IconColor = ThemeUtils.ParseColor(json.IconColor, "topBar.sliders.iconColor",
+                                              ref errorMessages);
+            HandleColor = ThemeUtils.ParseColor(json.HandleColor, "topBar.sliders.handleColor",
+                                                ref errorMessages);
             
             HandleWidth = json.HandleWidth;
             HandleHeight = json.HandleHeight;
@@ -167,39 +187,44 @@ public class TopBarTheme(TopBarThemeJson json)
             
             if (HandleWidth <= 0)
             {
-                throw new ColorThemeException("topBar.sliders.handleWidth must be positive");
+                errorMessages.Add("topBar.sliders.handleWidth must be positive");
             }
 
             if (HandleHeight <= 0)
             {
-                throw new ColorThemeException("topBar.sliders.handleHeight must be positive");
+                errorMessages.Add("topBar.sliders.handleHeight must be positive");
             }
 
             if (TopThickness < 0)
             {
-                throw new ColorThemeException("topBar.sliders.topThickness cannot be negative");
+                errorMessages.Add("topBar.sliders.topThickness cannot be negative");
             }
             
             if (BottomThickness < 0)
             {
-                throw new ColorThemeException("topBar.sliders.bottomThickness cannot be negative");
+                errorMessages.Add("topBar.sliders.bottomThickness cannot be negative");
             }
         }
     }
 
     public readonly Color BackgroundColor = ThemeUtils.ParseColor(json.BackgroundColor,
-                                                                  "topBar.backgroundColor");
-    public readonly SliderTheme Sliders = new(json.Sliders);
-    public readonly ButtonTheme Buttons = new(json.Buttons, "topBar.buttons");
-    public readonly TextElementTheme Tooltips = new(json.Tooltips, "topBar.tooltips");
+                                                                  "topBar.backgroundColor",
+                                                                  ref errorMessages);
+    public readonly SliderTheme Sliders = new(json.Sliders, ref errorMessages);
+    public readonly ButtonTheme Buttons = new(json.Buttons, "topBar.buttons", ref errorMessages);
+    public readonly TextElementTheme Tooltips = new(json.Tooltips, "topBar.tooltips",
+                                                    ref errorMessages);
     public readonly TextElementTheme SaveFileContextMenu = new(json.SaveFileContextMenu,
-                                                               "topBar.saveFileContextMenu");
+                                                               "topBar.saveFileContextMenu",
+                                                               ref errorMessages);
 }
 
-public class DialogTheme(DialogThemeJson json) : TextElementTheme(json, "dialogs")
+public class DialogTheme(DialogThemeJson json, ref List<string> errorMessages) :
+    TextElementTheme(json, "dialogs", ref errorMessages)
 {
-    public readonly TextElementTheme InputBoxes = new(json.InputBoxes, "dialogs.inputBoxes");
-    public readonly ButtonTheme Buttons = new(json.Buttons, "dialogs.buttons");
+    public readonly TextElementTheme InputBoxes = new(json.InputBoxes, "dialogs.inputBoxes",
+                                                      ref errorMessages);
+    public readonly ButtonTheme Buttons = new(json.Buttons, "dialogs.buttons", ref errorMessages);
 }
 
 public class QuickInfoTheme
@@ -209,21 +234,22 @@ public class QuickInfoTheme
     public readonly double TitleSize;
     public readonly double InfoSize;
     
-    public QuickInfoTheme(QuickInfoThemeJson json)
+    public QuickInfoTheme(QuickInfoThemeJson json, ref List<string> errorMessages)
     {
-        TitleColor = ThemeUtils.ParseColor(json.TitleColor, "quickInfo.titleColor");
-        InfoColor = ThemeUtils.ParseColor(json.InfoColor, "quickInfo.infoColor");
+        TitleColor = ThemeUtils.ParseColor(json.TitleColor, "quickInfo.titleColor",
+                                           ref errorMessages);
+        InfoColor = ThemeUtils.ParseColor(json.InfoColor, "quickInfo.infoColor", ref errorMessages);
         TitleSize = json.TitleSize;
         InfoSize = json.InfoSize;
         
         if (TitleSize <= 0)
         {
-            throw new ColorThemeException("quickInfo.titleSize must be positive");
+            errorMessages.Add("quickInfo.titleSize must be positive");
         }
         
         if (InfoSize <= 0)
         {
-            throw new ColorThemeException("quickInfo.infoSize must be positive");
+            errorMessages.Add("quickInfo.infoSize must be positive");
         }
     }
 }
@@ -233,19 +259,20 @@ public class LineTheme
     public readonly Color Color;
     public readonly double Thickness;
     
-    public LineTheme(LineThemeJson json, string keyName)
+    public LineTheme(LineThemeJson json, string keyName, ref List<string> errorMessages)
     {
-        Color = ThemeUtils.ParseColor(json.Color, $"{keyName}.color");
+        Color = ThemeUtils.ParseColor(json.Color, $"{keyName}.color", ref errorMessages);
         Thickness = json.Thickness;
 
         if (Thickness < 0)
         {
-            throw new ColorThemeException($"{keyName}.thickness cannot be negative");
+            errorMessages.Add($"{keyName}.thickness cannot be negative");
         }
     }
 }
 
-public class NoteViewerTheme(NoteViewerThemeJson json) : ElementTheme(json, "noteViewer")
+public class NoteViewerTheme(NoteViewerThemeJson json, ref List<string> errorMessages) :
+    ElementTheme(json, "noteViewer", ref errorMessages)
 {
     public class LaneNumberTheme
     {
@@ -254,22 +281,25 @@ public class NoteViewerTheme(NoteViewerThemeJson json) : ElementTheme(json, "not
         public readonly double OutlineThickness;
         public readonly double TextSize;
         
-        public LaneNumberTheme(NoteViewerThemeJson.LaneNumberThemeJson json)
+        public LaneNumberTheme(NoteViewerThemeJson.LaneNumberThemeJson json,
+            ref List<string> errorMessages)
         {
-            Color = ThemeUtils.ParseColor(json.Color, "noteViewer.laneNumbers.color");
+            Color = ThemeUtils.ParseColor(json.Color, "noteViewer.laneNumbers.color",
+                                          ref errorMessages);
             OutlineColor = ThemeUtils.ParseColor(json.OutlineColor,
-                                                 "noteViewer.laneNumbers.outlineColor");
+                                                 "noteViewer.laneNumbers.outlineColor",
+                                                 ref errorMessages);
             OutlineThickness = json.OutlineThickness;
             TextSize = json.TextSize;
             
             if (OutlineThickness < 0)
             {
-                throw new ColorThemeException(
+                errorMessages.Add(
                     "noteViewer.laneNumbers.outlineThickness cannot be negative");
             }
             if (TextSize <= 0)
             {
-                throw new ColorThemeException("noteViewer.laneNumbers.textSize must be positive");
+                errorMessages.Add("noteViewer.laneNumbers.textSize must be positive");
             }
         }
     }
@@ -280,20 +310,21 @@ public class NoteViewerTheme(NoteViewerThemeJson json) : ElementTheme(json, "not
         public readonly double LineThickness;
         public readonly double TextSize;
         
-        public LabeledLineTheme(NoteViewerThemeJson.LabeledLineThemeJson json, string keyName)
+        public LabeledLineTheme(NoteViewerThemeJson.LabeledLineThemeJson json, string keyName,
+            ref List<string> errorMessages)
         {
-            Color = ThemeUtils.ParseColor(json.Color, $"{keyName}.color");
+            Color = ThemeUtils.ParseColor(json.Color, $"{keyName}.color", ref errorMessages);
             LineThickness = json.LineThickness;
             TextSize = json.TextSize;
             
             if (LineThickness < 0)
             {
-                throw new ColorThemeException($"{keyName}.lineThickness cannot be negative");
+                errorMessages.Add($"{keyName}.lineThickness cannot be negative");
             }
             
             if (TextSize <= 0)
             {
-                throw new ColorThemeException($"{keyName}.textSize must be positive");
+                errorMessages.Add($"{keyName}.textSize must be positive");
             }
         }
     }
@@ -302,14 +333,15 @@ public class NoteViewerTheme(NoteViewerThemeJson json) : ElementTheme(json, "not
     {
         public readonly double TextSize;
         
-        public FullBeatSnapLineTheme(NoteViewerThemeJson.FullBeatSnapLineThemeJson json) :
-            base(json, "noteViewer.fullBeatSnapLine")
+        public FullBeatSnapLineTheme(NoteViewerThemeJson.FullBeatSnapLineThemeJson json,
+            ref List<string> errorMessages) : base(json, "noteViewer.fullBeatSnapLine",
+                                                   ref errorMessages)
         {
             TextSize = json.TextSize;
             
             if (TextSize <= 0)
             {
-                throw new ColorThemeException(
+                errorMessages.Add(
                     "noteViewer.fullBeatSnapLine.textSize must be positive");
             }
         }
@@ -322,15 +354,19 @@ public class NoteViewerTheme(NoteViewerThemeJson json) : ElementTheme(json, "not
         public readonly Color Color3;
         public readonly double ArrowScale;
         
-        public MarkersTheme(NoteViewerThemeJson.MarkersThemeJson json)
+        public MarkersTheme(NoteViewerThemeJson.MarkersThemeJson json,
+            ref List<string> errorMessages)
         {
-            Color1 = ThemeUtils.ParseColor(json.Color1, "noteViewer.markers.color1");
-            Color2 = ThemeUtils.ParseColor(json.Color2, "noteViewer.markers.color2");
-            Color3 = ThemeUtils.ParseColor(json.Color3, "noteViewer.markers.color3");
+            Color1 = ThemeUtils.ParseColor(json.Color1, "noteViewer.markers.color1",
+                                           ref errorMessages);
+            Color2 = ThemeUtils.ParseColor(json.Color2, "noteViewer.markers.color2",
+                                           ref errorMessages);
+            Color3 = ThemeUtils.ParseColor(json.Color3, "noteViewer.markers.color3",
+                                           ref errorMessages);
             ArrowScale = json.ArrowScale;
             if (ArrowScale < 0)
             {
-                throw new ColorThemeException("noteViewer.markers.arrowScale cannot be negative");
+                errorMessages.Add("noteViewer.markers.arrowScale cannot be negative");
             }
         }
     }
@@ -340,33 +376,98 @@ public class NoteViewerTheme(NoteViewerThemeJson json) : ElementTheme(json, "not
         public readonly Color Color;
         public readonly double ArrowScale;
         
-        public BreakpointTheme(NoteViewerThemeJson.BreakpointThemeJson json) :
-            base(json, "noteViewer.breakpoint")
+        public BreakpointTheme(NoteViewerThemeJson.BreakpointThemeJson json,
+            ref List<string> errorMessages) : base(json, "noteViewer.breakpoint", ref errorMessages)
         {
-            Color = ThemeUtils.ParseColor(json.Color, "noteViewer.breakpoint.color");
+            Color = ThemeUtils.ParseColor(json.Color, "noteViewer.breakpoint.color",
+                                          ref errorMessages);
             ArrowScale = json.ArrowScale;
             if (ArrowScale < 0)
             {
-                throw new ColorThemeException(
+                errorMessages.Add(
                     "noteViewer.breakpoint.arrowScale cannot be negative");
             }
         }
     }
     
+    public class NoteLaneThemes
+    {
+        public readonly Color TopColor;
+        public readonly Color BottomColor;
+        public readonly Color CenterColor;
+        public readonly Color CameraColor;
+    
+        public readonly double TopWidth;
+        public readonly double BottomWidth;
+        public readonly double CenterWidth;
+        public readonly double CameraWidth;
+
+        public NoteLaneThemes(NoteLaneThemesJson json, ref List<string> errorMessages)
+        {
+            TopColor = ThemeUtils.ParseColor(json.TopColor, "noteViewer.noteLanes.topColor",
+                                             ref errorMessages);
+            BottomColor = ThemeUtils.ParseColor(json.BottomColor,
+                                                "noteViewer.noteLanes.bottomColor",
+                                                ref errorMessages);
+            CenterColor = ThemeUtils.ParseColor(json.CenterColor,
+                                                "noteViewer.noteLanes.centerColor",
+                                                ref errorMessages);
+            CameraColor = ThemeUtils.ParseColor(json.CameraColor,
+                                                "noteViewer.noteLanes.cameraColor",
+                                                ref errorMessages);
+        
+            TopWidth = json.TopWidth;
+            BottomWidth = json.BottomWidth;
+            CenterWidth = json.CenterWidth;
+            CameraWidth = json.CameraWidth;
+        
+            if (TopWidth < 0)
+            {
+                errorMessages.Add("noteViewer.noteLanes.topWidth cannot be negative");
+            }
+        
+            if (BottomWidth < 0)
+            {
+                errorMessages.Add(
+                    "noteViewer.noteLanes.bottomWidth cannot be negative");
+            }
+        
+            if (CenterWidth < 0)
+            {
+                errorMessages.Add(
+                    "noteViewer.noteLanes.centerWidth cannot be negative");
+            }
+        
+            if (CameraWidth < 0)
+            {
+                errorMessages.Add(
+                    "noteViewer.noteLanes.cameraWidth cannot be negative");
+            }
+        }
+    }
+    
     public readonly Color SelectDragColor = ThemeUtils.ParseColor(json.SelectDragColor,
-                                                                  "noteViewer.selectDragColor");
+                                                                  "noteViewer.selectDragColor",
+                                                                  ref errorMessages);
     public readonly Color DeleteDragColor = ThemeUtils.ParseColor(json.DeleteDragColor,
-                                                                  "noteViewer.deleteDragColor");
-    public readonly LaneNumberTheme LaneNumbers = new(json.LaneNumbers);
-    public readonly LabeledLineTheme BpmChange = new(json.BpmChanges, "noteViewer.bpmChange");
-    public readonly LabeledLineTheme Label = new(json.Labels, "noteViewer.label");
-    public readonly FullBeatSnapLineTheme FullBeatSnapLine = new(json.FullBeatSnapLine);
+                                                                  "noteViewer.deleteDragColor",
+                                                                  ref errorMessages);
+    public readonly LaneNumberTheme LaneNumbers = new(json.LaneNumbers, ref errorMessages);
+    public readonly LabeledLineTheme BpmChange = new(json.BpmChanges, "noteViewer.bpmChange",
+                                                     ref errorMessages);
+    public readonly LabeledLineTheme Label = new(json.Labels, "noteViewer.label",
+                                                 ref errorMessages);
+    public readonly FullBeatSnapLineTheme FullBeatSnapLine = new(json.FullBeatSnapLine,
+                                                                 ref errorMessages);
     public readonly LineTheme SubBeatSnapLine = new(json.SubBeatSnapLine,
-                                                    "noteViewer.subBeatSnapLine");
+                                                    "noteViewer.subBeatSnapLine",
+                                                    ref errorMessages);
     public readonly LineTheme CurrentTimeLine = new(json.CurrentTimeLine,
-                                                    "noteViewer.currentTimeLine");
-    public readonly MarkersTheme Markers = new(json.Markers);
-    public readonly BreakpointTheme Breakpoint = new(json.Breakpoint);
+                                                    "noteViewer.currentTimeLine",
+                                                    ref errorMessages);
+    public readonly MarkersTheme Markers = new(json.Markers, ref errorMessages);
+    public readonly BreakpointTheme Breakpoint = new(json.Breakpoint, ref errorMessages);
+    public readonly NoteLaneThemes NoteLanes = new(json.NoteLanes, ref errorMessages);
 }
 
 public class GamePreviewTheme : ElementTheme
@@ -376,15 +477,17 @@ public class GamePreviewTheme : ElementTheme
         public readonly Color OutlineColor;
         public readonly double OutlineThickness;
         
-        public ViewableAreaTheme(GamePreviewThemeJson.ViewableAreaThemeJson json)
+        public ViewableAreaTheme(GamePreviewThemeJson.ViewableAreaThemeJson json,
+            ref List<string> errorMessages)
         {
             OutlineColor = ThemeUtils.ParseColor(json.OutlineColor,
-                                                 "gamePreview.viewableArea.outlineColor");
+                                                 "gamePreview.viewableArea.outlineColor",
+                                                 ref errorMessages);
             OutlineThickness = json.OutlineThickness;
             
             if (OutlineThickness < 0)
             {
-                throw new ColorThemeException(
+                errorMessages.Add(
                     "gamePreviewer.viewableArea.outlineColor cannot be negative");
             }
         }
@@ -400,23 +503,26 @@ public class GamePreviewTheme : ElementTheme
             public readonly double Radius;
             
             public TargetCirclesTheme(
-                GamePreviewThemeJson.NoteTargetsThemeJson.TargetCirclesThemeJson json)
+                GamePreviewThemeJson.NoteTargetsThemeJson.TargetCirclesThemeJson json,
+                ref List<string> errorMessages)
             {
                 FillColor = ThemeUtils.ParseColor(json.FillColor,
-                                                  "gamePreview.noteTargets.circles.fillColor");
+                                                  "gamePreview.noteTargets.circles.fillColor",
+                                                  ref errorMessages);
                 OutlineColor = ThemeUtils.ParseColor(json.OutlineColor,
-                                                     "gamePreview.noteTargets.circles.outlineColor");
+                                                     "gamePreview.noteTargets.circles.outlineColor",
+                                                     ref errorMessages);
                 
                 OutlineThickness = json.OutlineThickness;
                 Radius = json.Radius;
                 if (OutlineThickness < 0)
                 {
-                    throw new ColorThemeException(
+                    errorMessages.Add(
                         "gamePreview.noteTargets.circles.outlineThickness cannot be negative");
                 }
                 if (Radius <= 0)
                 {
-                    throw new ColorThemeException(
+                    errorMessages.Add(
                         "gamePreview.noteTargets.circles.radius must be positive");
                 }
             }
@@ -426,15 +532,17 @@ public class GamePreviewTheme : ElementTheme
         public readonly double LineThickness;
         public readonly TargetCirclesTheme Circles;
         
-        public NoteTargetsTheme(GamePreviewThemeJson.NoteTargetsThemeJson json)
+        public NoteTargetsTheme(GamePreviewThemeJson.NoteTargetsThemeJson json,
+            ref List<string> errorMessages)
         {
-            LineColor = ThemeUtils.ParseColor(json.LineColor, "gamePreview.noteTargets.lineColor");
+            LineColor = ThemeUtils.ParseColor(json.LineColor, "gamePreview.noteTargets.lineColor",
+                                              ref errorMessages);
             LineThickness = json.LineThickness;
-            Circles = new TargetCirclesTheme(json.TargetCircles);
+            Circles = new TargetCirclesTheme(json.TargetCircles, ref errorMessages);
 
             if (LineThickness < 0)
             {
-                throw new ColorThemeException(
+                errorMessages.Add(
                     "gamePreview.noteTargets.lineThickness cannot be negative");
             }
         }
@@ -446,46 +554,51 @@ public class GamePreviewTheme : ElementTheme
     public readonly ViewableAreaTheme ViewableArea;
     public readonly NoteTargetsTheme NoteTargets;
     
-    public GamePreviewTheme(GamePreviewThemeJson json) : base(json, "gamePreview")
+    public GamePreviewTheme(GamePreviewThemeJson json, ref List<string> errorMessages) :
+        base(json, "gamePreview", ref errorMessages)
     {
-        CopColor = ThemeUtils.ParseColor(json.CopColor, "gamePreview.copColor");
+        CopColor = ThemeUtils.ParseColor(json.CopColor, "gamePreview.copColor", ref errorMessages);
         CameraArrowColor = ThemeUtils.ParseColor(json.CameraArrowColor,
-                                                 "gamePreview.cameraArrowColor");
+                                                 "gamePreview.cameraArrowColor", ref errorMessages);
         CameraArrowScale = json.CameraArrowScale;
-        ViewableArea = new ViewableAreaTheme(json.ViewableArea);
-        NoteTargets = new NoteTargetsTheme(json.NoteTargets);
+        ViewableArea = new ViewableAreaTheme(json.ViewableArea, ref errorMessages);
+        NoteTargets = new NoteTargetsTheme(json.NoteTargets, ref errorMessages);
         
         if (CameraArrowScale < 0)
         {
-            throw new ColorThemeException("gamePreview.cameraArrowScale cannot be negative");
+            errorMessages.Add("gamePreview.cameraArrowScale cannot be negative");
         }
     }
 }
 
 public class PlacementPriorityListTheme : ElementTheme
 {
-    public class ListEntryTheme(PlacementPriorityListThemeJson.ListEntryThemeJson json) :
-        TextElementTheme(json, "placementPriorityList.listEntries")
+    public class ListEntryTheme(PlacementPriorityListThemeJson.ListEntryThemeJson json,
+        ref List<string> errorMessages) : TextElementTheme(json,
+                                                           "placementPriorityList.listEntries",
+                                                           ref errorMessages)
     {
         public readonly Color ReorderIconColor =
             ThemeUtils.ParseColor(json.ReorderIconColor,
-                                  "placementPriorityList.listEntries.reorderIconColor");
+                                  "placementPriorityList.listEntries.reorderIconColor",
+                                  ref errorMessages);
     }
 
     public readonly Color TitleColor;
     public readonly double TitleSize;
     public readonly ListEntryTheme ListEntries;
     
-    public PlacementPriorityListTheme(PlacementPriorityListThemeJson json) :
-        base(json, "placementPriorityList")
+    public PlacementPriorityListTheme(PlacementPriorityListThemeJson json,
+        ref List<string> errorMessages) : base(json, "placementPriorityList", ref errorMessages)
     {
-        TitleColor = ThemeUtils.ParseColor(json.TitleColor, "placementPriorityList.titleColor");
+        TitleColor = ThemeUtils.ParseColor(json.TitleColor, "placementPriorityList.titleColor",
+                                           ref errorMessages);
         TitleSize = json.TitleSize;
-        ListEntries = new ListEntryTheme(json.ListEntries);
+        ListEntries = new ListEntryTheme(json.ListEntries, ref errorMessages);
 
         if (TitleSize <= 0)
         {
-            throw new ColorThemeException("placementPriorityList.titleSize must be positive");
+            errorMessages.Add("placementPriorityList.titleSize must be positive");
         }
     }
 }
@@ -504,30 +617,35 @@ public class InstantNoteTheme
     public readonly double OutlineThickness;
     public readonly SelectedTheme Selected;
     
-    public InstantNoteTheme(InstantNoteThemeJson json, string keyName)
+    public InstantNoteTheme(InstantNoteThemeJson json, string keyName,
+        ref List<string> errorMessages)
     {
-        FillColor = ThemeUtils.ParseColor(json.FillColor, $"{keyName}.fillColor");
-        OutlineColor = ThemeUtils.ParseColor(json.OutlineColor, $"{keyName}.outlineColor");
+        FillColor = ThemeUtils.ParseColor(json.FillColor, $"{keyName}.fillColor",
+                                          ref errorMessages);
+        OutlineColor = ThemeUtils.ParseColor(json.OutlineColor, $"{keyName}.outlineColor",
+                                             ref errorMessages);
         OutlineThickness = json.OutlineThickness;
 
         if (OutlineThickness < 0)
         {
-            throw new ColorThemeException($"{keyName}.outlineThickness cannot be negative");
+            errorMessages.Add($"{keyName}.outlineThickness cannot be negative");
         }
 
         if (json.Selected.OutlineThickness < 0 && json.Selected.OutlineThickness != -1)
         {
-            throw new ColorThemeException(
+            errorMessages.Add(
                 $"{keyName}.selected.outlineThickness cannot be negative");
         }
         
         Selected = new SelectedTheme(
             json.Selected.FillColor != "" ?
                 ThemeUtils.ParseColor(json.Selected.FillColor,
-                                      $"{keyName}.selected.fillColor") : FillColor,
+                                      $"{keyName}.selected.fillColor", ref errorMessages) :
+                FillColor,
             json.Selected.OutlineColor != "" ?
                 ThemeUtils.ParseColor(json.Selected.OutlineColor,
-                                      $"{keyName}.selected.outlineColor") : OutlineColor,
+                                      $"{keyName}.selected.outlineColor", ref errorMessages) :
+                OutlineColor,
             json.Selected.OutlineThickness != -1 ? json.Selected.OutlineThickness :
                 OutlineThickness);
     }
@@ -554,59 +672,67 @@ public class NonInstantNoteTheme
     public readonly double TailOutlineThickness;
     public readonly SelectedTheme Selected;
     
-    public NonInstantNoteTheme(NonInstantNoteThemeJson json, string keyName)
+    public NonInstantNoteTheme(NonInstantNoteThemeJson json, string keyName,
+        ref List<string> errorMessages)
     {
-        FillColor = ThemeUtils.ParseColor(json.FillColor, $"{keyName}.fillColor");
-        OutlineColor = ThemeUtils.ParseColor(json.OutlineColor, $"{keyName}.outlineColor");
+        FillColor = ThemeUtils.ParseColor(json.FillColor, $"{keyName}.fillColor",
+                                          ref errorMessages);
+        OutlineColor = ThemeUtils.ParseColor(json.OutlineColor, $"{keyName}.outlineColor",
+                                             ref errorMessages);
         OutlineThickness = json.OutlineThickness;
-        TailColor = ThemeUtils.ParseColor(json.TailColor, $"{keyName}.tailColor");
+        TailColor = ThemeUtils.ParseColor(json.TailColor, $"{keyName}.tailColor",
+                                          ref errorMessages);
         TailOutlineColor = ThemeUtils.ParseColor(json.TailOutlineColor,
-                                                 $"{keyName}.tailOutlineColor");
+                                                 $"{keyName}.tailOutlineColor", ref errorMessages);
         TailOutlineThickness = json.TailOutlineThickness;
 
         if (OutlineThickness < 0)
         {
-            throw new ColorThemeException($"{keyName}.outlineThickness cannot be negative");
+            errorMessages.Add($"{keyName}.outlineThickness cannot be negative");
         }
         
         if (TailOutlineThickness < 0)
         {
-            throw new ColorThemeException($"{keyName}.tailOutlineThickness cannot be negative");
+            errorMessages.Add($"{keyName}.tailOutlineThickness cannot be negative");
         }
         
         if (json.Selected.OutlineThickness < 0 && json.Selected.OutlineThickness != -1)
         {
-            throw new ColorThemeException(
+            errorMessages.Add(
                 $"{keyName}.selected.outlineThickness cannot be negative");
         }
         
         if (json.Selected.TailOutlineThickness < 0 && json.Selected.TailOutlineThickness != -1)
         {
-            throw new ColorThemeException(
+            errorMessages.Add(
                 $"{keyName}.selected.tailOutlineThickness cannot be negative");
         }
         
         Selected = new SelectedTheme(
             json.Selected.FillColor != "" ?
                 ThemeUtils.ParseColor(json.Selected.FillColor,
-                                      $"{keyName}.selected.fillColor") : FillColor,
+                                      $"{keyName}.selected.fillColor", ref errorMessages) :
+                FillColor,
             json.Selected.OutlineColor != "" ?
                 ThemeUtils.ParseColor(json.Selected.OutlineColor,
-                                      $"{keyName}.selected.outlineColor") : OutlineColor,
+                                      $"{keyName}.selected.outlineColor", ref errorMessages) :
+                OutlineColor,
             json.Selected.OutlineThickness != -1 ?
                 json.Selected.OutlineThickness : OutlineThickness,
             json.Selected.TailColor != "" ?
                 ThemeUtils.ParseColor(json.Selected.TailColor,
-                                      $"{keyName}.selected.tailColor") : TailColor,
+                                      $"{keyName}.selected.tailColor", ref errorMessages) :
+                TailColor,
             json.Selected.TailOutlineColor != "" ?
                 ThemeUtils.ParseColor(json.Selected.TailOutlineColor,
-                                      $"{keyName}.selected.tailOutlineColor") : TailOutlineColor,
+                                      $"{keyName}.selected.tailOutlineColor", ref errorMessages) :
+                TailOutlineColor,
             json.Selected.OutlineThickness != -1 ?
                 json.Selected.OutlineThickness : OutlineThickness);
     }
 }
 
-public class NoteThemes(NoteThemesJson json)
+public class NoteThemes(NoteThemesJson json, ref List<string> errorMessages)
 {
     public class CommonTheme
     {
@@ -615,38 +741,42 @@ public class NoteThemes(NoteThemesJson json)
         public readonly double FlagTextOutlineThickness;
         public readonly double FlagTextSize;
 
-        public CommonTheme(NoteThemesJson.CommonThemeJson json)
+        public CommonTheme(NoteThemesJson.CommonThemeJson json, ref List<string> errorMessages)
         {
-            FlagTextColor = ThemeUtils.ParseColor(json.FlagTextColor, "notes.common.flagTextColor");
+            FlagTextColor = ThemeUtils.ParseColor(json.FlagTextColor, "notes.common.flagTextColor",
+                                                  ref errorMessages);
             FlagTextOutlineColor = ThemeUtils.ParseColor(json.FlagTextOutlineColor,
-                                                         "notes.common.flagTextOutlineColor");
+                                                         "notes.common.flagTextOutlineColor",
+                                                         ref errorMessages);
             FlagTextOutlineThickness = json.FlagTextOutlineThickness;
             FlagTextSize = json.FlagTextSize;
 
             if (FlagTextOutlineThickness < 0)
             {
-                throw new ColorThemeException(
+                errorMessages.Add(
                     "notes.common.flagTextOutlineThickness cannot be negative");
             }
             if (FlagTextSize <= 0)
             {
-                throw new ColorThemeException("notes.common.flagTextSize must be positive");
+                errorMessages.Add("notes.common.flagTextSize must be positive");
             }
         }
     }
     
-    public readonly CommonTheme Common = new(json.Common);
-    public readonly InstantNoteTheme Single = new(json.Single, "notes.single");
-    public readonly InstantNoteTheme Spike = new(json.Spike, "notes.spike");
-    public readonly NonInstantNoteTheme Hold = new(json.Hold, "notes.hold");
-    public readonly NonInstantNoteTheme Double = new(json.Double, "notes.double");
-    public readonly InstantNoteTheme Freestyle = new(json.Freestyle, "notes.freestyle");
-    public readonly InstantNoteTheme Camera = new (json.Camera, "notes.camera");
-    public readonly NonInstantNoteTheme Mash = new(json.Mash, "notes.mash");
-    public readonly NonInstantNoteTheme Cop1 = new(json.Cop1, "notes.cop1");
-    public readonly NonInstantNoteTheme Cop2 = new(json.Cop2, "notes.cop2");
-    public readonly NonInstantNoteTheme Cop3 = new(json.Cop3, "notes.cop3");
-    public readonly NonInstantNoteTheme Cop4 = new(json.Cop4, "notes.cop4");
+    public readonly CommonTheme Common = new(json.Common, ref errorMessages);
+    public readonly InstantNoteTheme Single = new(json.Single, "notes.single", ref errorMessages);
+    public readonly InstantNoteTheme Spike = new(json.Spike, "notes.spike", ref errorMessages);
+    public readonly NonInstantNoteTheme Hold = new(json.Hold, "notes.hold", ref errorMessages);
+    public readonly NonInstantNoteTheme Double = new(json.Double, "notes.double",
+                                                     ref errorMessages);
+    public readonly InstantNoteTheme Freestyle = new(json.Freestyle, "notes.freestyle",
+                                                     ref errorMessages);
+    public readonly InstantNoteTheme Camera = new (json.Camera, "notes.camera", ref errorMessages);
+    public readonly NonInstantNoteTheme Mash = new(json.Mash, "notes.mash", ref errorMessages);
+    public readonly NonInstantNoteTheme Cop1 = new(json.Cop1, "notes.cop1", ref errorMessages);
+    public readonly NonInstantNoteTheme Cop2 = new(json.Cop2, "notes.cop2", ref errorMessages);
+    public readonly NonInstantNoteTheme Cop3 = new(json.Cop3, "notes.cop3", ref errorMessages);
+    public readonly NonInstantNoteTheme Cop4 = new(json.Cop4, "notes.cop4", ref errorMessages);
 }
 
 public class DebugInfoTheme
@@ -659,47 +789,49 @@ public class DebugInfoTheme
     public readonly double NoteTimestampTextSize;
     public readonly double NoteTimestampTextOutlineThickness;
 
-    public DebugInfoTheme(DebugInfoThemeJson json)
+    public DebugInfoTheme(DebugInfoThemeJson json, ref List<string> errorMessages)
     {
         OverlayBackgroundColor = ThemeUtils.ParseColor(json.OverlayBackgroundColor,
-                                                       "debugInfo.overlayBackgroundColor");
+                                                       "debugInfo.overlayBackgroundColor",
+                                                       ref errorMessages);
         OverlayTextColor = ThemeUtils.ParseColor(json.OverlayTextColor,
-                                                 "debugInfo.overlayTextColor");
+                                                 "debugInfo.overlayTextColor", ref errorMessages);
         OverlayTextSize = json.OverlayTextSize;
         NoteTimestampTextColor = ThemeUtils.ParseColor(json.NoteTimestampTextColor,
-                                                       "debugInfo.noteTimestampTextColor");
+                                                       "debugInfo.noteTimestampTextColor",
+                                                       ref errorMessages);
         NoteTimestampTextOutlineColor =
             ThemeUtils.ParseColor(json.NoteTimestampTextOutlineColor,
-                                  "debugInfo.noteTimestampTextOutlineColor");
+                                  "debugInfo.noteTimestampTextOutlineColor", ref errorMessages);
         NoteTimestampTextSize = json.NoteTimestampTextSize;
         NoteTimestampTextOutlineThickness = json.NoteTimestampTextOutlineThickness;
         
         if (OverlayTextSize <= 0)
         {
-            throw new ColorThemeException("debugInfo.overlayTextSize must be positive");
+            errorMessages.Add("debugInfo.overlayTextSize must be positive");
         }
         if (NoteTimestampTextSize <= 0)
         {
-            throw new ColorThemeException("debugInfo.noteTimestampTextSize must be positive");
+            errorMessages.Add("debugInfo.noteTimestampTextSize must be positive");
         }
         if (NoteTimestampTextOutlineThickness < 0)
         {
-            throw new ColorThemeException(
+            errorMessages.Add(
                 "debugInfo.noteTimestampTextOutlineThickness cannot be negative");
         }
     }
 }
 
-public class ColorTheme(ColorThemeJson json)
+public class ColorTheme(ColorThemeJson json, ref List<string> errorMessages)
 {
-    public readonly MainWindowTheme MainWindow = new(json.MainWindow);
-    public readonly TopBarTheme TopBar = new(json.TopBar);
-    public readonly DialogTheme Dialogs = new(json.Dialogs);
-    public readonly QuickInfoTheme QuickInfo = new(json.QuickInfo);
-    public readonly NoteViewerTheme NoteViewer = new(json.NoteViewer);
-    public readonly GamePreviewTheme GamePreview = new(json.GamePreview);
+    public readonly MainWindowTheme MainWindow = new(json.MainWindow, ref errorMessages);
+    public readonly TopBarTheme TopBar = new(json.TopBar, ref errorMessages);
+    public readonly DialogTheme Dialogs = new(json.Dialogs, ref errorMessages);
+    public readonly QuickInfoTheme QuickInfo = new(json.QuickInfo, ref errorMessages);
+    public readonly NoteViewerTheme NoteViewer = new(json.NoteViewer, ref errorMessages);
+    public readonly GamePreviewTheme GamePreview = new(json.GamePreview, ref errorMessages);
     public readonly PlacementPriorityListTheme PlacementPriorityList =
-        new(json.PlacementPriorityList);
-    public readonly NoteThemes Notes = new(json.NoteThemes);
-    public readonly DebugInfoTheme DebugInfo = new(json.DebugInfo);
+        new(json.PlacementPriorityList, ref errorMessages);
+    public readonly NoteThemes Notes = new(json.NoteThemes, ref errorMessages);
+    public readonly DebugInfoTheme DebugInfo = new(json.DebugInfo, ref errorMessages);
 }

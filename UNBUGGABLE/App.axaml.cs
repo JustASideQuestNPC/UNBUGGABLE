@@ -62,7 +62,7 @@ public partial class App : Application
     {
         // load configs and apply UI settings
         ThemeManager.Init(Resources);
-        Config.LoadAllConfigFiles();
+        Config.InitialLoadAllConfigFiles();
         SfxEngine.Init(Config.Settings.MaxConcurrentSfx);
         UserData.LoadData();
         ApplyColorTheme(Config.CurrentTheme);
