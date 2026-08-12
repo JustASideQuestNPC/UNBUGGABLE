@@ -373,14 +373,11 @@ public class NoteViewerTheme(NoteViewerThemeJson json, ref List<string> errorMes
     
     public class BreakpointTheme : LineTheme
     {
-        public readonly Color Color;
         public readonly double ArrowScale;
         
         public BreakpointTheme(NoteViewerThemeJson.BreakpointThemeJson json,
             ref List<string> errorMessages) : base(json, "noteViewer.breakpoint", ref errorMessages)
         {
-            Color = ThemeUtils.ParseColor(json.Color, "noteViewer.breakpoint.color",
-                                          ref errorMessages);
             ArrowScale = json.ArrowScale;
             if (ArrowScale < 0)
             {

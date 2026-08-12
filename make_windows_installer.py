@@ -7,6 +7,7 @@ from pathlib import Path
 
 ASSETS_DIR = 'UNBUGGABLE\\Assets'
 PUBLISH_DIR = 'UNBUGGABLE\\publish'
+THEMES_DIR = 'UNBUGGABLE\\themes'
 
 NSIS_HEADER = r'''RequestExecutionLevel user ; for some reason the default level is admin?
 
@@ -96,12 +97,10 @@ Section "Main App" MainAppComponent
     CreateDirectory "$INSTDIR\configs"
     File "/oname=$OUTDIR\configs\updatedConfig.json" "UNBUGGABLE\configs\config.json"
     File "/oname=$OUTDIR\configs\updatedKeybinds.json" "UNBUGGABLE\configs\keybinds.json"
-    File "/oname=$OUTDIR\configs\themes.json" "UNBUGGABLE\configs\themes.json"
     FileWrite $UninstLog "$OUTDIR\configs\updatedConfig.json$\r$\n"
     FileWrite $UninstLog "$OUTDIR\configs\updatedKeybinds.json$\r$\n"
     FileWrite $UninstLog "$OUTDIR\configs\config.json$\r$\n"
     FileWrite $UninstLog "$OUTDIR\configs\keybinds.json$\r$\n"
-    FileWrite $UninstLog "$OUTDIR\configs\themes.json$\r$\n"
     FileWrite $UninstLog "$OUTDIR\configs\userData.json$\r$\n"
 
     ${WriteUninstaller} "UNBUGGABLE_Uninstaller.exe"
@@ -207,6 +206,7 @@ def relative_path(path: str) -> Path:
 
 full_publish_path = relative_path(PUBLISH_DIR)
 full_assets_path = relative_path(ASSETS_DIR)
+full_themes_path = relative_path(THEMES_DIR)
 
 # look through the assembly to find the version
 version = ''
@@ -257,6 +257,13 @@ for file in full_assets_path.iterdir():
         filename = f'{file}'[len(f'{full_assets_path}') + 1:]
         nsis_lines.append(f'    File "/oname=Assets\\{filename}" "{ASSETS_DIR}\\{filename}"\n')
         nsis_lines.append(f'    FileWrite $UninstLog "$OUTDIR\\Assets\\{filename}$\\r$\\n"\n')
+
+nsis_lines.append('\n    CreateDirectory "$INSTDIR\\themes"\n')
+for file in full_themes_path.iterdir():
+    if file.is_file():
+        filename = f'{file}'[len(f'{full_themes_path}') + 1:]
+        nsis_lines.append(f'    File "/oname=themes\\{filename}" "{THEMES_DIR}\\{filename}"\n')
+        nsis_lines.append(f'    FileWrite $UninstLog "$OUTDIR\\themes\\{filename}$\\r$\\n"\n')
 
 nsis_lines.pop()
 nsis_lines.append('FunctionEnd\n')
