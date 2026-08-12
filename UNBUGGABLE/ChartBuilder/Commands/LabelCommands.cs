@@ -4,6 +4,8 @@ public class AddLabelCommand(long time, string text) : ICommand
 {
     public string Name => "Add Label";
     
+    public bool UpdatesPriorityList => false;
+    
     private readonly Chart.Label _label = new(time, text);
     
     public void Execute()
@@ -21,6 +23,8 @@ public class RemoveLabelCommand(Chart.Label label) : ICommand
 {
     public string Name => "Remove Label";
     
+    public bool UpdatesPriorityList => false;
+    
     public void Execute()
     {
         Chart.RemoveLabel(label);
@@ -35,6 +39,8 @@ public class RemoveLabelCommand(Chart.Label label) : ICommand
 public class EditLabelCommand(Chart.Label oldLabel, string newText) : ICommand
 {
     public string Name => "Edit Label";
+    
+    public bool UpdatesPriorityList => false;
     
     private readonly Chart.Label _newLabel = new(oldLabel.Time, newText);
 

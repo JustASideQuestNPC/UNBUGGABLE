@@ -32,7 +32,10 @@ public static class ChartBuilderCommandInvoker
         CommandStack.Push(command);
         RedoStack.Clear();
         command.Execute();
-        App.MainWindowViewModel.UpdatePriorityListEntries();
+        if (command.UpdatesPriorityList)
+        {
+            App.MainWindowViewModel.UpdatePriorityListEntries();
+        }
     }
     
     public static void Undo()
@@ -45,7 +48,10 @@ public static class ChartBuilderCommandInvoker
         var command = CommandStack.Pop();
         command.Undo();
         RedoStack.Push(command);
-        App.MainWindowViewModel.UpdatePriorityListEntries();
+        if (command.UpdatesPriorityList)
+        {
+            App.MainWindowViewModel.UpdatePriorityListEntries();
+        }
     }
     
     public static void Redo()
@@ -58,6 +64,9 @@ public static class ChartBuilderCommandInvoker
         var command = RedoStack.Pop();
         command.Execute();
         CommandStack.Push(command);
-        App.MainWindowViewModel.UpdatePriorityListEntries();
+        if (command.UpdatesPriorityList)
+        {
+            App.MainWindowViewModel.UpdatePriorityListEntries();
+        }
     }
 }

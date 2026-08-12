@@ -11,6 +11,8 @@ public class AddNotesCommand(List<NoteBase> notes) : ICommand
 {
     public string Name => "Add Notes";
     
+    public bool UpdatesPriorityList => true;
+    
     public void Execute()
     {
         ChartBuilder.ClearSelection();
@@ -39,6 +41,8 @@ public class AddNotesCommand(List<NoteBase> notes) : ICommand
 public class PasteNotesCommand : ICommand
 {
     public string Name => "Paste Notes";
+    
+    public bool UpdatesPriorityList => true;
 
     private readonly List<NoteBase> _addedNotes;
     private readonly List<NoteBase> _removedNotes = [];
@@ -123,6 +127,8 @@ public class DeleteNotesCommand(List<NoteBase> notes) : ICommand
 {
     public string Name => "Delete Notes";
     
+    public bool UpdatesPriorityList => true;
+    
     public void Execute()
     {
         ChartBuilder.ClearSelection();
@@ -146,6 +152,8 @@ public class UpdateNotesCommand(List<NoteBase> oldNotes, List<NoteBase> newNotes
     bool transferSelected = false) : ICommand
 {
     public string Name => "Update Notes";
+    
+    public bool UpdatesPriorityList => true;
     
     public void Execute()
     {
@@ -194,6 +202,8 @@ public class MirrorNotesCommand(List<NoteBase> notes) : ICommand
 {
     public string Name => "Mirror Notes";
     
+    public bool UpdatesPriorityList => true;
+    
     public void Execute()
     {
         foreach (var note in notes)
@@ -226,6 +236,8 @@ public class MirrorNotesCommand(List<NoteBase> notes) : ICommand
 public class SetFlagsCommand(char flag, bool newValue, List<(NoteBase, bool)> notes) : ICommand
 {
     public string Name => newValue ? "Set note flags" : "Unset note flags";
+    
+    public bool UpdatesPriorityList => true;
     
     public void Execute()
     {
@@ -285,6 +297,8 @@ public class SetFlagsCommand(char flag, bool newValue, List<(NoteBase, bool)> no
 public class SetNotesCopIdCommand : ICommand
 {
     public string Name => "Set Cop ID";
+    
+    public bool UpdatesPriorityList => true;
     
     private readonly List<NoteBase> _oldNotes;
     private readonly List<NoteBase> _newNotes;
@@ -369,6 +383,8 @@ public class ReorderNotesCommand(List<(NoteBase, int)> indexedOldOrder, List<Not
 {
     public string Name => "Reorder Notes";
     
+    public bool UpdatesPriorityList => false;
+    
     private readonly List<NoteBase> _oldOrder = indexedOldOrder.Select(i => i.Item1).ToList();
     private readonly List<(NoteBase, int)> _indexedNewOrder =
         newOrder.Select((note, i) => (note, i)).ToList();
@@ -401,6 +417,8 @@ public class ReorderNotesCommand(List<(NoteBase, int)> indexedOldOrder, List<Not
 public class NudgeNotesCommand(List<(NoteBase, int, int)> nudges) : ICommand
 {
     public string Name => "Nudge Notes";
+    
+    public bool UpdatesPriorityList => true;
     
     public void Execute()
     {
@@ -442,6 +460,8 @@ public class NudgeNotesCommand(List<(NoteBase, int, int)> nudges) : ICommand
 public class UpdateMarkerCommand(long time, int type) : ICommand
 {
     public string Name => "Update Marker";
+    
+    public bool UpdatesPriorityList => true;
 
     public void Execute()
     {
