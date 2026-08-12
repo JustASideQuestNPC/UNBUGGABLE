@@ -10,6 +10,7 @@ and whistles, and even fixes the bugs! Windows only.
 - [Quickstart](#quickstart)
 - [Keybinds](#keybinds)
 - [Settings](#settings)
+- [Color Themes](#)
 
 # Installation
 To install UNBUGGABLE, download and run the installer from the
@@ -21,12 +22,17 @@ the [official instructions](https://app.notion.com/p/dcellgames/USING-THE-EDITOR
 and then come back here to see the UNBUGGABLE-specific things.
 
 ### IMPORTANT!!!
-Currently, UNBUGGABLE has 2 semi-major limitations:
+Currently, UNBUGGABLE has 3 semi-major limitations:
 1. Variable bitrate .mp3 files do not work correctly and will desync from everything else. If you're
    running into troubles with desync, use a .wav or make sure you convert to a constant bitrate.
    **Note:** If you rip an mp3 off of YouTube, it probably has a variable bitrate.
 2. The in-game preview in UNBUGGABLE only shows where the camera is *supposed* to be. Unlike the
    official editor, it does not account for how long it takes the camera to actually move.
+3. Because of rounding errors that I am doing my best to fix, pasting notes will sometimes place
+   them 1ms before or after a snap line. On its own this has no effect on gameplay, but it prevents
+   the notes from appearing in the placement priority list, and if you add new notes alongside them
+   it can result in forced misses. You can fix this by selecting the notes and using the nudge
+   keybinds to line them back up.
 
 Additionally, UNBUGGABLE uses milliseconds for offset, not seconds.
 
@@ -58,8 +64,8 @@ There are also some UNBUGGABLE-specific keybinds:
 - `ctrl+1/2/3/4` without any notes selected will set the editor to place notes for that cop.
 - `ctrl+0` or <code>ctrl+`</code>: If notes are selected, converts cop notes to normal notes.
   Otherwise, sets the editor to place normal notes.
-- `n` while notes are selected: Set singles, spikes, holds, and doubles to be Noisz notes that spawn
-  in the center of the screen, like in the base game's Noisz charts.
+- `n` while notes are selected: Set singles, spikes, holds, and doubles to spawn in the center of
+  the screen, like in the base game's Noisz charts.
 - `shift+c/f/w/n`: Lock the C/W/F flags or the Noisz spawn. While a flag is locked, placing a note
   will immediately give it that flag (does not apply to pasting notes). **Note:** Locking the W flag
   will make all singles and holds become spikes and doubles, and make all camera changes zoom
@@ -67,6 +73,10 @@ There are also some UNBUGGABLE-specific keybinds:
   enabled). Locking the C flag will make singles and holds become invisible notes, make all camera
   changes be instant swaps, and will make most other note types invalid. Locking Noisz spawns does
   nothing for camera changes and center lane notes.
+- `alt+w/s` while notes are selected: Nudge those notes forward or back by 1ms. This only moves the
+  start of holds, doubles, and mash notes; use `shift+alt+w/s` to move the end of them. **Note:**
+  Nudging the end of notes will still move instant notes. This is primarily useful for when you use
+  spikes or other notes to telegraph a double.
 - Drag while holding right click to delete notes instead of selecting them.
 
 ## Editing Keybinds
@@ -100,8 +110,8 @@ reasons, these settings will not change until you fully restart the editor:
 - autosaveInterval
 
 ## colorTheme
-Which color theme to use for the editor. This must be the name of one of the themes in
-`configs/themes.json` (case sensitive).
+Which color theme to use for the editor. This must be the name of one of the themes in the themes
+folder (case sensitive).
 
 ## useBeatFiles
 Whether UNBUGGABLE should default to saving charts as .beat.txt files, or as standard .txt files.
@@ -173,7 +183,7 @@ multiplies all snap values by 4. The default snap values for UNBUGGABLE match th
 official editor.
 
 ## quickScrollBeats
-While holding the quick scroll modifier (default `f`), you scroll this many beats at a time. Must be
+While holding the quick scroll modifier (default `x`), you scroll this many beats at a time. Must be
 a positive integer.
 
 ## pasteOverwrites
@@ -198,6 +208,9 @@ Maximum possible zoom. Smaller values zoom out, larger values zoom in.
 ## zoomIncrement
 How much to increase or decrease zoom by when scrolling the mouse. Negative values invert scroll
 direction.
+
+## sliderIncrement
+Determines how many percent the volume and play speed sliders snap to.
 
 ## laneOrder
 What order (from left to right) the note viewer displays lanes. The default setting places the
@@ -239,3 +252,12 @@ hit sounds for everything except markers and camera changes.
 
 ## debug
 Contains toggles to enable or disable debug overlays that display some technical info.
+
+# Color Themes
+Every color theme is its own `.json` file in the themes folder. The naming is (hopefully)
+self-explanatory, but there are a few restrictions on what you can add:
+- Colors must be in `#rgb`, `#rgba`, `#rrggbb`, or `#rrggbbaa` format.
+- All numbers cannot be negative (see below for the only exception). Text sizes also cannot be 0.
+- For the `selected` section of note themes, you can set color values to an empty string and numbers
+  to `-1`. Doing this will make them copy the value used when the note isn't selected. This also
+  applies to the `hovered` section of button themes.
