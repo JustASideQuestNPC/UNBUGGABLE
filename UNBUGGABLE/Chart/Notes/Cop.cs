@@ -28,7 +28,7 @@ public class CopNote : NoteBase
         public required double SelectedTailOutlineThickness;
     }
 
-    private static List<StyleGroup> Styles = [];
+    private static readonly List<StyleGroup> Styles = [];
     
     private const double PreviewPixelsPerSecond = 200;
     

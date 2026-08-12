@@ -33,8 +33,8 @@ public class SingleNote : NoteBase
         new( 35, 30)
     ];
     
-    private static StyleGroup SingleStyles;
-    private static StyleGroup SpikeStyles;
+    private static StyleGroup _singleStyles;
+    private static StyleGroup _spikeStyles;
     
     public override NoteType Type => (Flags.W ? NoteType.SPIKE : NoteType.SINGLE);
     
@@ -43,7 +43,7 @@ public class SingleNote : NoteBase
     
     public static void UpdateStyles()
     {
-        SingleStyles = new StyleGroup
+        _singleStyles = new StyleGroup
         {
             FillBrush = (SolidColorBrush)App.Current.Resources["Notes.Single.FillColor"],
             OutlineBrush = (SolidColorBrush)App.Current.Resources["Notes.Single.OutlineColor"],
@@ -57,7 +57,7 @@ public class SingleNote : NoteBase
             SelectedOutlineThickness =
                 ((Thickness)App.Current.Resources["Notes.Single.Selected.OutlineThickness"]).Top
         };
-        SpikeStyles = new StyleGroup
+        _spikeStyles = new StyleGroup
         {
             FillBrush = (SolidColorBrush)App.Current.Resources["Notes.Spike.FillColor"],
             OutlineBrush = (SolidColorBrush)App.Current.Resources["Notes.Spike.OutlineColor"],
@@ -136,9 +136,9 @@ public class SingleNote : NoteBase
         
             
         var pen = selected ?
-            new Pen(SingleStyles.SelectedOutlineBrush, SingleStyles.SelectedOutlineThickness) :
-            new Pen(SingleStyles.OutlineBrush, SingleStyles.OutlineThickness);
-        dc.DrawRectangle(selected ? SingleStyles.SelectedFillBrush : SingleStyles.FillBrush, pen,
+            new Pen(_singleStyles.SelectedOutlineBrush, _singleStyles.SelectedOutlineThickness) :
+            new Pen(_singleStyles.OutlineBrush, _singleStyles.OutlineThickness);
+        dc.DrawRectangle(selected ? _singleStyles.SelectedFillBrush : _singleStyles.FillBrush, pen,
                          new Rect(x - 40, y - 12, 80, 24));
         
         RenderFlags(dc, x, y);
@@ -147,7 +147,7 @@ public class SingleNote : NoteBase
 
     private void RenderSinglePreview(DrawingContext dc, double y)
     {
-        dc.DrawEllipse(SingleStyles.FillBrush, new Pen(SingleStyles.OutlineBrush, 6),
+        dc.DrawEllipse(_singleStyles.FillBrush, new Pen(_singleStyles.OutlineBrush, 6),
                        new Point(GamePreview.TimeToScreenCoords(Time), y), 30, 30);
     }
     
@@ -173,9 +173,9 @@ public class SingleNote : NoteBase
         
             
         var pen = selected ?
-            new Pen(SpikeStyles.SelectedOutlineBrush, SpikeStyles.SelectedOutlineThickness) :
-            new Pen(SpikeStyles.OutlineBrush, SpikeStyles.OutlineThickness);
-        dc.DrawGeometry(selected ? SpikeStyles.SelectedFillBrush : SpikeStyles.FillBrush, pen,
+            new Pen(_spikeStyles.SelectedOutlineBrush, _spikeStyles.SelectedOutlineThickness) :
+            new Pen(_spikeStyles.OutlineBrush, _spikeStyles.OutlineThickness);
+        dc.DrawGeometry(selected ? _spikeStyles.SelectedFillBrush : _spikeStyles.FillBrush, pen,
                         shape);
         
         RenderFlags(dc, x, y, new NoteFlags(Flags.C, Flags.F, false, Flags.N));
@@ -195,7 +195,7 @@ public class SingleNote : NoteBase
                                                       y + offset));
         shape.Transform = transform;
         
-        dc.DrawGeometry(SpikeStyles.FillBrush, new Pen(SpikeStyles.OutlineBrush, 6), shape);
+        dc.DrawGeometry(_spikeStyles.FillBrush, new Pen(_spikeStyles.OutlineBrush, 6), shape);
     }
     
     private double TimeToNoiszPreviewY(double time)

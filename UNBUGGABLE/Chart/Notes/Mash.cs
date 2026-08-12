@@ -7,15 +7,17 @@ namespace UNBUGGABLE;
 
 public class MashNote : NoteBase
 {
-    private static SolidColorBrush _fillBrush;
-    private static SolidColorBrush _outlineBrush;
-    private static double _outlineThickness;
+    // these are public because they're used by negative mashes (which use the FreestyleNote class)
+    public static SolidColorBrush FillBrush;
+    public static SolidColorBrush OutlineBrush;
+    public static double OutlineThickness;
+    public static SolidColorBrush SelectedFillBrush;
+    public static SolidColorBrush SelectedOutlineBrush;
+    public static double SelectedOutlineThickness;
+    
     private static SolidColorBrush _tailFillBrush;
     private static SolidColorBrush _tailOutlineBrush;
     private static double _tailOutlineThickness;
-    private static SolidColorBrush _selectedFillBrush;
-    private static SolidColorBrush _selectedOutlineBrush;
-    private static double _selectedOutlineThickness;
     private static SolidColorBrush _selectedTailFillBrush;
     private static SolidColorBrush _selectedTailOutlineBrush;
     private static double _selectedTailOutlineThickness;
@@ -26,19 +28,19 @@ public class MashNote : NoteBase
 
     public static void UpdateStyles()
     {
-        _fillBrush = (SolidColorBrush)App.Current.Resources["Notes.Mash.FillColor"];
-        _outlineBrush = (SolidColorBrush)App.Current.Resources["Notes.Mash.OutlineColor"];
-        _outlineThickness =
+        FillBrush = (SolidColorBrush)App.Current.Resources["Notes.Mash.FillColor"];
+        OutlineBrush = (SolidColorBrush)App.Current.Resources["Notes.Mash.OutlineColor"];
+        OutlineThickness =
             ((Thickness)App.Current.Resources["Notes.Mash.OutlineThickness"]).Top;
         _tailFillBrush = (SolidColorBrush)App.Current.Resources["Notes.Mash.TailColor"];
         _tailOutlineBrush = (SolidColorBrush)App.Current.Resources["Notes.Mash.TailOutlineColor"];
         _tailOutlineThickness =
             ((Thickness)App.Current.Resources["Notes.Mash.TailOutlineThickness"]).Top;
 
-        _selectedFillBrush = (SolidColorBrush)App.Current.Resources["Notes.Mash.Selected.FillColor"];
-        _selectedOutlineBrush =
+        SelectedFillBrush = (SolidColorBrush)App.Current.Resources["Notes.Mash.Selected.FillColor"];
+        SelectedOutlineBrush =
             (SolidColorBrush)App.Current.Resources["Notes.Mash.Selected.OutlineColor"];
-        _selectedOutlineThickness =
+        SelectedOutlineThickness =
             ((Thickness)App.Current.Resources["Notes.Mash.Selected.OutlineThickness"]).Top;
         _selectedTailFillBrush =
             (SolidColorBrush)App.Current.Resources["Notes.Mash.Selected.TailColor"];
@@ -72,9 +74,9 @@ public class MashNote : NoteBase
                          new Rect(x - 16, startY, 32, endY - startY));
             
         var pen = selected ?
-            new Pen(_selectedOutlineBrush, _selectedOutlineThickness) : 
-            new Pen(_outlineBrush, _outlineThickness);
-        dc.DrawRectangle(selected ? _selectedFillBrush : _fillBrush, pen,
+            new Pen(SelectedOutlineBrush, SelectedOutlineThickness) : 
+            new Pen(OutlineBrush, OutlineThickness);
+        dc.DrawRectangle(selected ? SelectedFillBrush : FillBrush, pen,
                          new Rect(x - 40, startY - 12, 80, 24));
         
         RenderFlags(dc, x, startY, new NoteFlags(Flags.C, false, Flags.W));
@@ -100,7 +102,7 @@ public class MashNote : NoteBase
         {
             dc.DrawLine(new Pen(_tailFillBrush, 40), new Point(startX, 0), new Point(endX, 0));
         }
-        dc.DrawRectangle(_fillBrush, new Pen(_outlineBrush, 6), rect);
+        dc.DrawRectangle(FillBrush, new Pen(OutlineBrush, 6), rect);
     }
 
     public override long? ShouldPlayHitSound(double rangeStart, double rangeEnd)

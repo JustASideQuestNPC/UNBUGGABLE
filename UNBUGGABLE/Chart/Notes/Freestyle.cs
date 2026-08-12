@@ -13,24 +13,26 @@ public class FreestyleNote : NoteBase
     
     public override NoteLane Lane => NoteLane.CENTER;
     
-    private static SolidColorBrush FillBrush;
-    private static SolidColorBrush OutlineBrush;
-    private static double OutlineThickness;
-    private static SolidColorBrush SelectedOutlineBrush;
-    private static SolidColorBrush SelectedFillBrush;
-    private static double SelectedOutlineThickness;
+    // these are public because the game preview occasionally needs access to them
+    public static SolidColorBrush FillBrush;
+    public static SolidColorBrush OutlineBrush;
+    
+    private static double _outlineThickness;
+    private static SolidColorBrush _selectedOutlineBrush;
+    private static SolidColorBrush _selectedFillBrush;
+    private static double _selectedOutlineThickness;
     
     public static void UpdateStyles()
     {
         FillBrush = (SolidColorBrush)App.Current.Resources["Notes.Freestyle.FillColor"];
         OutlineBrush = (SolidColorBrush)App.Current.Resources["Notes.Freestyle.OutlineColor"];
-        OutlineThickness =
+        _outlineThickness =
             ((Thickness)App.Current.Resources["Notes.Freestyle.OutlineThickness"]).Top;
-        SelectedFillBrush =
+        _selectedFillBrush =
             (SolidColorBrush)App.Current.Resources["Notes.Freestyle.Selected.FillColor"];
-        SelectedOutlineBrush =
+        _selectedOutlineBrush =
             (SolidColorBrush)App.Current.Resources["Notes.Freestyle.Selected.OutlineColor"];
-        SelectedOutlineThickness =
+        _selectedOutlineThickness =
             ((Thickness)App.Current.Resources["Notes.Freestyle.Selected.OutlineThickness"]).Top;
     }
     
@@ -44,19 +46,26 @@ public class FreestyleNote : NoteBase
             return;
         }
 
+        var pen = selected ?
+            new Pen(_selectedOutlineBrush, _selectedOutlineThickness) :
+            new Pen(OutlineBrush, _outlineThickness);
+        var fill = selected ? _selectedFillBrush : FillBrush;
+        
         var rect = new Rect(x - 40, y - 12, 80, 24);
         var parentNote = Chart.GetPreviousNote(this);
         if (parentNote?.Type == NoteType.FREESTYLE
             && !(Config.Settings.NegativeMashConversion && (parentNote.Flags.F || Flags.F)))
         {
             rect = new Rect(x - 24, y - 12, 48, 24);
+            
+            fill = selected ? MashNote.SelectedFillBrush : MashNote.FillBrush;
+            pen = selected ?
+                new Pen(MashNote.SelectedOutlineBrush, MashNote.SelectedOutlineThickness) :
+                new Pen(MashNote.OutlineBrush, MashNote.OutlineThickness);
         }
         
         
-        var pen = selected ?
-            new Pen(SelectedOutlineBrush, SelectedOutlineThickness) 
-            : new Pen(OutlineBrush, OutlineThickness);
-        dc.DrawRectangle(selected ? SelectedFillBrush : FillBrush, pen, rect);
+        dc.DrawRectangle(fill, pen, rect);
         
         RenderFlags(dc, x, y);
         
@@ -78,7 +87,7 @@ public class FreestyleNote : NoteBase
             var rect = new RoundedRect(
                 new Rect(x - 30, GamePreview.TopLaneY, 60,
                          -GamePreview.TopLaneY + GamePreview.BottomLaneY), 30);
-            dc.DrawRectangle(FillBrush, new Pen(OutlineBrush, 6), rect);
+            dc.DrawRectangle(MashNote.FillBrush, new Pen(MashNote.OutlineBrush, 6), rect);
             return;
         }
         
@@ -87,12 +96,6 @@ public class FreestyleNote : NoteBase
                         && !(Config.Settings.NegativeMashConversion && parentNote.Flags.F);
         if (isSubNote)
         {
-            if (parentNote?.Time < Chart.CurrentTimeRaw)
-            {
-                dc.DrawEllipse(FillBrush, new Pen(OutlineBrush, 6),
-                               new Point(GamePreview.TimeToScreenCoords(Chart.CurrentTimeRaw), 0),
-                               30, 30);
-            }
             dc.DrawEllipse(FillBrush, new Pen(OutlineBrush, 6), new Point(x, 0), 15, 15);
         }
         else

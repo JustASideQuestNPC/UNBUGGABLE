@@ -24,14 +24,14 @@ public class HoldNote : NoteBase
         public required double SelectedTailOutlineThickness;
     }
 
-    private static StyleGroup HoldStyles;
-    private static StyleGroup DoubleStyles;
+    private static StyleGroup _holdStyles;
+    private static StyleGroup _doubleStyles;
     
     public override NoteType Type => (Flags.W ? NoteType.DOUBLE : NoteType.HOLD);
 
     public static void UpdateStyles()
     {
-        HoldStyles = new StyleGroup
+        _holdStyles = new StyleGroup
         {
             FillBrush = (SolidColorBrush)App.Current.Resources["Notes.Hold.FillColor"],
             OutlineBrush = (SolidColorBrush)App.Current.Resources["Notes.Hold.OutlineColor"],
@@ -58,7 +58,7 @@ public class HoldNote : NoteBase
             SelectedTailOutlineThickness =
                 ((Thickness)App.Current.Resources["Notes.Hold.Selected.TailOutlineThickness"]).Top,
         };
-        DoubleStyles = new StyleGroup
+        _doubleStyles = new StyleGroup
         {
             FillBrush = (SolidColorBrush)App.Current.Resources["Notes.Double.FillColor"],
             OutlineBrush = (SolidColorBrush)App.Current.Resources["Notes.Double.OutlineColor"],
@@ -107,7 +107,7 @@ public class HoldNote : NoteBase
 
     public override void Render(DrawingContext dc, bool selected)
     {
-        var styles = Type == NoteType.HOLD ? HoldStyles : DoubleStyles;
+        var styles = Type == NoteType.HOLD ? _holdStyles : _doubleStyles;
         
         var x = NoteViewer.GetNoteX(Lane);
         var startY = NoteViewer.TimeToScreenCoords(Time);
@@ -173,7 +173,8 @@ public class HoldNote : NoteBase
                 {
                     return (long)(Time - rangeStart);
                 }
-                if (EndTime > rangeStart && EndTime <= rangeEnd && Config.Settings.HitSounds.HoldEnd)
+                if (EndTime > rangeStart && EndTime <= rangeEnd &&
+                    Config.Settings.HitSounds.HoldEnd)
                 {
                     return (long)(EndTime - rangeStart);
                 }
@@ -183,7 +184,8 @@ public class HoldNote : NoteBase
                 {
                     return (long)(Time - rangeStart);
                 }
-                if (EndTime > rangeStart && EndTime <= rangeEnd && Config.Settings.HitSounds.DoubleEnd)
+                if (EndTime > rangeStart && EndTime <= rangeEnd &&
+                    Config.Settings.HitSounds.DoubleEnd)
                 {
                     return (long)(EndTime - rangeStart);
                 }
@@ -199,9 +201,9 @@ public class HoldNote : NoteBase
         
         var endX = GamePreview.TimeToScreenCoords(EndTime);
         
-        dc.DrawLine(new Pen(HoldStyles.TailFillBrush, 20), new Point(startX, y),
+        dc.DrawLine(new Pen(_holdStyles.TailFillBrush, 20), new Point(startX, y),
                     new Point(endX, y));
-        dc.DrawEllipse(HoldStyles.FillBrush, new Pen(HoldStyles.OutlineBrush, 6),
+        dc.DrawEllipse(_holdStyles.FillBrush, new Pen(_holdStyles.OutlineBrush, 6),
                        new Point(startX, y), 30, 30);
     }
     
@@ -213,18 +215,18 @@ public class HoldNote : NoteBase
         var noteY = Utils.MapRanges(Math.Clamp(Chart.CurrentTimeRaw, Time, EndTime), Time, EndTime,
                               startY, endY);
         
-        var fillBrush = DoubleStyles.FillBrush;
-        var outlineBrush = DoubleStyles.OutlineBrush;
+        var fillBrush = _doubleStyles.FillBrush;
+        var outlineBrush = _doubleStyles.OutlineBrush;
         if (Time < Chart.CurrentTimeRaw)
         {
-            fillBrush = DoubleStyles.TailFillBrush;
-            outlineBrush = DoubleStyles.TailOutlineBrush;
+            fillBrush = _doubleStyles.TailFillBrush;
+            outlineBrush = _doubleStyles.TailOutlineBrush;
         }
 
         if (Config.Settings.EnhancedPreview)
         {
             var endX = GamePreview.TimeToScreenCoords(EndTime);
-            dc.DrawEllipse(DoubleStyles.TailFillBrush, null, new Point(endX, endY), 20, 20);
+            dc.DrawEllipse(_doubleStyles.TailFillBrush, null, new Point(endX, endY), 20, 20);
         }
         dc.DrawEllipse(fillBrush, new Pen(outlineBrush, 6), new Point(startX, noteY), 30, 30);
     }

@@ -278,6 +278,18 @@ public class GamePreview : Control
         CurrentNotesFromRight = true;
         var viewableZoomedOut = false;
         var currentNoteZoomedOut = false;
+        
+        // render freestyles that have been "caught" -- originally this was rendered as part of the
+        // freestyle note class, but doing it here avoids issues when notes are really far apart
+        var previousNote = Chart.GetLastNoteBeforeTime(Chart.CurrentTime);
+        var nextNote = Chart.GetFirstNoteAfterTime(Chart.CurrentTime);
+
+        if (previousNote?.Type == NoteType.FREESTYLE && nextNote?.Type == NoteType.FREESTYLE)
+        {
+            dc.DrawEllipse(FreestyleNote.FillBrush, new Pen(FreestyleNote.OutlineBrush, 6),
+                           new Point(TimeToScreenCoords(Chart.CurrentTimeRaw), 0), 30, 30);
+        }
+        
         foreach (var note in Chart.Notes)
         {
             if (note.Type is NoteType.CAMERA_ZOOM or NoteType.CAMERA_SWAP_AND_ZOOM)

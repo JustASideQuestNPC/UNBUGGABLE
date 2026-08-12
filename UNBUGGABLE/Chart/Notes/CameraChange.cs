@@ -20,12 +20,12 @@ public class CameraChange : NoteBase
         new(-33.412, 10.920)
     ];
 
-    private static SolidColorBrush FillBrush;
-    private static SolidColorBrush OutlineBrush;
-    private static double OutlineThickness;
-    private static SolidColorBrush SelectedOutlineBrush;
-    private static SolidColorBrush SelectedFillBrush;
-    private static double SelectedOutlineThickness;
+    private static SolidColorBrush _fillBrush;
+    private static SolidColorBrush _outlineBrush;
+    private static double _outlineThickness;
+    private static SolidColorBrush _selectedOutlineBrush;
+    private static SolidColorBrush _selectedFillBrush;
+    private static double _selectedOutlineThickness;
     
     public override NoteType Type =>
         (Flags.C && Flags.W ? NoteType.CAMERA_SWAP_AND_ZOOM :
@@ -38,15 +38,15 @@ public class CameraChange : NoteBase
 
     public static void UpdateStyles()
     {
-        FillBrush = (SolidColorBrush)App.Current.Resources["Notes.Camera.FillColor"];
-        OutlineBrush = (SolidColorBrush)App.Current.Resources["Notes.Camera.OutlineColor"];
+        _fillBrush = (SolidColorBrush)App.Current.Resources["Notes.Camera.FillColor"];
+        _outlineBrush = (SolidColorBrush)App.Current.Resources["Notes.Camera.OutlineColor"];
         // thickness is always the same on all sides
-        OutlineThickness = ((Thickness)App.Current.Resources["Notes.Camera.OutlineThickness"]).Top;
-        SelectedFillBrush =
+        _outlineThickness = ((Thickness)App.Current.Resources["Notes.Camera.OutlineThickness"]).Top;
+        _selectedFillBrush =
             (SolidColorBrush)App.Current.Resources["Notes.Camera.Selected.FillColor"];
-        SelectedOutlineBrush =
+        _selectedOutlineBrush =
             (SolidColorBrush)App.Current.Resources["Notes.Camera.Selected.OutlineColor"];
-        SelectedOutlineThickness =
+        _selectedOutlineThickness =
             ((Thickness)App.Current.Resources["Notes.Camera.Selected.OutlineThickness"]).Top;
     }
 
@@ -64,9 +64,9 @@ public class CameraChange : NoteBase
         shape.Transform = new TranslateTransform(x, y);
         
         var pen = selected ?
-            new Pen(SelectedOutlineBrush, SelectedOutlineThickness) :
-            new Pen(OutlineBrush, OutlineThickness);
-        dc.DrawGeometry(selected ? SelectedFillBrush : FillBrush, pen, shape);
+            new Pen(_selectedOutlineBrush, _selectedOutlineThickness) :
+            new Pen(_outlineBrush, _outlineThickness);
+        dc.DrawGeometry(selected ? _selectedFillBrush : _fillBrush, pen, shape);
         
         RenderFlags(dc, x, y);
         

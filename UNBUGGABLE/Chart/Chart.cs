@@ -956,6 +956,24 @@ public static partial class Chart
         return _notes.Where(n => n.Time >= start && n.Time <= end && lanes.Contains(n.Lane))
                      .ToList();
     }
+    
+    public static NoteBase? GetLastNoteBeforeTime(long time) =>
+        NonMarkerNotes.LastOrDefault(n => n.Time <= time);
+    
+    public static NoteBase? GetLastNoteBeforeTime(long time, NoteLane lane) =>
+        NonMarkerNotes.LastOrDefault(n => n.Time <= time && n.Lane == lane);
+    
+    public static NoteBase? GetLastNoteBeforeTime(long time, List<NoteLane> lanes) =>
+        NonMarkerNotes.LastOrDefault(n => n.Time <= time && lanes.Contains(n.Lane));
+
+    public static NoteBase? GetFirstNoteAfterTime(long time) =>
+        NonMarkerNotes.FirstOrDefault(n => n.Time >= time);
+    
+    public static NoteBase? GetFirstNoteAfterTime(long time, NoteLane lane) =>
+        NonMarkerNotes.FirstOrDefault(n => n.Time >= time && n.Lane == lane);
+    
+    public static NoteBase? GetFirstNoteAfterTime(long time, List<NoteLane> lanes) =>
+        NonMarkerNotes.FirstOrDefault(n => n.Time >= time && lanes.Contains(n.Lane));
 
     /// <summary>
     /// Adds a note. If one or more notes already exist at that timestamp, the new note will be
