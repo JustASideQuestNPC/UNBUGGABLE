@@ -131,7 +131,7 @@ public static class Config
         TryReloadConfig(false);
     }
 
-    public static void TryReloadConfig(bool showError = true)
+    public static void TryReloadConfig(bool mainWindowInitialized = true)
     {
         Trace.WriteLine("\n-- Reloading Config --");
         
@@ -144,13 +144,19 @@ public static class Config
         {
             loadError = !TryLoadConfig();
         }
-        
-        if (loadError && showError)
+
+        // load errors and some other things are skipped on the first load -- without this, it'll
+        // try to spawn ui components that can't exist and the entire thing will crash and burn
+        if (mainWindowInitialized)
         {
-            LoadError = true;
-            // line break between the end of config loading and everything else
-            Trace.WriteLine("\n");
-            return;
+            App.MainWindowViewModel.SliderIncrement = Settings.SliderIncrement;
+            if (loadError)
+            {
+                LoadError = true;
+                // line break between the end of config loading and everything else
+                Trace.WriteLine("\n");
+                return;
+            }
         }
         
         ThemeManager.ApplyTheme(ColorThemes[Settings.ColorTheme]);
@@ -350,6 +356,20 @@ public static class Config
                 {
                     Trace.WriteLine("zoom increment must be nonzero");
                     settings.ZoomIncrement = 0.25;
+                    loadError = true;
+                }
+                
+                if (settings.QuickScrollBeats <= 0)
+                {
+                    Trace.WriteLine("quick scroll beats must be > 0");
+                    settings.QuickScrollBeats = 5;
+                    loadError = true;
+                }
+                
+                if (settings.SliderIncrement <= 0)
+                {
+                    Trace.WriteLine("slider increment must be > 0");
+                    settings.SliderIncrement = 5;
                     loadError = true;
                 }
 

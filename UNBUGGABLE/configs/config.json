@@ -7,7 +7,7 @@
   "useLane2AsMarkers": true,
   "saveMarkersAsLane2Notes": false,
   "alwaysEnableCustomDifficultyName": false,
-  "autoSelect": "pasted",
+  "autoSelect": "all",
   "selectHoldNotesFromTail": "all",
   "allowTopLaneCopMashes": false,
   "showFreestyleSubNotesWhilePlacing": true,
@@ -69,11 +69,12 @@
     "marker3": false
   },
   "debug": {
-    "enabled": false,
+    "enabled": true,
     "commandStacks": false,
     "inputData": false,
     "mediaPlayer": false,
-    "noteTimestamps": false
+    "noteTimestamps": true
   },
-  "quickScrollBeats": 5
+  "quickScrollBeats": 5,
+  "sliderIncrement": 5
 }

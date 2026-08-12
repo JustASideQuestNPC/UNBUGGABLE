@@ -159,6 +159,9 @@ public class Settings
     
     [JsonRequired][JsonPropertyName("quickScrollBeats")]
     public int QuickScrollBeats { get; set; } = 5;
+    
+    [JsonRequired][JsonPropertyName("sliderIncrement")]
+    public int SliderIncrement { get; set; } = 5;
 
     [JsonRequired][JsonPropertyName("beatSnaps")]
     public List<int> BeatSnaps { get; set; } =
@@ -240,6 +243,8 @@ public class Settings
                          hit sound tick rate: {HitSoundTickRate}
                          max concurrent hit sounds: {MaxConcurrentSfx}
                          hit sounds: {HitSounds.GetFormattedString()}
+                         quick scroll beats: {QuickScrollBeats}
+                         slider increment: {SliderIncrement}
                          debug mode: {DebugToggles.Enabled}
                          {DebugToggles.GetFormattedString()}
                          """);

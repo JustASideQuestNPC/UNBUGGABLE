@@ -225,7 +225,7 @@ public class MirrorNotesCommand(List<NoteBase> notes) : ICommand
 
 public class SetFlagsCommand(char flag, bool newValue, List<(NoteBase, bool)> notes) : ICommand
 {
-    public string Name => newValue ? "Set note flags" : $"Unset note flags";
+    public string Name => newValue ? "Set note flags" : "Unset note flags";
     
     public void Execute()
     {

@@ -282,6 +282,9 @@ public static partial class Chart
     {
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
+
+    private static List<long> _jumpTargets = [];
+    private static bool _jumpTargetsOutOfDate = true;
     
     [GeneratedRegex(@"[0-9]+,[0-9]+.[0-9]+,[0-9]+,[0-9]+,[0-9]+,[0-9]+,[0-9]+,[0-9]+")]
     private static partial Regex TimingPointRegex();
@@ -448,6 +451,12 @@ public static partial class Chart
 
     public static void MoveToNextLabel()
     {
+        if (_jumpTargetsOutOfDate)
+        {
+            RebuildJumpTargets();
+            _jumpTargetsOutOfDate = false;
+        }
+        
         if (CurrentTimeRaw >= Length)
         {
             return;
@@ -456,17 +465,16 @@ public static partial class Chart
         // skip labels within the next snap - this may end up jumping past the next label (but that
         // shouldn't be an issue unless you have multiple labels within a single beat) but prevents
         // an infinite loop if the next label isn't quite on a snap line
-        var nextLabel = _labels.FirstOrDefault(
-            l => l.Time - Metadata.ChartOffset > GetNextSnapTime());
-        if (nextLabel != null)
+        if (_jumpTargets.Any(t => t - Metadata.ChartOffset > GetNextSnapTime()))
         {
-            //Trace.WriteLine($"Moving to label {_labels.IndexOf(nextLabel)} at {nextLabel.Time - Metadata.ChartOffset} (raw {CurrentTimeRaw}, {CurrentTime})");
-            CurrentTimeRaw = nextLabel.Time - Metadata.ChartOffset;
+            var time = _jumpTargets.Find(
+                t => t - Metadata.ChartOffset > GetNextSnapTime());
+            //Trace.WriteLine($"Moving to label {_labels.IndexOf(previousLabel)} at {previousLabel.Time - Metadata.ChartOffset} (raw {CurrentTimeRaw}, {CurrentTime})");
+            CurrentTimeRaw = time - Metadata.ChartOffset;
         }
         else
         {
-            var lastNote = NonMarkerNotes[^1];
-            CurrentTimeRaw = (lastNote.Instant ? lastNote.Time : lastNote.EndTime);
+            CurrentTimeRaw = Length;
         }
         
         SetTimeToNearestSnap();
@@ -474,6 +482,12 @@ public static partial class Chart
     
     public static void MoveToPreviousLabel()
     {
+        if (_jumpTargetsOutOfDate)
+        {
+            RebuildJumpTargets();
+            _jumpTargetsOutOfDate = false;
+        }
+        
         if (CurrentTimeRaw <= 0)
         {
             return;
@@ -482,12 +496,12 @@ public static partial class Chart
         // skip labels within the previous snap - this may end up jumping past the actual previous
         // label (but that shouldn't be an issue unless you have multiple labels within a single
         // beat) but prevents an infinite loop if the previous label isn't quite on a snap line
-        var previousLabel = _labels.LastOrDefault(
-            l => l.Time - Metadata.ChartOffset < GetPreviousSnapTime());
-        if (previousLabel != null)
+        if (_jumpTargets.Any(t => t - Metadata.ChartOffset < GetPreviousSnapTime()))
         {
+            var time = _jumpTargets.FindLast(
+                t => t - Metadata.ChartOffset < GetPreviousSnapTime());
             //Trace.WriteLine($"Moving to label {_labels.IndexOf(previousLabel)} at {previousLabel.Time - Metadata.ChartOffset} (raw {CurrentTimeRaw}, {CurrentTime})");
-            CurrentTimeRaw = previousLabel.Time - Metadata.ChartOffset;
+            CurrentTimeRaw = time - Metadata.ChartOffset;
         }
         else
         {
@@ -563,6 +577,8 @@ public static partial class Chart
     public static async Task<(bool, string)> TryCreateChartFromAudio(string path)
     {
         SongLoaded = false;
+        _canAutosave = false;
+        _jumpTargetsOutOfDate = true;
 
         var result = await TryLoadAudioFile(path);
         if (!result.Item1)
@@ -612,6 +628,8 @@ public static partial class Chart
     {
         SongLoaded = false;
         _canAutosave = false;
+        _jumpTargetsOutOfDate = true;
+        
         Trace.WriteLine($"Loading chart file: {path}");
         if (!File.Exists(path))
         {
@@ -961,6 +979,7 @@ public static partial class Chart
         
         App.MainWindowViewModel.UpdatePriorityListEntries(GetNotesAtTime(CurrentTime));
         UnsavedChanges = true;
+        _jumpTargetsOutOfDate = true;
     }
 
     public static void RemoveNote(NoteBase note)
@@ -968,6 +987,7 @@ public static partial class Chart
         _notes.Remove(note);
         App.MainWindowViewModel.UpdatePriorityListEntries(GetNotesAtTime(CurrentTime));
         UnsavedChanges = true;
+        _jumpTargetsOutOfDate = true;
     }
     
     /// <summary>
@@ -978,6 +998,7 @@ public static partial class Chart
         _notes[_notes.IndexOf(oldNote)] = newNote;
         App.MainWindowViewModel.UpdatePriorityListEntries(GetNotesAtTime(CurrentTime));
         UnsavedChanges = true;
+        _jumpTargetsOutOfDate = true;
     }
 
     /// <summary>
@@ -998,6 +1019,7 @@ public static partial class Chart
         }
         
         UnsavedChanges = true;
+        _jumpTargetsOutOfDate = true;
     }
 
     public static void AddOrUpdateMarker(long time, bool color1, bool color2, bool color3)
@@ -1022,6 +1044,8 @@ public static partial class Chart
             if (m is { Color1: false, Color2: false, Color3: false })
             {
                 RemoveNote(existing);
+                UnsavedChanges = true;
+                _jumpTargetsOutOfDate = true;
             }
         }
         else
@@ -1032,6 +1056,8 @@ public static partial class Chart
                 Color2 = color2,
                 Color3 = color3
             });
+            UnsavedChanges = true;
+            _jumpTargetsOutOfDate = true;
         }
     }
 
@@ -1057,12 +1083,14 @@ public static partial class Chart
         }
         
         UnsavedChanges = true;
+        _jumpTargetsOutOfDate = true;
     }
 
     public static void RemoveLabel(Label label)
     {
         _labels.Remove(label);
         UnsavedChanges = true;
+        _jumpTargetsOutOfDate = true;
     }
 
     /// <summary>
@@ -1123,6 +1151,7 @@ public static partial class Chart
         
         RebuildSnapLineSets();
         UnsavedChanges = true;
+        _jumpTargetsOutOfDate = true;
     }
 
     public static void RemoveBpmRegion(BpmRegion region)
@@ -1195,6 +1224,28 @@ public static partial class Chart
         
         _currentSnapLineSet = SnapLineSets[BeatSnap];
         SetTimeToNearestSnap();
+    }
+
+    /// <summary>
+    /// Recalculates every timestamp that label jumping can send you to.
+    /// </summary>
+    private static void RebuildJumpTargets()
+    {
+        _jumpTargets = Labels.Select(l => l.Time).ToList();
+        _jumpTargets.AddRange(BpmRegions.Select(r => r.StartTime));
+        if (NonMarkerNotes.Count > 0)
+        {
+            _jumpTargets.Add(NonMarkerNotes[0].Time);
+            _jumpTargets.Add(NonMarkerNotes[^1].Time);
+        }
+        if (MarkerNotes.Count > 0)
+        {
+            _jumpTargets.Add(MarkerNotes[0].Time);
+            _jumpTargets.Add(MarkerNotes[^1].Time);
+        }
+        
+        _jumpTargets = _jumpTargets.Distinct().ToList();
+        _jumpTargets.Sort();
     }
 
     private static void ClearChart()

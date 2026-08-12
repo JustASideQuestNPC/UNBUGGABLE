@@ -82,10 +82,11 @@
                 
                 <materialIcons:MaterialIcon IconSize="22" Kind="Music" />
                 <Panel Classes="Spacer" Width="5" />
-                <Slider Name="MusicVolumeSlider" Minimum="0" Maximum="100" TickFrequency="1"
-                        IsSnapToTickEnabled="True" Width="150" Orientation="Horizontal"
-                        VerticalAlignment="Stretch" Value="{Binding SongVolume}"
-                        IsEnabled="{Binding SongLoaded}" Focusable="False">
+                <Slider Name="MusicVolumeSlider" Minimum="0" Maximum="100"
+                        TickFrequency="{Binding SliderIncrement}" IsSnapToTickEnabled="True"
+                        Width="150" Orientation="Horizontal" VerticalAlignment="Stretch"
+                        Value="{Binding SongVolume}" IsEnabled="{Binding SongLoaded}"
+                        Focusable="False">
                     <ToolTip.Tip>Music Volume</ToolTip.Tip>
                 </Slider>
                 <Panel Classes="Spacer" Width="5" />
@@ -96,9 +97,10 @@
                 
                 <materialIcons:MaterialIcon IconSize="22" Kind="VolumeHigh" />
                 <Panel Classes="Spacer" Width="5" />
-                <Slider Name="SfxVolumeSlider" Minimum="0" Maximum="100" TickFrequency="1"
-                        IsSnapToTickEnabled="True" Width="150" Orientation="Horizontal"
-                        VerticalAlignment="Stretch" Value="{Binding SfxVolume}" Focusable="False"
+                <Slider Name="SfxVolumeSlider" Minimum="0" Maximum="100"
+                        TickFrequency="{Binding SliderIncrement}" IsSnapToTickEnabled="True"
+                        Width="150" Orientation="Horizontal" VerticalAlignment="Stretch"
+                        Value="{Binding SfxVolume}" Focusable="False"
                         IsEnabled="{Binding SongLoaded}">
                     <ToolTip.Tip>SFX Volume</ToolTip.Tip>
                 </Slider>
@@ -111,9 +113,10 @@
                 
                 <materialIcons:MaterialIcon IconSize="22" Kind="FastForward" />
                 <Panel Classes="Spacer" Width="5" />
-                <Slider Name="PlaySpeedSlider" Minimum="25" Maximum="200" TickFrequency="1"
-                        IsSnapToTickEnabled="True" Width="400" Orientation="Horizontal"
-                        VerticalAlignment="Stretch" Value="{Binding PlaySpeed}" Focusable="False"
+                <Slider Name="PlaySpeedSlider" Minimum="25" Maximum="200"
+                        TickFrequency="{Binding SliderIncrement}" IsSnapToTickEnabled="True"
+                        Width="400" Orientation="Horizontal" VerticalAlignment="Stretch"
+                        Value="{Binding PlaySpeed}" Focusable="False"
                         IsEnabled="{Binding EditorUiEnabled}">
                     <ToolTip.Tip>Playback Speed</ToolTip.Tip>
                 </Slider>

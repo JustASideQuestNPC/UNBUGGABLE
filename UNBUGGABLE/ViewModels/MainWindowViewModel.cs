@@ -91,6 +91,7 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty] private bool _songLoaded = false;
     [ObservableProperty] private bool _editorUiEnabled = false;
     [ObservableProperty] private bool _placementPriorityListEnabled = false;
+    [ObservableProperty] private int _sliderIncrement = 5;
     [ObservableProperty] private Border _eventIndicator = new();
     
     [ObservableProperty]
@@ -220,6 +221,8 @@ public partial class MainWindowViewModel : ViewModelBase
         };
     }
 
+    public void UpdatePriorityListEntries() =>
+        UpdatePriorityListEntries(Chart.GetNotesAtTime(Chart.CurrentTime));
     public void UpdatePriorityListEntries(List<(NoteBase, int)> notes)
     {
         _updatingPriorityList = true;
