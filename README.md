@@ -216,7 +216,13 @@ Determines how many percent the volume and play speed sliders snap to.
 What order (from left to right) the note viewer displays lanes. The default setting places the
 center lane in between the top and bottom to match the in-game order. To use the official editor's
 order where the center lane is on the right, change this setting to 
-["top", "bottom", "camera", "center"].
+`["top", "bottom", "camera", "center"]`.
+
+## jumpTargets
+Determines where the "jump to previous/next label" keybinds can send you to. Allowed values are
+`"labels"`, `"bpmChanges"`, `"breakpoint"`, `"firstNote"`, `"lastNote"`, `"firstMarker"`,
+`"lastMarker"`, `"chartStart"`, and `"chartEnd"`. **Note:** Values in this array can be in any
+order. The editor will automatically sort them.
 
 ## doublePreviewAlpha
 Opacity of doubles in the in-game preview while they are moving toward their landing point. Between
