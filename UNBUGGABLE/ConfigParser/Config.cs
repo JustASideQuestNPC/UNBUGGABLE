@@ -161,6 +161,11 @@ public static class Config
         
         ThemeManager.ApplyTheme(ColorThemes[Settings.ColorTheme]);
         Trace.WriteLine($"applied theme \"{Settings.ColorTheme}\"\n");
+
+        if (Chart.SongLoaded)
+        {
+            Chart.RebuildJumpTargets();
+        }
         
         LoadError = false;
     }
@@ -230,6 +235,7 @@ public static class Config
                 VerifyKeybindStrings(keybinds.AddMarker3, "addMarker3") &&
                 VerifyKeybindStrings(keybinds.SetBreakpoint, "setBreakpoint") &&
                 VerifyKeybindStrings(keybinds.RemoveBreakpoint, "removeBreakpoint") &&
+                VerifyKeybindStrings(keybinds.JumpToBreakpoint, "jumpToBreakpoint") &&
                 VerifyKeybindStrings(keybinds.EmergencyReload, "emergencyReload") &&
                 VerifyKeybindStrings(keybinds.NudgeForward, "nudgeForward") &&
                 VerifyKeybindStrings(keybinds.NudgeBack, "nudgeBack") &&
@@ -313,6 +319,7 @@ public static class Config
             new AddMarkerAction(Keybinds.AddMarker3, 2),
             new SetBreakpointAction(Keybinds.SetBreakpoint),
             new RemoveBreakpointAction(Keybinds.RemoveBreakpoint),
+            new JumpToBreakpointCommand(Keybinds.JumpToBreakpoint),
             new EmergencyReloadAction(Keybinds.EmergencyReload)
         ];
 
@@ -429,6 +436,58 @@ public static class Config
                     Trace.WriteLine("Invalid lane order");
                     settings.LaneOrder = ["top", "center", "bottom", "camera"];
                     loadError = true;
+                }
+
+                if (settings.JumpTargets.Count == 0)
+                {
+                    Trace.WriteLine("No jump targets.");
+                    settings.JumpTargets = [
+                        "labels",
+                        "bpmChanges",
+                        "firstNote",
+                        "lastNote",
+                        "chartStart",
+                        "chartEnd"
+                    ];
+                    loadError = true;
+                }
+                else
+                {
+                    settings.JumpTargets = settings.JumpTargets.Distinct().ToList();
+                    var invalidJumpTarget = false;
+                    List<string> allowedTargets = [
+                        "labels",
+                        "bpmChanges",
+                        "firstNote",
+                        "lastNote",
+                        "firstMarker",
+                        "lastMarker",
+                        "chartStart",
+                        "chartEnd",
+                        "breakpoint"
+                    ];
+                    
+                    foreach (var target in settings.JumpTargets)
+                    {
+                        if (!allowedTargets.Contains(target))
+                        {
+                            invalidJumpTarget = true;
+                            Trace.WriteLine($"Invalid jump target \"{target}\"");
+                        }
+                    }
+
+                    if (invalidJumpTarget)
+                    {
+                        settings.JumpTargets = [
+                            "labels",
+                            "bpmChanges",
+                            "firstNote",
+                            "lastNote",
+                            "chartStart",
+                            "chartEnd"
+                        ];
+                        loadError = true;
+                    }
                 }
 
                 if (settings.PasteBehavior != "none" && settings.PasteBehavior != "notes" &&

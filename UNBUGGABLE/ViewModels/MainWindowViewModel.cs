@@ -222,7 +222,7 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     public void UpdatePriorityListEntries() =>
-        UpdatePriorityListEntries(Chart.GetNotesAtTime(Chart.CurrentTime));
+        UpdatePriorityListEntries(Chart.GetNotesAtCurrentTime());
     public void UpdatePriorityListEntries(List<(NoteBase, int)> notes)
     {
         _updatingPriorityList = true;

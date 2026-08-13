@@ -166,7 +166,7 @@ public class Settings
     [JsonRequired][JsonPropertyName("beatSnaps")]
     public List<int> BeatSnaps { get; set; } =
         [1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 20, 5, 9, 11, 13];
-
+    
     [JsonRequired][JsonPropertyName("pasteOverwrites")]
     public string PasteBehavior { get; set; } = "notes";
 
@@ -184,6 +184,17 @@ public class Settings
 
     [JsonRequired][JsonPropertyName("laneOrder")]
     public List<string> LaneOrder { get; set; } = ["top", "center", "bottom", "camera"];
+
+    [JsonRequired][JsonPropertyName("jumpTargets")]
+    public List<string> JumpTargets { get; set; } =
+    [
+        "labels",
+        "bpmChanges",
+        "firstNote",
+        "lastNote",
+        "chartStart",
+        "chartEnd"
+    ];
 
     [JsonRequired][JsonPropertyName("doublePreviewAlpha")]
     public double DoublePreviewAlpha { get; set; } = 0.5;
@@ -238,6 +249,7 @@ public class Settings
                          max zoom: {MaxZoom}
                          zoom increment: {ZoomIncrement}
                          lane order: [{string.Join(", ", LaneOrder)}]
+                         jump targets: [{string.Join(", ", JumpTargets)}]
                          hit sound offset: {HitSoundOffset}
                          hard chart offset: {HardChartOffset}
                          hit sound tick rate: {HitSoundTickRate}

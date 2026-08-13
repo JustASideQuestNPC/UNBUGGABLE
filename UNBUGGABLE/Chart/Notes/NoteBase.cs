@@ -56,7 +56,7 @@ public class NoteFlags(bool c, bool f, bool w, bool n = false)
 /// </summary>
 public abstract partial class NoteBase
 {
-    [GeneratedRegex(@"\d\d\d,192,-?\d+,\d+,\d+,(\d+:){4,5}")]
+    [GeneratedRegex(@"\d{2,3},192,-?\d+,\d+,\d+,[\d+:]{4,5}")]
     private static partial Regex HitObjectRegex();
     
     public long Time { get; set; }

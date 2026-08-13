@@ -436,7 +436,7 @@ public class NudgeNotesCommand(List<(NoteBase, int, int)> nudges) : ICommand
                 nudge.Item1.EndTime += nudge.Item3;
             }
         }
-        App.MainWindowViewModel.UpdatePriorityListEntries(Chart.GetNotesAtTime(Chart.CurrentTime));
+        App.MainWindowViewModel.UpdatePriorityListEntries(Chart.GetNotesAtCurrentTime());
     }
     
     public void Undo()
@@ -453,7 +453,7 @@ public class NudgeNotesCommand(List<(NoteBase, int, int)> nudges) : ICommand
                 nudge.Item1.EndTime -= nudge.Item3;
             }
         }
-        App.MainWindowViewModel.UpdatePriorityListEntries(Chart.GetNotesAtTime(Chart.CurrentTime));
+        App.MainWindowViewModel.UpdatePriorityListEntries(Chart.GetNotesAtCurrentTime());
     }
 }
 

@@ -41,6 +41,14 @@
     "bottom",
     "camera"
   ],
+  "jumpTargets": [
+    "labels",
+    "bpmChanges",
+    "firstNote",
+    "lastNote",
+    "chartStart",
+    "chartEnd"
+  ],
   "doublePreviewAlpha": 0.5,
   "currentTimePosition": 175,
   "hitSoundOffset": -30,

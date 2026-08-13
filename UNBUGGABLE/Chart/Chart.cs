@@ -175,7 +175,7 @@ public static partial class Chart
 
             if (!Playing)
             {
-                App.MainWindowViewModel.UpdatePriorityListEntries(GetNotesAtTime(CurrentTime));
+                App.MainWindowViewModel.UpdatePriorityListEntries(GetNotesAtCurrentTime());
                 // _songPlayer.Time = value + AdjustedOffset;
             }
         }
@@ -511,6 +511,15 @@ public static partial class Chart
         SetTimeToNearestSnap();
     }
 
+    public static void MoveToBreakpoint()
+    {
+        if (ChartBuilder.BreakpointTime != -1000)
+        {
+            CurrentTimeRaw = ChartBuilder.BreakpointTime;
+            SetTimeToNearestSnap();
+        }
+    }
+
     /// <summary>
     /// Called once per tick, used to update chart time and play hit sounds.
     /// </summary>
@@ -595,6 +604,7 @@ public static partial class Chart
         _notes = [];
         _labels = [];
         ChartBuilder.ClearSelection();
+        ChartBuilder.TryRemoveBreakpoint();
             
         _bpmRegions = [new BpmRegion(0, 60)];
         RebuildSnapLineSets();
@@ -895,6 +905,8 @@ public static partial class Chart
         }
         return notes;
     }
+    
+    public static List<(NoteBase, int)> GetNotesAtCurrentTime() => GetNotesAtTime(CurrentTime);
 
     /// <summary>
     /// Returns a list of every non-marker, non-instant note that ends at a timestamp
@@ -995,7 +1007,7 @@ public static partial class Chart
             _notes.Insert(i, note);
         }
         
-        App.MainWindowViewModel.UpdatePriorityListEntries(GetNotesAtTime(CurrentTime));
+        App.MainWindowViewModel.UpdatePriorityListEntries(GetNotesAtCurrentTime());
         UnsavedChanges = true;
         _jumpTargetsOutOfDate = true;
     }
@@ -1003,7 +1015,7 @@ public static partial class Chart
     public static void RemoveNote(NoteBase note)
     {
         _notes.Remove(note);
-        App.MainWindowViewModel.UpdatePriorityListEntries(GetNotesAtTime(CurrentTime));
+        App.MainWindowViewModel.UpdatePriorityListEntries(GetNotesAtCurrentTime());
         UnsavedChanges = true;
         _jumpTargetsOutOfDate = true;
     }
@@ -1014,7 +1026,7 @@ public static partial class Chart
     public static void ReplaceNote(NoteBase oldNote, NoteBase newNote)
     {
         _notes[_notes.IndexOf(oldNote)] = newNote;
-        App.MainWindowViewModel.UpdatePriorityListEntries(GetNotesAtTime(CurrentTime));
+        App.MainWindowViewModel.UpdatePriorityListEntries(GetNotesAtCurrentTime());
         UnsavedChanges = true;
         _jumpTargetsOutOfDate = true;
     }
@@ -1247,19 +1259,53 @@ public static partial class Chart
     /// <summary>
     /// Recalculates every timestamp that label jumping can send you to.
     /// </summary>
-    private static void RebuildJumpTargets()
+    public static void RebuildJumpTargets()
     {
-        _jumpTargets = Labels.Select(l => l.Time).ToList();
-        _jumpTargets.AddRange(BpmRegions.Select(r => r.StartTime));
-        if (NonMarkerNotes.Count > 0)
+        _jumpTargets = [];
+        if (Config.Settings.JumpTargets.Contains("labels"))
+        {
+            _jumpTargets.AddRange(_labels.Select(l => l.Time));
+        }
+
+        if (Config.Settings.JumpTargets.Contains("bpmChanges"))
+        {
+            _jumpTargets.AddRange(_bpmRegions.Select(r => r.StartTime));
+        }
+
+        if (Config.Settings.JumpTargets.Contains("firstNote") && NonMarkerNotes.Count > 0)
         {
             _jumpTargets.Add(NonMarkerNotes[0].Time);
+        }
+        
+        if (Config.Settings.JumpTargets.Contains("lastNote") && NonMarkerNotes.Count > 0)
+        {
             _jumpTargets.Add(NonMarkerNotes[^1].Time);
         }
-        if (MarkerNotes.Count > 0)
+        
+        if (Config.Settings.JumpTargets.Contains("firstMarker") && MarkerNotes.Count > 0)
         {
             _jumpTargets.Add(MarkerNotes[0].Time);
+        }
+        
+        if (Config.Settings.JumpTargets.Contains("lastMarker") && MarkerNotes.Count > 0)
+        {
             _jumpTargets.Add(MarkerNotes[^1].Time);
+        }
+
+        if (Config.Settings.JumpTargets.Contains("breakpoint") &&
+            ChartBuilder.BreakpointTime != -1000)
+        {
+            _jumpTargets.Add(ChartBuilder.BreakpointTime);
+        }
+
+        if (Config.Settings.JumpTargets.Contains("chartStart"))
+        {
+            _jumpTargets.Add(0);
+        }
+        
+        if (Config.Settings.JumpTargets.Contains("chartEnd"))
+        {
+            _jumpTargets.Add(Length);
         }
         
         _jumpTargets = _jumpTargets.Distinct().ToList();
@@ -1272,7 +1318,7 @@ public static partial class Chart
         _notes = [];
         _labels = [];
         ChartBuilder.ClearSelection();
-        ChartBuilder.RemoveBreakpoint(false);
+        ChartBuilder.TryRemoveBreakpoint(false);
             
         _bpmRegions = [];
         _beatSnapIndex = 0;

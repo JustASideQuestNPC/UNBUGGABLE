@@ -195,6 +195,9 @@
     "setBreakpoint": [
         "b"
     ],
+    "jumpToBreakpoint": [
+        "alt+b"
+    ],
     "removeBreakpoint": [
         "ctrl+b"
     ],

@@ -113,3 +113,11 @@ public class NextNoteSnapAction(List<string> keybinds) : InputActionBase(keybind
         Chart.IncreaseBeatSnap();
     }
 }
+
+public class JumpToBreakpointCommand(List<string> keybinds) : InputActionBase(keybinds)
+{
+    public override async Task OnPress()
+    {
+        Chart.MoveToBreakpoint();
+    }
+}

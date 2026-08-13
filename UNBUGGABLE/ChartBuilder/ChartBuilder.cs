@@ -298,6 +298,12 @@ public static class ChartBuilder
         {
             ChartBuilderCommandInvoker.Execute(new MirrorNotesCommand([..SelectedNotes]));
         }
+        else if (Chart.GetNotesAtCurrentTime().Count > 0)
+        {
+            ChartBuilderCommandInvoker.Execute(new MirrorNotesCommand(
+                                                   Chart.GetNotesAtCurrentTime()
+                                                        .Select(n => n.Item1).ToList()));
+        }
     }
 
     public static void MoveSelectionForward()
@@ -562,7 +568,7 @@ public static class ChartBuilder
 
         if (Chart.CurrentTime == BreakpointTime)
         {
-            RemoveBreakpoint();
+            TryRemoveBreakpoint();
             return;
         }
         
@@ -589,8 +595,14 @@ public static class ChartBuilder
         File.WriteAllLines(Config.PracticeModConfigPath, lines);
     }
     
-    public static void RemoveBreakpoint(bool showEventIndicator = true)
+    public static void TryRemoveBreakpoint(bool showEventIndicator = true)
     {
+        if (BreakpointTime == -1000 || !Config.Settings.EnableBreakpoints ||
+            !Config.PracticeModInstalled)
+        {
+            return;
+        }
+        
         BreakpointTime = -1000;
         if (!Config.Settings.EnableBreakpoints || !Config.PracticeModInstalled)
         {
@@ -632,7 +644,7 @@ public static class ChartBuilder
         }
         else
         {
-            RemoveBreakpoint(false);
+            TryRemoveBreakpoint(false);
         }
     }
 
@@ -643,7 +655,16 @@ public static class ChartBuilder
 
     public static void SetNoteFlags(char flag)
     {
-        if (SelectedNotes.Count == 0)
+        List<NoteBase> notes_ = [];
+        if (SelectedNotes.Count > 0)
+        {
+            notes_ = [..SelectedNotes];
+        }
+        else if (Chart.GetNotesAtCurrentTime().Count > 0)
+        {
+            notes_ = Chart.GetNotesAtCurrentTime().Select(n => n.Item1).ToList();
+        }
+        else
         {
             App.MainWindowViewModel.ShowEventIndicator("No notes selected to set flags");
             return;
@@ -652,7 +673,7 @@ public static class ChartBuilder
         // flag operations prioritize making the flag true for all notes
         var newValue = false;
         List<(NoteBase, bool)> notes = [];
-        foreach (var note in SelectedNotes)
+        foreach (var note in notes_)
         {
             if (flag == 'n' && (note.Type is not NoteType.SINGLE and not NoteType.SPIKE
                     and not NoteType.HOLD and not NoteType.DOUBLE))

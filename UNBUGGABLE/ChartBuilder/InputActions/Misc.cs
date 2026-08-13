@@ -62,7 +62,7 @@ public class RemoveBreakpointAction(List<string> keybinds) : InputActionBase(key
 {
     public override async Task OnPress()
     {
-        ChartBuilder.RemoveBreakpoint();
+        ChartBuilder.TryRemoveBreakpoint();
     }
 }
 
