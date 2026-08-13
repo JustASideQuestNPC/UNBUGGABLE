@@ -490,7 +490,7 @@ public static class ChartBuilder
         else
         {
             var bpm = await new NumberEntryDialog("add bpm change").ShowAsync();
-            if (bpm.HasValue)
+            if (bpm.HasValue && bpm.Value != 0.0)
             {
                 Trace.WriteLine($"Add bpm region at {time} ms");
                 ChartBuilderCommandInvoker.Execute(new AddBpmRegionCommand(time, bpm.Value));

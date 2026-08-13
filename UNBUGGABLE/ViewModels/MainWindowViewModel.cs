@@ -450,7 +450,7 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         if (!CanSave)
         {
-            return;
+            ShowEventIndicator("Cannot save until metadata is set");
         }
 
         var fullPath = Path.Combine(Path.Combine(Config.CustomSongsDirectory,
@@ -473,7 +473,7 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         if (!CanSave)
         {
-            return;
+            ShowEventIndicator("Cannot save until metadata is set");
         }
         
         if (App.TopLevel == null)
@@ -506,7 +506,7 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         if (!CanSave)
         {
-            return;
+            ShowEventIndicator("Cannot save until metadata is set");
         }
 
         var fullPath = Path.Combine(Config.CustomSongsDirectory,
@@ -529,7 +529,7 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         if (!CanSave)
         {
-            return;
+            ShowEventIndicator("Cannot save until metadata is set");
         }
         
         if (App.TopLevel == null)

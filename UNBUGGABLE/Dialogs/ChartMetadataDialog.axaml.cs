@@ -77,7 +77,8 @@ public partial class ChartMetadataDialog : BaseDialog<Chart.MetadataContainer>
         Trace.WriteLine($"Difficulty slot changed to {newSelection}");
         if (DifficultyNameBox != null)
         {
-            if (_difficultySlot == DifficultySlot.STAR || Config.Settings.AlwaysEnableCustomDifficultyName)
+            if (_difficultySlot == DifficultySlot.STAR ||
+                Config.Settings.AlwaysEnableCustomDifficultyName)
             {
                 DifficultyNameBox.IsEnabled = true;
             }
@@ -96,15 +97,15 @@ public partial class ChartMetadataDialog : BaseDialog<Chart.MetadataContainer>
     {
         var metadata = new Chart.MetadataContainer()
         {
-            SongName = SongNameBox.Text,
-            ArtistName = ArtistNameBox.Text,
-            CoverArtistName = CoverArtistNameBox.Text,
-            CharterName = CharterNameBox.Text,
-            FlavorText = FlavorTextBox.Text,
+            SongName = SongNameBox.Text ?? "",
+            ArtistName = ArtistNameBox.Text ?? "",
+            CoverArtistName = CoverArtistNameBox.Text ?? "",
+            CharterName = CharterNameBox.Text ?? "",
+            FlavorText = FlavorTextBox.Text ?? "",
             DifficultySlot = _difficultySlot,
-            DifficultyName = DifficultyNameBox.Text,
-            DifficultyLevel = (int)DifficultyLevelBox.Value,
-            ChartOffset = long.Parse(OffsetBox.Text)
+            DifficultyName = DifficultyNameBox.Text ?? "",
+            DifficultyLevel = (int)(DifficultyLevelBox.Value ?? 0),
+            ChartOffset = long.Parse(OffsetBox.Text ?? "0")
             
         };
         Close(metadata);
