@@ -111,20 +111,21 @@
         <Setter Property="HorizontalAlignment" Value="Right" />
     </Style>
     
-    <Style Selector="TextBlock.BigText">
-        <Setter Property="FontSize" Value="22" />
-        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+    <Style Selector="TextBlock.QuickInfoValues">
+        <Setter Property="FontSize" Value="{DynamicResource QuickInfo.InfoSize}" />
+        <Setter Property="Foreground" Value="{DynamicResource QuickInfo.InfoColor}" />
     </Style>
     
-    <Style Selector="TextBlock.SmallText">
-        <Setter Property="FontSize" Value="15" />
-        <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
+    <Style Selector="TextBlock.QuickInfoNames">
+        <Setter Property="FontSize" Value="{DynamicResource QuickInfo.TitleSize}" />
+        <Setter Property="Foreground" Value="{DynamicResource QuickInfo.TitleColor}" />
     </Style>
     
     <Style Selector="Border.EventIndicator">
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="Background" Value="{DynamicResource Accent}" />
+        <Setter Property="Background"
+                Value="{DynamicResource MainWindow.EventIndicator.BackgroundColor}" />
         <Setter Property="Padding" Value="4" />
         <Setter Property="Height" Value="40" />
         <Style.Animations>
@@ -147,8 +148,10 @@
     <Style Selector="Border.EventIndicator TextBlock">
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="HorizontalAlignment" Value="Left" />
-        <Setter Property="FontSize" Value="16" />
-        <Setter Property="Foreground" Value="{DynamicResource TextDark}" />
+        <Setter Property="FontSize"
+                Value="{DynamicResource MainWindow.EventIndicator.TextSize}" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource MainWindow.EventIndicator.TextColor}" />
         <Setter Property="FontFamily" Value="{DynamicResource RobotoMono}" />
     </Style>
     
@@ -158,46 +161,49 @@
     </Style>
     <Style Selector="ListBoxItem">
         <Setter Property="Padding" Value="3" />
-        <Setter Property="Background" Value="{DynamicResource EditorBackground}" />
+        <Setter Property="Background" Value="{DynamicResource Transparent}" />
     </Style>
     <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
         <Setter Property="Background" Value="Transparent"/>	
     </Style>
+    <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent"/>	
+    </Style>
     
-    <Style Selector="NumericUpDown">
-        <Setter Property="FontFamily" Value="{StaticResource RobotoMono}" />
-        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
-        <Setter Property="Background" Value="{DynamicResource EditorBackground}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
-        <Setter Property="BorderThickness" Value="2" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="VerticalAlignment" Value="Stretch" />
-        <Setter Property="Margin" Value="10 10" />
-        <Setter Property="Padding" Value="3" />
-        <Setter Property="FontSize" Value="22" />
-    </Style>
-    <Style Selector="NumericUpDown:focus-within">
-        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="VerticalAlignment" Value="Stretch" />
-        <Setter Property="Padding" Value="3" />
-        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
-        <Setter Property="BorderThickness" Value="2" />
-        <Setter Property="Background" Value="{DynamicResource EditorBackground}" />
-    </Style>
-    <Style Selector="NumericUpDown:pointerover">
-        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="VerticalAlignment" Value="Stretch" />
-        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
-        <Setter Property="Background" Value="{DynamicResource EditorBackground}" />
-    </Style>
-    <Style Selector="NumericUpDown:focus-within /template/ Border">
-        <Setter Property="Background" Value="{DynamicResource EditorBackground}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
-    </Style>
-    <Style Selector="NumericUpDown:pointerover /template/ Border">
-        <Setter Property="Background" Value="{DynamicResource EditorBackground}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
-    </Style>
+    <!-- <Style Selector="NumericUpDown"> -->
+    <!--     <Setter Property="FontFamily" Value="{StaticResource RobotoMono}" /> -->
+    <!--     <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" /> -->
+    <!--     <Setter Property="Background" Value="{DynamicResource EditorBackground}" /> -->
+    <!--     <Setter Property="BorderBrush" Value="{DynamicResource Accent}" /> -->
+    <!--     <Setter Property="BorderThickness" Value="2" /> -->
+    <!--     <Setter Property="VerticalContentAlignment" Value="Center" /> -->
+    <!--     <Setter Property="VerticalAlignment" Value="Stretch" /> -->
+    <!--     <Setter Property="Margin" Value="10 10" /> -->
+    <!--     <Setter Property="Padding" Value="3" /> -->
+    <!--     <Setter Property="FontSize" Value="22" /> -->
+    <!-- </Style> -->
+    <!-- <Style Selector="NumericUpDown:focus-within"> -->
+    <!--     <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" /> -->
+    <!--     <Setter Property="VerticalContentAlignment" Value="Center" /> -->
+    <!--     <Setter Property="VerticalAlignment" Value="Stretch" /> -->
+    <!--     <Setter Property="Padding" Value="3" /> -->
+    <!--     <Setter Property="BorderBrush" Value="{DynamicResource Accent}" /> -->
+    <!--     <Setter Property="BorderThickness" Value="2" /> -->
+    <!--     <Setter Property="Background" Value="{DynamicResource EditorBackground}" /> -->
+    <!-- </Style> -->
+    <!-- <Style Selector="NumericUpDown:pointerover"> -->
+    <!--     <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" /> -->
+    <!--     <Setter Property="VerticalContentAlignment" Value="Center" /> -->
+    <!--     <Setter Property="VerticalAlignment" Value="Stretch" /> -->
+    <!--     <Setter Property="BorderBrush" Value="{DynamicResource Accent}" /> -->
+    <!--     <Setter Property="Background" Value="{DynamicResource EditorBackground}" /> -->
+    <!-- </Style> -->
+    <!-- <Style Selector="NumericUpDown:focus-within /template/ Border"> -->
+    <!--     <Setter Property="Background" Value="{DynamicResource EditorBackground}" /> -->
+    <!--     <Setter Property="BorderBrush" Value="{DynamicResource Accent}" /> -->
+    <!-- </Style> -->
+    <!-- <Style Selector="NumericUpDown:pointerover /template/ Border"> -->
+    <!--     <Setter Property="Background" Value="{DynamicResource EditorBackground}" /> -->
+    <!--     <Setter Property="BorderBrush" Value="{DynamicResource Accent}" /> -->
+    <!-- </Style> -->
 </Styles>

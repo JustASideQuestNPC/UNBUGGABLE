@@ -100,10 +100,10 @@ public class GamePreview : Control
         
         var clip = dc.PushClip(
             new RoundedRect(new Rect(0, 0, Bounds.Size.Width, Bounds.Size.Height), _cornerRadius));
+        dc.DrawRectangle(_backgroundBrush, null, new Rect(0, 0, PreviewWidth, PreviewHeight));
         
         var positionOffset = dc.PushTransform(new Matrix(1, 0, 0, 1, PreviewWidth / 2,
                                                          PreviewHeight / 2));
-        dc.DrawRectangle(_backgroundBrush, null, new Rect(0, 0, PreviewWidth, PreviewHeight));
         
         var linePen = new Pen(_noteTargetLineBrush, _noteTargetLineThickness);
         var circlePen = new Pen(_noteTargetCircleOutlineBrush, _noteTargetCircleOutlineThickness);

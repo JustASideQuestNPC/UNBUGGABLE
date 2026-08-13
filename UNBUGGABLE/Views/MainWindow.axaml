@@ -26,14 +26,16 @@
         <StyleInclude Source="/Dialogs/DialogStyles.axaml" />
     </Window.Styles>
     <dialogs:ReactiveDialogHost CloseOnClickAway="True" DialogMargin="0"
-                                Background="Transparent" OverlayBackground="Transparent">
-        <DockPanel Name="Container">
+                                Background="Transparent" OverlayBackground="Transparent"
+                                TabIndex="-1">
+        <DockPanel Name="Container" TabIndex="-1">
             <StackPanel DockPanel.Dock="Top" Name="TopButtonBar" Orientation="Horizontal"
                         Margin="0 0" Background="{DynamicResource TopBar.BackgroundColor}"
-                        Height="50">
+                        Height="50" TabIndex="-1">
                 
                 <Button Classes="SquareIconButton" ToolTip.Tip="Reload Config File"
-                        Command="{Binding TryReloadConfigCommand}" Focusable="False">
+                        Command="{Binding TryReloadConfigCommand}" Focusable="False"
+                        TabIndex="-1">
                     <materialIcons:MaterialIcon Kind="Reload" />
                     <Button.ContextMenu>
                         <ContextMenu>
@@ -48,13 +50,13 @@
                 <Panel Classes="Spacer" />
                 
                 <Button Classes="SquareIconButton" ToolTip.Tip="Open File"
-                        Command="{Binding LoadFileCommand}" Focusable="False">
+                        Command="{Binding LoadFileCommand}" Focusable="False" TabIndex="-1">
                     <materialIcons:MaterialIcon Kind="FolderOpen" />
                 </Button>
                 
                 <Button Classes="SquareIconButton" ToolTip.Tip="{Binding SaveButtonToolTip}"
                         Command="{Binding DefaultSaveCommand}" IsEnabled="{Binding EditorUiEnabled}"
-                        Focusable="False">
+                        Focusable="False" TabIndex="-1">
                     <materialIcons:MaterialIcon Kind="ContentSave" />
                     <Button.ContextMenu>
                         <ContextMenu>
@@ -74,7 +76,7 @@
                 
                 <Button Classes="SquareIconButton" ToolTip.Tip="Chart Metadata"
                         Command="{Binding EditChartMetadataCommand}"
-                        IsEnabled="{Binding SongLoaded}" Focusable="False">
+                        IsEnabled="{Binding SongLoaded}" Focusable="False" TabIndex="-1">
                     <materialIcons:MaterialIcon Kind="TableEdit" />
                 </Button>
                     
@@ -86,7 +88,7 @@
                         TickFrequency="{Binding SliderIncrement}" IsSnapToTickEnabled="True"
                         Width="150" Orientation="Horizontal" VerticalAlignment="Stretch"
                         Value="{Binding SongVolume}" IsEnabled="{Binding SongLoaded}"
-                        Focusable="False">
+                        Focusable="False" TabIndex="-1">
                     <ToolTip.Tip>Music Volume</ToolTip.Tip>
                 </Slider>
                 <Panel Classes="Spacer" Width="5" />
@@ -101,7 +103,7 @@
                         TickFrequency="{Binding SliderIncrement}" IsSnapToTickEnabled="True"
                         Width="150" Orientation="Horizontal" VerticalAlignment="Stretch"
                         Value="{Binding SfxVolume}" Focusable="False"
-                        IsEnabled="{Binding SongLoaded}">
+                        IsEnabled="{Binding SongLoaded}" TabIndex="-1">
                     <ToolTip.Tip>SFX Volume</ToolTip.Tip>
                 </Slider>
                 <Panel Classes="Spacer" Width="5" />
@@ -135,122 +137,149 @@
 
             <Panel>
                 <Grid RowDefinitions="*, 350" ColumnDefinitions="560, *" ColumnSpacing="30"
-                      RowSpacing="40" Margin="10 20 20 20" Focusable="True">
+                      RowSpacing="40" Margin="10 20 20 20" Focusable="True"
+                      TabIndex="-1">
                     <Grid Grid.Row="0" Grid.Column="1" RowDefinitions="*, *"
-                          ColumnDefinitions="*, *, 400" ColumnSpacing="20">
+                          ColumnDefinitions="*, *, 400" ColumnSpacing="20" TabIndex="-1">
                         <StackPanel Grid.Column="0" Grid.RowSpan="2"
                                     Orientation="Vertical" Spacing="5">
                             <StackPanel Orientation="Vertical" Spacing="0">
-                                <TextBlock Classes="SmallText">time (with offset)</TextBlock>
-                                <TextBlock Classes="BigText" Text="{Binding SongTimeText}" />
+                                <TextBlock Classes="QuickInfoNames">time (with offset)</TextBlock>
+                                <TextBlock Classes="QuickInfoValues"
+                                           Text="{Binding SongTimeText}" />
                             </StackPanel>
                             
                             <StackPanel Orientation="Vertical" Spacing="0">
-                                <TextBlock Classes="SmallText">time (without offset)</TextBlock>
-                                <TextBlock Classes="BigText" Text="{Binding ChartTimeText}" />
+                                <TextBlock Classes="QuickInfoNames">
+                                    time (without offset)
+                                </TextBlock>
+                                <TextBlock Classes="QuickInfoValues" 
+                                           Text="{Binding ChartTimeText}" />
                             </StackPanel>
                             
                             <StackPanel Orientation="Vertical" Spacing="0">
-                                <TextBlock Classes="SmallText">beat snap</TextBlock>
+                                <TextBlock Classes="QuickInfoNames">beat snap</TextBlock>
                                 <!-- this can't be bound to a property because of issues with the UI
                                      not displaying the new value when it updates -->
-                                <TextBlock Classes="BigText" Name="BeatSnapText" />
+                                <TextBlock Classes="QuickInfoValues" Name="BeatSnapText" />
                             </StackPanel>
                             
                             <StackPanel Orientation="Vertical" Spacing="0">
-                                <TextBlock Classes="SmallText">zoom</TextBlock>
-                                <TextBlock Classes="BigText" Text="{Binding CurrentZoomText}" />
+                                <TextBlock Classes="QuickInfoNames">zoom</TextBlock>
+                                <TextBlock Classes="QuickInfoValues"
+                                           Text="{Binding CurrentZoomText}" />
                             </StackPanel>
                             
                             <StackPanel Orientation="Vertical" Spacing="0">
-                                <TextBlock Classes="SmallText">cops</TextBlock>
+                                <TextBlock Classes="QuickInfoNames">cops</TextBlock>
                                 <Grid RowDefinitions="Auto Auto Auto Auto"
                                       ColumnDefinitions="Auto Auto" ColumnSpacing="10">
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Classes="BigText"
+                                    <TextBlock Grid.Row="0" Grid.Column="0"
+                                               Classes="QuickInfoValues"
                                                Foreground="{DynamicResource Notes.Cop1.FillColor}">
                                         1:
                                     </TextBlock>
-                                    <TextBlock Grid.Row="0" Grid.Column="1" Classes="BigText" 
+                                    <TextBlock Grid.Row="0" Grid.Column="1"
+                                               Classes="QuickInfoValues" 
                                                Text="{Binding Cop1State}" />
-                                    <TextBlock Grid.Row="1" Grid.Column="0" Classes="BigText"
+                                    
+                                    <TextBlock Grid.Row="1" Grid.Column="0"
+                                               Classes="QuickInfoValues"
                                                Foreground="{DynamicResource Notes.Cop2.FillColor}">
                                         2:
                                     </TextBlock>
-                                    <TextBlock Grid.Row="1" Grid.Column="1" Classes="BigText" 
+                                    <TextBlock Grid.Row="1" Grid.Column="1"
+                                               Classes="QuickInfoValues" 
                                                Text="{Binding Cop2State}" />
-                                    <TextBlock Grid.Row="2" Grid.Column="0" Classes="BigText"
+                                    
+                                    <TextBlock Grid.Row="2" Grid.Column="0"
+                                               Classes="QuickInfoValues"
                                                Foreground="{DynamicResource Notes.Cop3.FillColor}">
                                         3:
                                     </TextBlock>
-                                    <TextBlock Grid.Row="2" Grid.Column="1" Classes="BigText" 
+                                    <TextBlock Grid.Row="2" Grid.Column="1"
+                                               Classes="QuickInfoValues" 
                                                Text="{Binding Cop3State}" />
-                                    <TextBlock Grid.Row="3" Grid.Column="0" Classes="BigText"
+                                    
+                                    <TextBlock Grid.Row="3" Grid.Column="0"
+                                               Classes="QuickInfoValues"
                                                Foreground="{DynamicResource Notes.Cop4.FillColor}">
                                         4:
                                     </TextBlock>
-                                    <TextBlock Grid.Row="3" Grid.Column="1" Classes="BigText" 
+                                    <TextBlock Grid.Row="3" Grid.Column="1"
+                                               Classes="QuickInfoValues" 
                                                Text="{Binding Cop4State}" />
                                 </Grid>
                             </StackPanel>
                             
                             <StackPanel Orientation="Vertical" Spacing="0">
-                                <TextBlock Classes="SmallText">locked flags</TextBlock>
-                                <TextBlock Classes="BigText" Text="{Binding LockedFlagsText}" />
+                                <TextBlock Classes="QuickInfoNames">locked flags</TextBlock>
+                                <TextBlock Classes="QuickInfoValues"
+                                           Text="{Binding LockedFlagsText}" />
                             </StackPanel>
                         </StackPanel>
                         
-                        <StackPanel Grid.Column="1" Grid.RowSpan="2"
-                                    Orientation="Vertical" Spacing="5">
+                        <StackPanel Grid.Row="0" Grid.Column="1" Grid.RowSpan="2"
+                                    Orientation="Vertical" Spacing="5" TabIndex="-1">
                             <StackPanel Orientation="Vertical" Spacing="0">
-                                <TextBlock Classes="SmallText">length</TextBlock>
-                                <TextBlock Classes="BigText" Text="{Binding ChartLengthText}" />
+                                <TextBlock Classes="QuickInfoNames">length</TextBlock>
+                                <TextBlock Classes="QuickInfoValues"
+                                           Text="{Binding ChartLengthText}" />
                             </StackPanel>
                             
                             <StackPanel Orientation="Vertical" Spacing="0">
-                                <TextBlock Classes="SmallText">placing</TextBlock>
-                                <TextBlock Classes="BigText" Text="{Binding CurrentNoteTypeText}" />
+                                <TextBlock Classes="QuickInfoNames">placing</TextBlock>
+                                <TextBlock Classes="QuickInfoValues"
+                                           Text="{Binding CurrentNoteTypeText}" />
                             </StackPanel>
                             
                             <StackPanel Orientation="Vertical" Spacing="0">
-                                <TextBlock Classes="SmallText">title</TextBlock>
-                                <TextBlock Classes="BigText" Text="{Binding SongNameText}" />
+                                <TextBlock Classes="QuickInfoNames">title</TextBlock>
+                                <TextBlock Classes="QuickInfoValues"
+                                           Text="{Binding SongNameText}" />
                             </StackPanel>
                             
                             <StackPanel Orientation="Vertical" Spacing="0">
-                                <TextBlock Classes="SmallText">artist</TextBlock>
-                                <TextBlock Classes="BigText" Text="{Binding ArtistNameText}" />
+                                <TextBlock Classes="QuickInfoNames">artist</TextBlock>
+                                <TextBlock Classes="QuickInfoValues"
+                                           Text="{Binding ArtistNameText}" />
                             </StackPanel>
                             
                             <StackPanel Orientation="Vertical" Spacing="0">
-                                <TextBlock Classes="SmallText">difficulty</TextBlock>
-                                <TextBlock Classes="BigText" Text="{Binding DifficultyText}" />
+                                <TextBlock Classes="QuickInfoNames">difficulty</TextBlock>
+                                <TextBlock Classes="QuickInfoValues"
+                                           Text="{Binding DifficultyText}" />
                             </StackPanel>
                             
                             <StackPanel Orientation="Vertical" Spacing="0">
-                                <TextBlock Classes="SmallText">bpm</TextBlock>
-                                <TextBlock Classes="BigText" Text="{Binding SongBpmText}" />
+                                <TextBlock Classes="QuickInfoNames">bpm</TextBlock>
+                                <TextBlock Classes="QuickInfoValues"
+                                           Text="{Binding SongBpmText}" />
                             </StackPanel>
                             
                             <StackPanel Orientation="Vertical" Spacing="0">
-                                <TextBlock Classes="SmallText">breakpoint</TextBlock>
-                                <TextBlock Classes="BigText" Text="{Binding BreakpointTimeText}" />
+                                <TextBlock Classes="QuickInfoNames">breakpoint</TextBlock>
+                                <TextBlock Classes="QuickInfoValues"
+                                           Text="{Binding BreakpointTimeText}" />
                             </StackPanel>
                         </StackPanel>
                         
-                        <Border Grid.Column="2"
+                        <Border Grid.Row="0" Grid.Column="2"
                                 BorderBrush="{DynamicResource PlacementPriorityList.OutlineColor}"
                                 BorderThickness="{DynamicResource PlacementPriorityList.OutlineThickness}"
                                 CornerRadius="{DynamicResource PlacementPriorityList.CornerRadius}"
-                                Padding="0" Margin="0">
+                                Background="{DynamicResource PlacementPriorityList.BackgroundColor}"
+                                Padding="0" Margin="0" TabIndex="-1">
                             <StackPanel Orientation="Vertical">
-                                <TextBlock Classes="SmallText" Margin="10 5 0 0"
+                                <TextBlock Margin="10 5 0 0"
                                            Foreground="{DynamicResource PlacementPriorityList.TitleColor}"
                                            FontSize="{DynamicResource PlacementPriorityList.TitleSize}">
                                     placement priority
                                 </TextBlock>
                                 <ScrollViewer>
                                     <ListBox ItemsSource="{Binding ActivePriorityListEntries}"
-                                             Margin="0" BorderBrush="Transparent">
+                                             Margin="0" BorderBrush="Transparent"
+                                             TabIndex="-1">
                                         <ListBox.IsEnabled>
                                             <MultiBinding Converter="{x:Static BoolConverters.And}">
                                                 <Binding Path="EditorUiEnabled" />
@@ -275,7 +304,8 @@
                                                         BorderBrush="{DynamicResource PlacementPriorityList.ListEntries.OutlineColor}"
                                                         BorderThickness="{DynamicResource PlacementPriorityList.ListEntries.OutlineThickness}"
                                                         CornerRadius="{DynamicResource PlacementPriorityList.ListEntries.CornerRadius}"
-                                                        Background="{DynamicResource PlacementPriorityList.ListEntries.BackgroundColor}">
+                                                        Background="{DynamicResource PlacementPriorityList.ListEntries.BackgroundColor}"
+                                                        TabIndex="-1">
                                                     <Grid Margin="0" ColumnDefinitions="*, 25"
                                                           RowDefinitions="Auto">
                                                         <TextBlock Classes="BigText"
