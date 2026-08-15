@@ -31,6 +31,7 @@
     13
   ],
   "pasteOverwrites": "region",
+  "holdExtensionSearchThreshold": 2,
   "preserveNoiszFlag": true,
   "minZoom": 0.5,
   "maxZoom": 7.5,

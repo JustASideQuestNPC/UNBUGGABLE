@@ -520,6 +520,21 @@ public static class Config
                 if (settings.QuickScrollBeats <= 0)
                 {
                     Trace.WriteLine("Quick scroll beats must be > 0");
+                    settings.QuickScrollBeats = 5;
+                    loadError = true;
+                }
+
+                if (settings.SliderIncrement <= 0)
+                {
+                    Trace.WriteLine("Slider increment must be > 0");
+                    settings.SliderIncrement = 5;
+                    loadError = true;
+                }
+
+                if (settings.HoldExtensionSearchThreshold < 0)
+                {
+                    Trace.WriteLine("Hold extension search threshold must be >= 0");
+                    settings.HoldExtensionSearchThreshold = 2;
                     loadError = true;
                 }
 

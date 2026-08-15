@@ -169,6 +169,9 @@ public class Settings
     
     [JsonRequired][JsonPropertyName("pasteOverwrites")]
     public string PasteBehavior { get; set; } = "notes";
+    
+    [JsonRequired][JsonPropertyName("holdExtensionSearchThreshold")]
+    public int HoldExtensionSearchThreshold { get; set; } = 2;
 
     [JsonRequired][JsonPropertyName("preserveNoiszFlag")]
     public bool PreserveNoiszFlag { get; set; } = true;
@@ -232,6 +235,7 @@ public class Settings
                          color theme: {ColorTheme}
                          save to .beat.txt: {DefaultSaveToBeatFiles}
                          enhanced preview: {EnhancedPreview}
+                         currentTimePosition: {CurrentTimePosition}
                          always show all note flags: {AlwaysShowAllFlags}
                          enable breakpoints: {EnableBreakpoints}
                          lane 2 markers: {Lane2Markers}
@@ -245,6 +249,8 @@ public class Settings
                          double preview alpha: {DoublePreviewAlpha}
                          autosave interval: {AutosaveInterval} seconds
                          beat snaps: [{string.Join(", ", BeatSnaps)}]
+                         preserve noisz flag: {PreserveNoiszFlag}
+                         hold extension search threshold: {HoldExtensionSearchThreshold}
                          min zoom: {MinZoom}
                          max zoom: {MaxZoom}
                          zoom increment: {ZoomIncrement}

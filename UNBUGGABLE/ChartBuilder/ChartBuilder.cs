@@ -773,7 +773,9 @@ public static class ChartBuilder
         // hold notes can also extend from the start of the note
         if (oldNote == null && end != start)
         {
-            oldNote = Chart.GetNote(end, lane) ?? Chart.GetNoteFromEnd(start, lane, 1);
+            oldNote =
+                Chart.GetNote(end, lane, Config.Settings.HoldExtensionSearchThreshold) ??
+                Chart.GetNoteFromEnd(start, lane, Config.Settings.HoldExtensionSearchThreshold);
         }
         Trace.WriteLine(oldNote);
         
@@ -835,7 +837,7 @@ public static class ChartBuilder
                 }
                 break;
             }
-            default: // case NoteLane.CENTER
+            default: // NoteLane.CENTER
                 newNote = (start == end ?
                     new FreestyleNote
                     {

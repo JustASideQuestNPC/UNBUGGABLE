@@ -199,6 +199,12 @@ Determines what happens when pasting over existing notes, either "none", "notes"
 If true, replacing/extending a note will preserve whether the N (noisz spawn) flag is on that note.
 Does not apply to cop notes.
 
+## holdExtensionSearchThreshold
+When you place a hold, double, or mash note, the editor will check for a matching note that begins
+or ends within this many milliseconds of the new note's start or end. If a note is found, that note
+will be extended instead of placing the new note. Setting this to 1 or 2 milliseconds should account
+for any rounding error-related issues.
+
 ## minZoom
 Minimum possible zoom. Smaller values zoom out, larger values zoom in.
 
