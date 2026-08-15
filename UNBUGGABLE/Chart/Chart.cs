@@ -1837,7 +1837,7 @@ public static partial class Chart
                 if (NonMarkerNotes.Count > 0 && note.Type == NoteType.CAMERA_ZOOM)
                 {
                     var prevNote = NonMarkerNotes[^1];
-                    if (prevNote.Type == NoteType.CAMERA_SWAP && prevNote.Time == note.Time)
+                    if (prevNote.Type == NoteType.CAMERA_SWAP && prevNote.Time == note.Time - 1)
                     {
                         prevNote.Flags.C = true;
                         prevNote.Flags.W = true;

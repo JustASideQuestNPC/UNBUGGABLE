@@ -368,7 +368,8 @@ public class SetNotesCopIdCommand : ICommand
                 NoteType.COP_SINGLE or NoteType.COP_HOLD or NoteType.COP_MASH =>
                     new CopNote(note.Type, copId)
                     {
-                        Lane = note.Lane, Time = note.Time, EndTime = note.EndTime
+                        Lane = note.Lane, Time = note.Time, EndTime = note.EndTime,
+                        Flags = note.Flags
                     },
                 _ => note
             };

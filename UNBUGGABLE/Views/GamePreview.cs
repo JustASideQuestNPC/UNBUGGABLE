@@ -37,16 +37,18 @@ public class GamePreview : Control
     ], true);
 
     private static SolidColorBrush _backgroundBrush;
-    private static SolidColorBrush _outlineBrush;
     private static SolidColorBrush _copBrush;
     private static SolidColorBrush _viewableAreaOutlineBrush;
     private static SolidColorBrush _cameraArrowBrush;
     private static SolidColorBrush _noteTargetLineBrush;
     private static SolidColorBrush _noteTargetCircleFillBrush;
     private static SolidColorBrush _noteTargetCircleOutlineBrush;
+    private static SolidColorBrush _cop1Brush;
+    private static SolidColorBrush _cop2Brush;
+    private static SolidColorBrush _cop3Brush;
+    private static SolidColorBrush _cop4Brush;
 
     private static double _cornerRadius;
-    private static double _outlineThickness;
     private static double _viewableAreaOutlineThickness;
     private static double _cameraArrowScale;
     private static double _noteTargetLineThickness;
@@ -56,7 +58,6 @@ public class GamePreview : Control
     public static void UpdateStyles()
     {
         _backgroundBrush = (SolidColorBrush)App.Current.Resources["GamePreview.BackgroundColor"];
-        _outlineBrush = (SolidColorBrush)App.Current.Resources["GamePreview.OutlineColor"];
         _copBrush = (SolidColorBrush)App.Current.Resources["GamePreview.CopColor"];
         _viewableAreaOutlineBrush =
             (SolidColorBrush)App.Current.Resources["GamePreview.ViewableArea.OutlineColor"];
@@ -67,9 +68,29 @@ public class GamePreview : Control
             (SolidColorBrush)App.Current.Resources["GamePreview.NoteTargets.Circles.FillColor"];
         _noteTargetCircleOutlineBrush =
             (SolidColorBrush)App.Current.Resources["GamePreview.NoteTargets.Circles.OutlineColor"];
+
+        _cop1Brush = new SolidColorBrush(
+            ((SolidColorBrush)App.Current.Resources["Notes.Cop1.FillColor"]).Color)
+        {
+            Opacity = 0.7
+        };
+        _cop2Brush = new SolidColorBrush(
+            ((SolidColorBrush)App.Current.Resources["Notes.Cop2.FillColor"]).Color)
+        {
+            Opacity = 0.7
+        };
+        _cop3Brush = new SolidColorBrush(
+            ((SolidColorBrush)App.Current.Resources["Notes.Cop3.FillColor"]).Color)
+        {
+            Opacity = 0.7
+        };
+        _cop4Brush = new SolidColorBrush(
+            ((SolidColorBrush)App.Current.Resources["Notes.Cop4.FillColor"]).Color)
+        {
+            Opacity = 0.7
+        };
         
         _cornerRadius = ((CornerRadius)App.Current.Resources["GamePreview.CornerRadius"]).TopLeft;
-        _outlineThickness = ((Thickness)App.Current.Resources["GamePreview.OutlineThickness"]).Top;
         _viewableAreaOutlineThickness =
             ((Thickness)App.Current.Resources["GamePreview.ViewableArea.OutlineThickness"]).Top;
         _noteTargetLineThickness =
@@ -204,74 +225,7 @@ public class GamePreview : Control
             }
         }
         
-        List<string> leftCopStates = [], rightCopStates = [];
-        if (Cop1State != CopState.DEAD)
-        {
-            if (Cop1State == CopState.LEFT)
-            {
-                leftCopStates.Add("1");
-            }
-            else
-            {
-                rightCopStates.Add("1");
-            }
-        }
-        if (Cop2State != CopState.DEAD)
-        {
-            if (Cop2State == CopState.LEFT)
-            {
-                leftCopStates.Add("2");
-            }
-            else
-            {
-                rightCopStates.Add("2");
-            }
-        }
-        if (Cop3State != CopState.DEAD)
-        {
-            if (Cop3State == CopState.LEFT)
-            {
-                leftCopStates.Add("3");
-            }
-            else
-            {
-                rightCopStates.Add("3");
-            }
-        }
-        if (Cop4State != CopState.DEAD)
-        {
-            if (Cop4State == CopState.LEFT)
-            {
-                leftCopStates.Add("4");
-            }
-            else
-            {
-                rightCopStates.Add("4");
-            }
-        }
-        
-        if (Cop1State == CopState.LEFT || Cop2State == CopState.LEFT ||
-            Cop3State == CopState.LEFT || Cop4State == CopState.LEFT)
-        {
-            var rect = new RoundedRect(
-                new Rect(-NoteTargetX - 120, TopLaneY + 20, 60, -TopLaneY + BottomLaneY - 40), 15);
-            dc.DrawRectangle(Brushes.Transparent, new Pen(_copBrush, 5), rect);
-            dc.DrawEllipse(_copBrush, null, new Point(-NoteTargetX - 78, TopLaneY + 45), 6, 6);
-            dc.DrawEllipse(_copBrush, null, new Point(-NoteTargetX - 102, TopLaneY + 45), 6, 6);
-            dc.DrawArc(null, new Pen(_copBrush, 5), new Point(-NoteTargetX - 90, TopLaneY + 55),
-                       20, 30, 20, 160);
-        }
-        if (Cop1State == CopState.RIGHT || Cop2State == CopState.RIGHT ||
-            Cop3State == CopState.RIGHT || Cop4State == CopState.RIGHT)
-        {
-            var rect = new RoundedRect(
-                new Rect(NoteTargetX + 60, TopLaneY + 20, 60, -TopLaneY + BottomLaneY - 40), 15);
-            dc.DrawRectangle(Brushes.Transparent, new Pen(_copBrush, 5), rect);
-            dc.DrawEllipse(_copBrush, null, new Point(NoteTargetX + 78, TopLaneY + 45), 6, 6);
-            dc.DrawEllipse(_copBrush, null, new Point(NoteTargetX + 102, TopLaneY + 45), 6, 6);
-            dc.DrawArc(null, new Pen(_copBrush, 5), new Point(NoteTargetX + 90, TopLaneY + 55),
-                       20, 30, 20, 160);
-        }
+        RenderCops(dc);
         
         // render notes
         var viewableNotesFromRight = true;
@@ -311,7 +265,7 @@ public class GamePreview : Control
                 }
             }
             
-            // camera notes have an empty RenderPreview() method
+            // camera and notes have an empty RenderPreview() method
             note.RenderPreview(dc);
         }
 
@@ -361,10 +315,64 @@ public class GamePreview : Control
         }
         
         positionOffset.Dispose();
-        // dc.DrawRectangle(null, new Pen(_outlineBrush, _outlineThickness),
-        //                  new RoundedRect(new Rect(0, 0, PreviewWidth, PreviewHeight),
-        //                                  _cornerRadius));
-        
         clip.Dispose();
+    }
+
+    private void RenderCops(DrawingContext dc)
+    {
+        if (Cop1State == CopState.LEFT)
+        {
+            dc.DrawFace(_cop1Brush, new Point(-NoteTargetX - 250, -42), 1.2);
+        }
+        else if (Cop1State == CopState.RIGHT)
+        {
+            dc.DrawFace(_cop1Brush, new Point(NoteTargetX + 175, -42), 1.2);
+        }
+        
+        if (Cop2State == CopState.LEFT)
+        {
+            dc.DrawFace(_cop2Brush, new Point(-NoteTargetX - 175, -42), 1.2);
+        }
+        else if (Cop2State == CopState.RIGHT)
+        {
+            dc.DrawFace(_cop2Brush, new Point(NoteTargetX + 250, -42), 1.2);
+        }
+        
+        if (Cop3State == CopState.LEFT)
+        {
+            dc.DrawFace(_cop3Brush, new Point(-NoteTargetX - 250, 32), 1.2);
+        }
+        else if (Cop3State == CopState.RIGHT)
+        {
+            dc.DrawFace(_cop3Brush, new Point(NoteTargetX + 175, 32), 1.2);
+        }
+        
+        if (Cop4State == CopState.LEFT)
+        {
+            dc.DrawFace(_cop4Brush, new Point(-NoteTargetX - 175, 32), 1.2);
+        }
+        else if (Cop4State == CopState.RIGHT)
+        {
+            dc.DrawFace(_cop4Brush, new Point(NoteTargetX + 250, 32), 1.2);
+        }
+        
+        // cop note targets
+        if (Cop1State == CopState.LEFT || Cop2State == CopState.LEFT ||
+            Cop3State == CopState.LEFT || Cop4State == CopState.LEFT)
+        {
+            var rect = new RoundedRect(
+                new Rect(-NoteTargetX - 120, TopLaneY + 20, 60, -TopLaneY + BottomLaneY - 40), 15);
+            dc.DrawRectangle(Brushes.Transparent, new Pen(_copBrush, 5), rect);
+            dc.DrawFace(_copBrush, new Point(-NoteTargetX - 90, TopLaneY + 50), 1);
+        }
+        
+        if (Cop1State == CopState.RIGHT || Cop2State == CopState.RIGHT ||
+            Cop3State == CopState.RIGHT || Cop4State == CopState.RIGHT)
+        {
+            var rect = new RoundedRect(
+                new Rect(NoteTargetX + 60, TopLaneY + 20, 60, -TopLaneY + BottomLaneY - 40), 15);
+            dc.DrawRectangle(Brushes.Transparent, new Pen(_copBrush, 5), rect);
+            dc.DrawFace(_copBrush, new Point(NoteTargetX + 90, TopLaneY + 50), 1);
+        }
     }
 }

@@ -51,6 +51,19 @@ public static class Utils
         dc.DrawGeometry(brush, pen, geo);
     }
 
+    public static void DrawFace(this DrawingContext dc, SolidColorBrush brush, Point origin,
+        double scale)
+    {
+        var transform = dc.PushTransform(new Matrix(scale, 0, 0, scale, origin.X, origin.Y));
+        
+        dc.DrawEllipse(brush, null, new Point(-12, -5), 6, 6);
+        dc.DrawEllipse(brush, null, new Point(12, -5), 6, 6);
+        dc.DrawArc(null, new Pen(brush, 5), new Point(0, 5),
+                   20, 30, 20, 160);
+        
+        transform.Dispose();
+    }
+
     /// <summary>
     /// Returns whether this number is within 1 of another number.
     /// </summary>

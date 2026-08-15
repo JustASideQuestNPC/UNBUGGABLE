@@ -87,7 +87,7 @@ public class CameraChange : NoteBase
             };
             var zoomNote = new CameraChange
             {
-                Time = Time,
+                Time = Time + 1, // offset by 1ms otherwise the game doesn't like it
                 Flags = new NoteFlags(false, Flags.F, true)
             };
             return $"{swapNote.ToHitObjectString(isFirstNote, isStandardFile)}\n" +

@@ -49,6 +49,8 @@ public class NoteFlags(bool c, bool f, bool w, bool n = false)
     /// it like one makes things work infinitely better under the hood. 
     /// </summary>
     public bool N { get; set; } = n;
+    
+    public NoteFlags Clone() => new(C, F, W, N);
 }
 
 /// <summary>
@@ -310,7 +312,7 @@ public abstract partial class NoteBase
     {
         var clone = (NoteBase)MemberwiseClone();
         // deep copy the flags
-        clone.Flags = new NoteFlags(Flags.C, Flags.F, Flags.W, Flags.N);
+        clone.Flags = Flags.Clone();
         if (newTime != null)
         {
             clone.EndTime = newTime.Value + (EndTime - Time);
