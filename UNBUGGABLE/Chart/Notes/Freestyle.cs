@@ -9,7 +9,8 @@ namespace UNBUGGABLE;
 
 public class FreestyleNote : NoteBase
 {
-    public override NoteType Type => NoteType.FREESTYLE;
+    public override NoteType Type => Config.Settings.NegativeMashConversion && Flags.F ?
+        NoteType.NEGATIVE_MASH : NoteType.FREESTYLE;
     
     public override NoteLane Lane => NoteLane.CENTER;
     
@@ -53,8 +54,7 @@ public class FreestyleNote : NoteBase
         
         var rect = new Rect(x - 40, y - 12, 80, 24);
         var parentNote = Chart.GetPreviousNote(this);
-        if (parentNote?.Type == NoteType.FREESTYLE
-            && !(Config.Settings.NegativeMashConversion && (parentNote.Flags.F || Flags.F)))
+        if (parentNote?.Type == NoteType.FREESTYLE && Type == NoteType.FREESTYLE)
         {
             rect = new Rect(x - 24, y - 12, 48, 24);
             
@@ -82,7 +82,7 @@ public class FreestyleNote : NoteBase
         var x = GamePreview.TimeToScreenCoords(Time < Chart.CurrentTimeRaw ?
                                                    Chart.CurrentTimeRaw : Time);
         
-        if (Config.Settings.NegativeMashConversion && Flags.F)
+        if (Type == NoteType.NEGATIVE_MASH)
         {
             var rect = new RoundedRect(
                 new Rect(x - 30, GamePreview.TopLaneY, 60,

@@ -35,12 +35,6 @@ public class PlacementPriorityListEntry : ViewModelBase
             {
                 return "";
             }
-
-            if ((Config.Settings.NegativeMashConversion && Note.Type == NoteType.FREESTYLE &&
-                 Note.Flags.F) || (Note.Type == NoteType.MASH && Note.EndTime < Note.Time))
-            {
-                return "Negative Mash";
-            }
             
             var laneName = Note.Lane switch
             {
@@ -58,6 +52,7 @@ public class PlacementPriorityListEntry : ViewModelBase
                 NoteType.DOUBLE => $"{laneName} Double",
                 NoteType.FREESTYLE => "Freestyle",
                 NoteType.MASH => "Mash",
+                NoteType.NEGATIVE_MASH => "Negative Mash",
                 NoteType.CAMERA_SWAP => "Camera Swap",
                 NoteType.CAMERA_ZOOM => "Camera Zoom In/Out",
                 NoteType.CAMERA_INSTANT => "Instant Camera Swap",

@@ -18,6 +18,7 @@ public enum NoteType
     DOUBLE,
     FREESTYLE,
     MASH,
+    NEGATIVE_MASH,
     CAMERA_SWAP,
     CAMERA_ZOOM,
     CAMERA_INSTANT,
@@ -78,6 +79,7 @@ public abstract partial class NoteBase
     public long Duration => Instant ? 0 : EndTime - Time;
     
     public abstract NoteType Type { get; }
+    
     public virtual NoteLane Lane { get; set; }
     
     // invisible notes disappear 1 beat before reaching the player
