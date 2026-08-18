@@ -672,7 +672,7 @@ public static partial class Chart
         var folderPath = dirName[..dirName.LastIndexOf('\\')];
         var chartData = (await File.ReadAllTextAsync(path)).Split("\n");
         string? audioPath = null;
-        (double, int, double)? lastEditorState = null;
+        (double, int, double, int)? lastEditorState = null;
         
         Metadata = new MetadataContainer();
         _labels = [];
@@ -688,7 +688,8 @@ public static partial class Chart
             {
                 case "[General]":
                     Trace.WriteLine("Parsing general data...");
-                    temp = TryParseGeneralChartData(chartData, i, folderPath, out audioPath, out errorMessage);
+                    temp = TryParseGeneralChartData(chartData, i, folderPath, out audioPath,
+                                                    out errorMessage);
                     break;
                 case "[Editor]":
                     Trace.WriteLine("Parsing official editor data...");
@@ -696,7 +697,8 @@ public static partial class Chart
                     break;
                 case "[UNBUGGABLE]":
                     Trace.WriteLine("Parsing UNBUGGABLE data...");
-                    temp = TryParseUnbuggableData(chartData, i, out lastEditorState, out errorMessage);
+                    temp = TryParseUnbuggableData(chartData, i, out lastEditorState,
+                                                  out errorMessage);
                     break;
                 case "[Metadata]":
                     Trace.WriteLine("Parsing metadata...");
@@ -751,6 +753,7 @@ public static partial class Chart
                 var time = lastEditorState.Value.Item1;
                 var beatSnap = lastEditorState.Value.Item2;
                 var zoom = lastEditorState.Value.Item3;
+                ChartBuilder.SetCopId(lastEditorState.Value.Item4);
 
                 if (time >= 0 && time <= Length)
                 {
@@ -1616,7 +1619,7 @@ public static partial class Chart
     }
     
     private static int TryParseUnbuggableData(string[] lines, int index,
-        out (double, int, double)? lastEditorState, out string errorMessage)
+        out (double, int, double, int)? lastEditorState, out string errorMessage)
     {
         lastEditorState = null;
         errorMessage = "";
@@ -1625,11 +1628,21 @@ public static partial class Chart
         if (lines[index + i].StartsWith("LastEditorState:"))
         {
             var split = lines[index + 1]["LastEditorState:".Length..].Trim().Split(',');
-            if (split.Length == 3 && double.TryParse(split[0], out var time) &&
+            
+            // check for length 3 and 4 because older versions of the editor don't save the current
+            // cop id as part of the editor state
+            if (split.Length is 3 or 4 && double.TryParse(split[0], out var time) &&
                 int.TryParse(split[1], out var beatSnap) &&
                 double.TryParse(split[2], out var zoom))
             {
-                lastEditorState = (time, beatSnap, zoom);
+                if (split.Length == 3)
+                {
+                    lastEditorState = (time, beatSnap, zoom, 0);
+                }
+                else if (int.TryParse(split[3], out var copId))
+                {
+                    lastEditorState = (time, beatSnap, zoom, copId);
+                }
             }
 
             ++i;
@@ -1964,12 +1977,13 @@ public static partial class Chart
     {
         await writer.WriteLineAsync("[UNBUGGABLE]");
         await writer.WriteLineAsync(
-            $"LastEditorState:{CurrentTime},{BeatSnap},{NoteViewer.CurrentZoom}");
+            $"LastEditorState:{CurrentTime},{BeatSnap},{NoteViewer.CurrentZoom}," +
+            $"{ChartBuilder.CopId}");
         
         List<string> markerStrings = [];
         foreach (var marker in MarkerNotes)
         {
-            var m = (MarkerDummyNote)(marker);
+            var m = (MarkerDummyNote)marker;
             var colorStatesString = (m.Color1 ? "1" : "0") +
                                     (m.Color2 ? "1" : "0") +
                                     (m.Color3 ? "1" : "0");

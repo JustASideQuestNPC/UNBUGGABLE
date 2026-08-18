@@ -826,14 +826,27 @@ public static class ChartBuilder
                         return;
                     }
                     
-                    newNote = new CopNote(start == end ? NoteType.COP_SINGLE : 
-                                          InputManager.ShiftPressed ? NoteType.COP_MASH :
-                                          NoteType.COP_HOLD, CopId)
+                    // holding shift always creates a spike
+                    if (InputManager.ShiftPressed && start == end)
                     {
-                        Time = start,
-                        EndTime = end,
-                        Lane = lane
-                    };
+                        newNote = new SingleNote
+                        {
+                            Lane = lane,
+                            Time = start,
+                            Flags = new NoteFlags(false, false, true)
+                        };
+                    }
+                    else
+                    {
+                        newNote = new CopNote(start == end ? NoteType.COP_SINGLE : 
+                                              InputManager.ShiftPressed ? NoteType.COP_MASH :
+                                              NoteType.COP_HOLD, CopId)
+                        {
+                            Time = start,
+                            EndTime = end,
+                            Lane = lane
+                        };
+                    }
                 }
                 break;
             }

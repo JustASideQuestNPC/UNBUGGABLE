@@ -605,6 +605,16 @@ public class NoteViewer : Control
         {
             if (start == end)
             {
+                // holding shift and tapping always creates a spike
+                if (InputManager.ShiftPressed)
+                {
+                    return new SingleNote
+                    {
+                        Time = start,
+                        Flags = new NoteFlags(false, false, true)
+                    };
+                }
+                
                 return new CopNote(NoteType.COP_SINGLE, ChartBuilder.CopId)
                 {
                     Time = start
