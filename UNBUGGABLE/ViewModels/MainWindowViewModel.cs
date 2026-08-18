@@ -514,8 +514,8 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             
             Trace.WriteLine($"Saving to {fullPath}");
-            await ChartBuilder.SaveToStandardPath(fullPath);
-            ShowEventIndicator($"Saved to {Chart.ChartFileName}.txt");
+            var success = await ChartBuilder.SaveToStandardPath(fullPath);
+            ShowEventIndicator(success ? $"Saved to {Chart.ChartFileName}.txt" : "Failed to save");
         }
     }
     
@@ -547,8 +547,8 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             var fullPath = file.Path.LocalPath;
             Trace.WriteLine($"Saving to {fullPath}");
-            await ChartBuilder.SaveToStandardPath(fullPath);
-            ShowEventIndicator($"Saved to {Chart.ChartFileName}.txt");
+            var success = await ChartBuilder.SaveToStandardPath(fullPath);
+            ShowEventIndicator(success ? $"Saved to {Chart.ChartFileName}.txt" : "Failed to save");
         }
     }
 

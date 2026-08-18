@@ -214,14 +214,14 @@ public static class ChartBuilder
         }
     }
 
-    public static async Task SaveToBeatPath(string path)
+    public static async Task<bool> SaveToBeatPath(string path)
     {
-        await Chart.SaveToBeatPath(path);
+        return await Chart.SaveToBeatPath(path);
     }
     
-    public static async Task SaveToStandardPath(string path)
+    public static async Task<bool> SaveToStandardPath(string path)
     {
-        await Chart.SaveToStandardPath(path);
+        return await Chart.SaveToStandardPath(path);
     }
 
     public static void Undo()

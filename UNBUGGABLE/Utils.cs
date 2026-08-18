@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Media;
 
@@ -16,7 +19,7 @@ public static class Utils
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         WriteIndented = true
     };
-    
+
     public static void DrawOutlinedText(this DrawingContext dc, FormattedText text, Point origin,
         IBrush fill, Pen outline)
     {
@@ -25,20 +28,20 @@ public static class Utils
         {
             return;
         }
-        
+
         dc.DrawGeometry(fill, outline, path);
     }
-    
+
     public static void DrawArc(this DrawingContext dc, SolidColorBrush? brush, Pen? pen,
         Point origin, double xRadius, double yRadius, double startAngle, double endAngle)
     {
         startAngle *= Math.PI / 180;
         endAngle *= Math.PI / 180;
-        
+
         var start = new Point(Math.Cos(startAngle) * xRadius,
                               Math.Sin(startAngle) * yRadius);
         var end = new Point(Math.Cos(endAngle) * xRadius, Math.Sin(endAngle) * yRadius);
-        
+
         var geo = new StreamGeometry();
         using (var c = geo.Open())
         {
@@ -47,6 +50,7 @@ public static class Utils
                     SweepDirection.Clockwise, true);
             c.EndFigure(false);
         }
+
         geo.Transform = new TranslateTransform(origin.X, origin.Y);
         dc.DrawGeometry(brush, pen, geo);
     }
@@ -55,12 +59,12 @@ public static class Utils
         double scale)
     {
         var transform = dc.PushTransform(new Matrix(scale, 0, 0, scale, origin.X, origin.Y));
-        
+
         dc.DrawEllipse(brush, null, new Point(-12, -5), 6, 6);
         dc.DrawEllipse(brush, null, new Point(12, -5), 6, 6);
         dc.DrawArc(null, new Pen(brush, 5), new Point(0, 5),
                    20, 30, 20, 160);
-        
+
         transform.Dispose();
     }
 
@@ -71,7 +75,7 @@ public static class Utils
     {
         return Math.Abs(a - b) < threshold;
     }
-    
+
     /// <summary>
     /// Returns whether this number is note within 1 of another number.
     /// </summary>
@@ -79,14 +83,14 @@ public static class Utils
     {
         return Math.Abs(a - b) > threshold;
     }
-    
+
     /// <summary>
     /// Returns whether a point is inside this rectangle.
     /// </summary>
     public static bool ContainsPoint(this Rect rect, Point point) =>
         rect.Left <= point.X && point.X <= rect.Right &&
-        rect.Top  <= point.Y && point.Y <= rect.Bottom;
-    
+        rect.Top <= point.Y && point.Y <= rect.Bottom;
+
     public static double MapRanges(double input, double inputStart, double inputEnd,
         double outputStart, double outputEnd) =>
         outputStart + ((outputEnd - outputStart) / (inputEnd - inputStart)) * (input - inputStart);
@@ -120,7 +124,26 @@ public static class Utils
             "oemQuestion" => "/",
             _ => split[^1]
         };
-        
+
         return split.Count > 1 ? string.Join("+", split[..^1]) + "+" + primaryKey : primaryKey;
+    }
+
+    public static async Task<StreamWriter?> TryWaitForFileStream(string path)
+    {
+        var attempts = 10; // waits for 1 full second
+        while (attempts-- > 0)
+        {
+            try
+            {
+                return new StreamWriter(path, false);
+            }
+            catch (IOException)
+            {
+                Trace.WriteLine($"Could not open file {path} for writing. Retrying...");
+                await Task.Delay(100);
+            }
+        }
+
+        return null;
     }
 }

@@ -110,8 +110,23 @@ public static partial class Chart
         get => _metadata;
         set
         {
+            UnsavedChanges = _metadata.SongName != value.SongName ||
+                             _metadata.ArtistName != value.ArtistName ||
+                             _metadata.CoverArtistName != value.CoverArtistName ||
+                             _metadata.CharterName != value.CharterName ||
+                             _metadata.FlavorText != value.FlavorText ||
+                             _metadata.DifficultySlot != value.DifficultySlot ||
+                             _metadata.DifficultyName != value.DifficultyName ||
+                             _metadata.DifficultyLevel != value.DifficultyLevel ||
+                             _metadata.ChartOffset != value.ChartOffset;
+            
+            // metadata was unchanged, so updates can be skipped
+            if (!UnsavedChanges)
+            {
+                return;
+            }
+            
             _metadata = value;
-            UnsavedChanges = true;
             
             // technically the chart can only be saved if it has a difficulty slot, but the way the
             // enum is set up makes it impossible to not have one
@@ -137,11 +152,15 @@ public static partial class Chart
                 
                 RebuildSnapLineSets();
             }
+            
             if (canSave)
             {
                 ChartFileName = GetChartFileName();
                 Trace.WriteLine($"chart file name: \"{ChartFileName}\"");
+                
             }
+            
+            UpdateWindowTitle();
         }
     }
 
@@ -593,6 +612,7 @@ public static partial class Chart
         if (!result.Item1)
         {
             ClearChart();
+            UpdateWindowTitle();
             return (false, result.Item2);
         }
         
@@ -623,6 +643,7 @@ public static partial class Chart
         SongLoaded = true;
         UnsavedChanges = false;
         UserData.LastOpenedChartFile = ""; 
+        UpdateWindowTitle();
         return (true, "");
     }
 
@@ -763,19 +784,28 @@ public static partial class Chart
             ChartBuilder.CheckExistingBreakpoint();
             SetTimeToNearestSnap();
             _canAutosave = true;
+            
+            UpdateWindowTitle();
             return (true, "");
         }
         
         ClearChart();
+        UpdateWindowTitle();
         return (false, result.Item2);
     }
 
     /// <summary>
     /// Saves the chart to a .beat.txt with extra UNBUGGABLE data.
     /// </summary>
-    public static async Task SaveToBeatPath(string path)
+    public static async Task<bool> SaveToBeatPath(string path)
     {
-        await using var writer = new StreamWriter(path, false);
+        await using var writer = await Utils.TryWaitForFileStream(path);
+        if (writer == null)
+        {
+            Trace.WriteLine("Save failed: file is not accessible");
+            return false;
+        }
+        
         writer.AutoFlush = true;
         await writer.WriteLineAsync("// Output from NPC's UNBUGGABLE editor\n" +
                                     "// based on TaroNuke's unity editor");
@@ -802,14 +832,22 @@ public static partial class Chart
         
         UserData.LastOpenedChartFile = path;
         UnsavedChanges = false;
+
+        return true;
     }
     
     /// <summary>
     /// Saves the chart to a standard .txt file.
     /// </summary>
-    public static async Task SaveToStandardPath(string path)
+    public static async Task<bool> SaveToStandardPath(string path)
     {
-        await using var writer = new StreamWriter(path, false);
+        await using var writer = await Utils.TryWaitForFileStream(path);
+        if (writer == null)
+        {
+            Trace.WriteLine("Save failed: file is not accessible");
+            return false;
+        }
+        
         writer.AutoFlush = true;
         await writer.WriteLineAsync("// Output from NPC's UNBUGGABLE editor\n" +
                                     "// based on TaroNuke's unity editor\n");
@@ -831,6 +869,8 @@ public static partial class Chart
         
         UserData.LastOpenedChartFile = path;
         UnsavedChanges = false;
+
+        return true;
     }
 
     /// <summary>
@@ -1348,21 +1388,30 @@ public static partial class Chart
         }
         
         Trace.WriteLine($"saving to \"{UserData.LastOpenedChartFile}.auto\"");
+        bool successful;
         if (UserData.LastOpenedChartFile.EndsWith(".beat.txt"))
         {
-            await SaveToBeatPath(UserData.LastOpenedChartFile + ".auto");
+            successful = await SaveToBeatPath(UserData.LastOpenedChartFile + ".auto");
         }
         else
         {
-            await SaveToStandardPath(UserData.LastOpenedChartFile + ".auto");
+            successful = await SaveToStandardPath(UserData.LastOpenedChartFile + ".auto");
         }
-        Trace.WriteLine("Autosave complete!");
+
+        if (successful)
+        {
+            Trace.WriteLine("Autosave complete!");
         
-        // reset the last opened file so we don't continuously add ".auto" to the end
-        UserData.LastOpenedChartFile = UserData.LastOpenedChartFile.Replace(".auto", "");
-        
-        App.MainWindowViewModel.ShowEventIndicator(
-            $"Autosaved to {Path.GetFileName(UserData.LastOpenedChartFile)}.auto");
+            // reset the last opened file so we don't continuously add ".auto" to the end
+            UserData.LastOpenedChartFile = UserData.LastOpenedChartFile.Replace(".auto", "");
+
+            App.MainWindowViewModel.ShowEventIndicator(
+                $"Autosaved to {Path.GetFileName(UserData.LastOpenedChartFile)}.auto");
+        }
+        else
+        {
+            Trace.WriteLine("Autosave failed.");
+        }
     }
 
     private static void PlaySong()
@@ -1423,6 +1472,28 @@ public static partial class Chart
         
         return $"{SanitizeString(Metadata.ArtistName)} - {SanitizeString(Metadata.SongName)} " +
                $"({SanitizeString(Metadata.CharterName)}) [{SanitizeString(difficultyName)}]";
+    }
+
+    private static void UpdateWindowTitle()
+    {
+        if (Metadata.SongName != "" && Metadata.ArtistName != "")
+        {
+            var difficultySlotName = Metadata.DifficultySlot switch
+            {
+                DifficultySlot.BEGINNER => "Beginner",
+                DifficultySlot.NORMAL => "Normal",
+                DifficultySlot.HARD => "Hard",
+                DifficultySlot.EXPERT => "Expert",
+                DifficultySlot.UNBEATABLE => "UNBEATABLE",
+                _ => "Star"
+            };
+            App.MainWindow.Title = $"{_metadata.ArtistName} — {_metadata.SongName} " +
+                                   $"({difficultySlotName}) — UNBUGGABLE";
+        }
+        else
+        {
+            App.MainWindow.Title = "UNBUGGABLE";
+        }
     }
 
     private static string SanitizeString(string str)
