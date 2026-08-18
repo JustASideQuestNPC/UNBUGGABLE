@@ -9,7 +9,7 @@
         <RootNamespace>UNBEATABLEChartEditor</RootNamespace>
         <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
         <Company>NonPlayerCharacterSoftware</Company>
-        <AssemblyVersion>0.13.1</AssemblyVersion>
+        <AssemblyVersion>0.13.2</AssemblyVersion>
     </PropertyGroup>
 
     <ItemGroup>
