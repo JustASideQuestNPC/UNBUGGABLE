@@ -74,6 +74,18 @@ public class FreestyleNote : NoteBase
 
     public override void RenderPreview(DrawingContext dc)
     {
+        // check for whether to draw the "head" of the freestyle chain before checking whether to
+        // actually render the note -- this prevents the head from disappearing if notes in the
+        // chain are more than 1 second apart
+        var parentNote = Chart.GetPreviousNote(this);
+        var isSubNote = parentNote?.Type == NoteType.FREESTYLE;
+        if (isSubNote && parentNote.Time < Chart.CurrentTime && Time >= Chart.CurrentTime)
+        {
+            dc.DrawEllipse(FillBrush, new Pen(OutlineBrush, 6),
+                           new Point(GamePreview.TimeToScreenCoords(Chart.CurrentTimeRaw), 0), 30,
+                           30);
+        }
+        
         if (Time < Chart.CurrentTimeRaw || Time > Chart.CurrentTimeRaw + 1000)
         {
             return;
@@ -91,9 +103,6 @@ public class FreestyleNote : NoteBase
             return;
         }
         
-        var parentNote = Chart.GetPreviousNote(this);
-        var isSubNote = parentNote?.Type == NoteType.FREESTYLE
-                        && !(Config.Settings.NegativeMashConversion && parentNote.Flags.F);
         if (isSubNote)
         {
             dc.DrawEllipse(FillBrush, new Pen(OutlineBrush, 6), new Point(x, 0), 15, 15);
