@@ -18,6 +18,15 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Threading;
 using LibVLCSharp.Shared;
+using SoundFlow.Abstracts.Devices;
+using SoundFlow.Backends.MiniAudio;
+using SoundFlow.Components;
+using SoundFlow.Editing;
+using SoundFlow.Enums;
+using SoundFlow.Metadata.Models;
+using SoundFlow.Modifiers;
+using SoundFlow.Providers;
+using SoundFlow.Structs;
 using Tmds.DBus.Protocol;
 using UNBEATABLEChartEditor;
 using UNBEATABLEChartEditor.Audio;
@@ -42,11 +51,10 @@ public class ChartDebugInfo
 {
     public required bool SongLoaded;
     public required bool Playing;
-    public required long MediaPlayerTime;
-    public required VLCState MediaPlayerState;
-    public required string LastVlcOutput;
-    public required double ChartTime;
-    public required double PlaySpeed;
+    public required PlaybackState PlayerState;
+    public required long ChartTime;
+    public required long PlayerTime;
+    public required double TimeOffset;
 }
 
 public static partial class Chart
@@ -78,12 +86,12 @@ public static partial class Chart
     public static ChartDebugInfo DebugInfo => new()
     {
         Playing = Playing,
-        SongLoaded = SongLoaded,
-        MediaPlayerTime = _mediaPlayer.Time,
-        MediaPlayerState = _mediaPlayer.State,
-        LastVlcOutput = _lastVlcConsoleOutput,
-        ChartTime = CurrentTimeRaw,
-        PlaySpeed = PlaySpeed
+        PlayerState = _player != null ? _player.State : PlaybackState.Stopped,
+        SongLoaded = _player != null,
+        ChartTime = CurrentTime,
+        PlayerTime = _player != null ? (long)Math.Round(PlayerTime * 1000) : 0,
+        TimeOffset = Math.Floor(
+            CurrentTimeRaw - (_player != null ? (long)Math.Round(PlayerTime * 1000) : 0)),
     };
 
     private static List<NoteBase> _notes = [];
@@ -164,17 +172,19 @@ public static partial class Chart
         }
     }
 
-    public static string AudioFileName = "";
-    public static int BeatSnap = 1;
+    public static string AudioFileName {get; private set;} = "";
+    public static int BeatSnap { get; private set; } = 1;
 
     public static string ChartFolderName { get; private set; } = "";
     public static string ChartFileName { get; private set; } = "";
     
-    public static long Length => _mediaPlayer.Media.Duration - AdjustedOffset;
+    public static long Length => _songLength - AdjustedOffset;
 
     public static long AdjustedOffset => Metadata.ChartOffset + Config.Settings.HardChartOffset;
 
     public static bool UnsavedChanges { get; private set; } = false;
+    
+    public static bool SongLoaded => _song != null;
 
     private static double _currentTimeRaw = 0;
     public static double CurrentTimeRaw
@@ -183,35 +193,23 @@ public static partial class Chart
         private set
         {
             _currentTimeRaw = value;
-            
             foreach (var region in _bpmRegions)
             {
                 if (CurrentTimeRaw >= region.StartTime && CurrentTimeRaw <= region.EndTime)
                 {
                     App.MainWindowViewModel.SongBpmText = region.Bpm.ToString("0.00");
+                    break;
                 }
             }
 
             if (!Playing)
             {
                 App.MainWindowViewModel.UpdatePriorityListEntries(GetNotesAtCurrentTime());
-                // _songPlayer.Time = value + AdjustedOffset;
             }
         }
     }
-    public static long CurrentTime => (long)Math.Round(CurrentTimeRaw);
 
-    private static bool _songLoaded = false;
-    public static bool SongLoaded
-    {
-        get => _songLoaded;
-        private set
-        {
-            _songLoaded = value;
-            App.MainWindowViewModel.SongLoaded = value;
-            App.MainWindowViewModel.EditorUiEnabled = true;
-        }
-    }
+    public static long CurrentTime => (long)Math.Round(CurrentTimeRaw);
     
     private static int _songVolume = 100;
     public static int SongVolume
@@ -220,9 +218,11 @@ public static partial class Chart
         set
         {
             _songVolume = value;
-            if (SongLoaded)
+            // i check for null directly instead of checking SongLoaded because the latter makes my
+            // IDE mad because it thinks the player could be null
+            if (_player != null)
             {
-                _mediaPlayer.Volume = value;
+                _player.Volume = (float)value / 100;
                 //Trace.WriteLine($"song volume changed to {value}");
             }
         }
@@ -239,17 +239,27 @@ public static partial class Chart
             //Trace.WriteLine($"sfx volume changed to {value}");
         }
     }
-    
+
+    private static float _playSpeed = 1;
     public static int PlaySpeed
     {
-        get => (int)(_mediaPlayer.Rate * 100);
+        get => _player != null ? (int)(_playSpeed * 100) : 100;
         set
         {
-            if (SongLoaded)
+            if (_player != null)
             {
-                _mediaPlayer.SetRate(value / 100.0f);
+                _playSpeed = value / 100.0f;
+                _song.Settings.TimeStretchFactor = 1 / _playSpeed;
+                Trace.WriteLine(_player.Time);
+                if (CurrentTimeRaw + AdjustedOffset >= 0 && _player.State != PlaybackState.Playing)
+                {
+                    _player.Seek(
+                        TimeSpan.FromMilliseconds((CurrentTimeRaw + AdjustedOffset) / _playSpeed));
+                }
+                Trace.WriteLine(_track.CalculateDuration());
+                Trace.WriteLine(_player.Time);
+                Trace.WriteLine($"Play speed changed to {value}");
             }
-            // Trace.WriteLine($"Play speed changed to {value}");
         }
     }
 
@@ -269,18 +279,25 @@ public static partial class Chart
         }
     }
 
-    private static LibVLC _libVlc = null!;
-    private static MediaPlayer _mediaPlayer = null!;
+    private static MiniAudioEngine _engine;
+    private static AudioPlaybackDevice _outputDevice;
+    private static SoundPlayer? _player;
+    private static SoundFormatInfo _soundFormatInfo;
+    private static ResamplerModifier _resampler;
 
-    private static MediaPlayer _hitSoundMediaPlayer = null!;
-    // private static ChartSongPlayer? _songPlayer = null!;
+    private static Composition _audioComposition;
+    private static Track? _track;
+    private static AudioSegment? _song;
     
     private static CachedSound? _hitSound = null;
     
     // used for keeping track of the song's actual play position
     private static Stopwatch _stopwatch = null!;
+    private static float _lastPlayerTime = 0;
+    private static float PlayerTime => _lastPlayerTime * _playSpeed;
 
-    // private static double _lastSongTime = 0;
+    private static long _songLength = 0;
+    
     private static double _lastStopwatchTime = 0;
     // no field for camera swaps because camera swaps do nothing if you give them a duration
     
@@ -305,7 +322,7 @@ public static partial class Chart
     private static List<long> _jumpTargets = [];
     private static bool _jumpTargetsOutOfDate = true;
     
-    [GeneratedRegex(@"[0-9]+,[0-9]+.[0-9]+,[0-9]+,[0-9]+,[0-9]+,[0-9]+,[0-9]+,[0-9]+")]
+    [GeneratedRegex("[0-9]+,[0-9]+.[0-9]+,[0-9]+,[0-9]+,[0-9]+,[0-9]+,[0-9]+,[0-9]+")]
     private static partial Regex TimingPointRegex();
 
     [GeneratedRegex(@".*\[(.+)\].*")]
@@ -320,14 +337,6 @@ public static partial class Chart
     /// </summary>
     public static void Init()
     {
-        _libVlc = new LibVLC();
-        _mediaPlayer = new MediaPlayer(_libVlc);
-        _hitSoundMediaPlayer = new MediaPlayer(_libVlc);
-        _mediaPlayer.EndReached += MediaPlayer_EndReached;
-        _libVlc.Log += (_, args) =>
-        {
-            _lastVlcConsoleOutput = args.Message;
-        };
         try
         {
             _hitSound = new CachedSound(
@@ -347,26 +356,36 @@ public static partial class Chart
             }
         }
         
+        _engine = new MiniAudioEngine();
+        _outputDevice = _engine.InitializePlaybackDevice(null, AudioFormat.Dvd);
+        _outputDevice.Start();
+        _audioComposition = new Composition(_engine, AudioFormat.Dvd);
+        
         _stopwatch = new Stopwatch();
         _stopwatch.Start();
     }
 
-    public static async void AsyncInit()
+    public static void Close()
     {
-        try
+        StopSong();
+        _audioComposition.Dispose();
+        _outputDevice.Stop();
+        _outputDevice.Dispose();
+        _engine.Dispose();
+        // _libVlc.Dispose();
+    }
+
+    public static void StopSong()
+    {
+        if (_player != null)
         {
-            var hitSoundMedia =
-                new Media(_libVlc,
-                          Path.Combine(Environment.CurrentDirectory, "Assets/hitSound.wav"));
-            _hitSoundMediaPlayer.Media = hitSoundMedia;
-            await hitSoundMedia.Parse();
+            _player.Stop();
+            _outputDevice.MasterMixer.RemoveComponent(_player);
+            _player.Dispose();
+            _player = null;
         }
-        catch (FileNotFoundException)
-        {
-            _hitSoundMediaPlayer.Media = null;
-            Trace.WriteLine(
-                "Hit sound (Assets/hitSound.wav) not found. Hit sounds are disabled.");
-        }
+        _song?.Dispose();
+        _lastPlayerTime = 0;
     }
 
     public static void PlayOrPauseSong()
@@ -488,7 +507,6 @@ public static partial class Chart
         {
             var time = _jumpTargets.Find(
                 t => t - Metadata.ChartOffset > GetNextSnapTime());
-            //Trace.WriteLine($"Moving to label {_labels.IndexOf(previousLabel)} at {previousLabel.Time - Metadata.ChartOffset} (raw {CurrentTimeRaw}, {CurrentTime})");
             CurrentTimeRaw = time - Metadata.ChartOffset;
         }
         else
@@ -519,7 +537,6 @@ public static partial class Chart
         {
             var time = _jumpTargets.FindLast(
                 t => t - Metadata.ChartOffset < GetPreviousSnapTime());
-            //Trace.WriteLine($"Moving to label {_labels.IndexOf(previousLabel)} at {previousLabel.Time - Metadata.ChartOffset} (raw {CurrentTimeRaw}, {CurrentTime})");
             CurrentTimeRaw = time - Metadata.ChartOffset;
         }
         else
@@ -544,17 +561,27 @@ public static partial class Chart
     /// </summary>
     public static void PerTickUpdate()
     {
-        if (SongLoaded && Playing)
+        if (_player != null && Playing)
         {
-            var prevTime = CurrentTimeRaw;
-            CurrentTimeRaw += (_stopwatch.ElapsedMilliseconds - _lastStopwatchTime) * PlaySpeed / 100;
-            if (CurrentTimeRaw + AdjustedOffset >= 0 && !_mediaPlayer.IsPlaying)
+            var prevTime = _currentTimeRaw;
+            CurrentTimeRaw +=
+                (_stopwatch.ElapsedMilliseconds - _lastStopwatchTime) * _playSpeed;
+            if (CurrentTimeRaw + AdjustedOffset >= 0 && _player.State != PlaybackState.Playing)
             {
-                _mediaPlayer.SeekTo(TimeSpan.FromMilliseconds(CurrentTimeRaw + AdjustedOffset));
-                _mediaPlayer.Play();
-                // CurrentTime = AdjustedOffset;
+                _player.Seek(
+                     TimeSpan.FromMilliseconds((CurrentTimeRaw + AdjustedOffset) / _playSpeed));
+                _player.Play();
             }
-            else if (CurrentTimeRaw > Length)
+
+            // sync up with the media player whenever possible
+            if (_lastPlayerTime != _player.Time)
+            {
+                Trace.WriteLine($"Player time: {_player.Time}");
+                _lastPlayerTime = _player.Time;
+                CurrentTimeRaw = PlayerTime * 1000 - AdjustedOffset;
+            }
+            
+            if (CurrentTimeRaw > Length)
             {
                 Playing = false;
                 CurrentTimeRaw = Length;
@@ -574,14 +601,6 @@ public static partial class Chart
                 }
             }
         }
-
-        // _temp += _stopwatch.ElapsedMilliseconds - _lastStopwatchTime;
-        //
-        // if (_temp >= 500)
-        // {
-        //     _temp -= 500;
-        //     SfxEngine.Play(_hitSound);
-        // }
         
         _lastStopwatchTime = _stopwatch.ElapsedMilliseconds;
         
@@ -602,13 +621,17 @@ public static partial class Chart
     /// Whether the audio file could be loaded, followed by an error message (or an empty string if
     /// there was no error).
     /// </returns>
-    public static async Task<(bool, string)> TryCreateChartFromAudio(string path)
+    public static (bool, string) TryCreateChartFromAudio(string path)
     {
-        SongLoaded = false;
+        StopSong();
+        
+        App.MainWindowViewModel.EditorUiEnabled = false;
+        App.MainWindowViewModel.SongLoaded = false;
+        
         _canAutosave = false;
         _jumpTargetsOutOfDate = true;
 
-        var result = await TryLoadAudioFile(path);
+        var result = TryLoadAudioFile(path);
         if (!result.Item1)
         {
             ClearChart();
@@ -640,10 +663,14 @@ public static partial class Chart
         App.MainWindowViewModel.PlaySpeed = 100;
         App.MainWindowViewModel.CanSave = false;
 
-        SongLoaded = true;
+        // SongLoaded = true;
         UnsavedChanges = false;
         UserData.LastOpenedChartFile = ""; 
         UpdateWindowTitle();
+        
+        App.MainWindowViewModel.EditorUiEnabled = true;
+        App.MainWindowViewModel.SongLoaded = true;
+        
         return (true, "");
     }
 
@@ -657,7 +684,11 @@ public static partial class Chart
     /// </returns>
     public static async Task<(bool, string)> TryLoadChartFile(string path)
     {
-        SongLoaded = false;
+        StopSong();
+        
+        App.MainWindowViewModel.EditorUiEnabled = false;
+        App.MainWindowViewModel.SongLoaded = false;
+        
         _canAutosave = false;
         _jumpTargetsOutOfDate = true;
         
@@ -729,21 +760,21 @@ public static partial class Chart
             
             if (temp == -1)
             {
-                _mediaPlayer.Media = null; // disables the editor
+                _player = null; // disables the editor ui
                 return (false, errorMessage);
             }
 
             i += temp;
         }
 
-        var result = await TryLoadAudioFile(audioPath);
+        var result = TryLoadAudioFile(audioPath);
         if (result.Item1)
         {
             RebuildSnapLineSets();
             SetBeatSnapIndex(0);
             ChartFileName = GetChartFileName();
             ChartFolderName = Directory.GetParent(path)?.Name ?? "";
-            SongLoaded = true;
+            // SongLoaded = true;
             UnsavedChanges = false;
             UserData.LastOpenedChartFile = path;
 
@@ -789,6 +820,8 @@ public static partial class Chart
             _canAutosave = true;
             
             UpdateWindowTitle();
+            App.MainWindowViewModel.EditorUiEnabled = true;
+            App.MainWindowViewModel.SongLoaded = true;
             return (true, "");
         }
         
@@ -1290,8 +1323,8 @@ public static partial class Chart
                 snapLineSet.Add((long)Math.Round(time));
             }
             
-            // Trace.WriteLine(
-            //     $"Snap line set for snap value {snapValue} has {snapLineSet.Count} lines");
+            Trace.WriteLine(
+                $"Snap line set for snap value {snapValue} has {snapLineSet.Count} lines");
             SnapLineSets[snapValue] = snapLineSet;
         }
         
@@ -1355,8 +1388,25 @@ public static partial class Chart
         _jumpTargets.Sort();
     }
 
+    public static void UpdatePlaySpeedConfig()
+    {
+        if (Config.Settings.PlaySpeedMode == "resample")
+        {
+            _player!.PlaybackSpeed = 1;
+            // _resampler.ResampleFactor = _playSpeed;
+        }
+        else
+        {
+            // _resampler.ResampleFactor = 1;
+            _player!.PlaybackSpeed = _playSpeed;
+            _player.SetTimeStretchQuality((WsolaPerformancePreset)Config.Settings.StretchQuality);
+        }
+    }
+
     private static void ClearChart()
     {
+        StopSong();
+        
         Metadata = new MetadataContainer();
         _notes = [];
         _labels = [];
@@ -1376,8 +1426,9 @@ public static partial class Chart
         App.MainWindowViewModel.SongBpmText = "";
         App.MainWindowViewModel.PlaySpeed = 100;
         App.MainWindowViewModel.CanSave = false;
-
-        SongLoaded = false;
+        App.MainWindowViewModel.EditorUiEnabled = false;
+        App.MainWindowViewModel.SongLoaded = false;
+        
         UnsavedChanges = false;
     }
 
@@ -1419,6 +1470,12 @@ public static partial class Chart
 
     private static void PlaySong()
     {
+        if (_player == null)
+        {
+            Trace.WriteLine("Attempting to play song when song is not loaded.");
+            return;
+        }
+        
         if (CurrentTimeRaw + AdjustedOffset >= Length)
         {
             return;
@@ -1427,26 +1484,26 @@ public static partial class Chart
         Playing = true;
         if (CurrentTimeRaw + AdjustedOffset >= 0)
         {
-            if (_mediaPlayer.Media.State == VLCState.Ended)
-            {
-                _mediaPlayer.Play(_mediaPlayer.Media);
-            }
-            else
-            {
-                _mediaPlayer.Play();
-            }
-            _mediaPlayer.SeekTo(TimeSpan.FromMilliseconds(CurrentTimeRaw + AdjustedOffset));
+            _player.Seek(TimeSpan.FromMilliseconds((CurrentTimeRaw + AdjustedOffset) / _playSpeed));
+            _player.Play();
         }
     }
     
     private static void PauseSong()
     {
+        if (_player == null)
+        {
+            Trace.WriteLine("Attempting to pause song when song is not loaded.");
+            return;
+        }
+
+        _lastPlayerTime = _player.Time;
         Playing = false;
-        _mediaPlayer.Pause();
+        _player.Pause();
         SetTimeToNearestSnap();
     }
 
-    private static void MediaPlayer_EndReached(object? sender, EventArgs e)
+    private static void Player_PlaybackEnded(object? sender, EventArgs e)
     {
         Dispatcher.UIThread.InvokeAsync(() =>
         {
@@ -1507,7 +1564,7 @@ public static partial class Chart
                     .Replace("[", "_").Replace("]", "_");
     }
     
-    private static async Task<(bool, string)> TryLoadAudioFile(string path)
+    private static (bool, string) TryLoadAudioFile(string path)
     {
         try
         {
@@ -1516,15 +1573,50 @@ public static partial class Chart
                 Trace.WriteLine("Could not load audio file: File not found.");
                 return (false, "Could not load audio file: File not found.");
             }
+
+            var audioFileStream = File.OpenRead(path);
+            var streamProvider = new StreamDataProvider(_engine, audioFileStream);
+            _soundFormatInfo = streamProvider.FormatInfo;
+            if (_soundFormatInfo.SampleRate != _outputDevice.Format.SampleRate ||
+                _soundFormatInfo.ChannelCount != _outputDevice.Format.Channels)
+            {
+                Trace.WriteLine(
+                    "Mismatched sample rate or channel count; adjusting output device.");
+                _outputDevice.Stop();
+                _outputDevice.Dispose();
+                _outputDevice = _engine.InitializePlaybackDevice(null, new AudioFormat
+                {
+                    Format = SampleFormat.F32,
+                    SampleRate = _soundFormatInfo.SampleRate,
+                    Channels = _soundFormatInfo.ChannelCount
+                });
+                _outputDevice.Start();
+            }
             
-            var media = new Media(_libVlc, path);
-            _mediaPlayer.Media = media;
-            _mediaPlayer.SeekTo(TimeSpan.FromMilliseconds(-AdjustedOffset));
-            // DisposeSongPlayer();
-            // _songPlayer = new ChartSongPlayer(path);
+            _player = new SoundPlayer(_engine, _outputDevice.Format, _audioComposition.Renderer);
+            _player.PlaybackEnded += Player_PlaybackEnded;
+
+            // the player always gets a resampler even if the config is set to stretch
+            // _resampler = new ResamplerModifier();
+            // _player.AddModifier(_resampler);
+            
+            _track = new Track();
+            _audioComposition.Editor.AddTrack(_track);
+            _song = _audioComposition.Editor.CreateAndAddSegmentFromFile(
+                _track, path, TimeSpan.FromSeconds(0));
+            _songLength = (long)Math.Floor(_track.CalculateDuration().TotalMilliseconds);
+            Trace.WriteLine(_songLength);
+            Trace.WriteLine($"""
+                             --- Audio Metadata ---
+                             {_soundFormatInfo.ToString().ReplaceLineEndings()}
+                             
+                             """);
+            
+            _outputDevice.MasterMixer.AddComponent(_player);
             AudioFileName = Path.GetFileName(path);
             
-            await media.Parse();
+            streamProvider.Dispose();
+            audioFileStream.Dispose();
         }
         catch (Exception e)
         {

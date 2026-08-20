@@ -169,7 +169,7 @@ public static class ChartBuilder
 
     public static async Task<bool> TryCreateChartFromAudio(string path)
     {
-        var result = await Chart.TryCreateChartFromAudio(path);
+        var result = Chart.TryCreateChartFromAudio(path);
         if (result.Item1)
         {
             ChartBuilderCommandInvoker.Reset();
@@ -768,7 +768,7 @@ public static class ChartBuilder
 
     private static void CheckForNoteOperation(NoteLane lane, long start, long end)
     {
-        var oldNote = Chart.GetNote(start, lane, 1);
+        var oldNote = Chart.GetNote(start, lane, Config.Settings.HoldExtensionSearchThreshold);
         Trace.WriteLine(oldNote);
         // hold notes can also extend from the start of the note
         if (oldNote == null && end != start)

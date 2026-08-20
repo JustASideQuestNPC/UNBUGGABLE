@@ -214,6 +214,12 @@ public class Settings
     [JsonRequired][JsonPropertyName("hitSoundTickRate")]
     public int HitSoundTickRate { get; set; } = 180;
 
+    [JsonRequired][JsonPropertyName("playSpeedMode")]
+    public string PlaySpeedMode { get; set; } = "resample";
+    
+    [JsonRequired][JsonPropertyName("stretchQuality")]
+    public int StretchQuality { get; set; } = 1;
+
     [JsonRequired][JsonPropertyName("maxConcurrentHitSounds")]
     public int MaxConcurrentSfx { get; set; } = 16;
 
@@ -259,6 +265,8 @@ public class Settings
                          hit sound offset: {HitSoundOffset}
                          hard chart offset: {HardChartOffset}
                          hit sound tick rate: {HitSoundTickRate}
+                         play speed mode: {PlaySpeedMode}
+                         stretch quality: {StretchQuality}
                          max concurrent hit sounds: {MaxConcurrentSfx}
                          hit sounds: {HitSounds.GetFormattedString()}
                          quick scroll beats: {QuickScrollBeats}
