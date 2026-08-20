@@ -165,6 +165,7 @@ public static class Config
         if (Chart.SongLoaded)
         {
             Chart.RebuildJumpTargets();
+            Chart.UpdatePlaySpeedConfig();
         }
         
         LoadError = false;
@@ -538,9 +539,21 @@ public static class Config
                     loadError = true;
                 }
 
+                if (settings.PlaySpeedMode != "resample" && settings.PlaySpeedMode != "stretch")
+                {
+                    Trace.WriteLine("Invalid play speed mode: must be \"resample\" or \"stretch\"");
+                    settings.PlaySpeedMode = "resample";
+                    loadError = true;
+                }
+
+                if (settings.StretchQuality is < 0 or > 3)
+                {
+                    Trace.WriteLine("Stretch quality must be between 0 and 3");
+                    settings.StretchQuality = 1;
+                    loadError = true;
+                }
+
                 Settings = settings;
-                // Trace.WriteLine("Loaded settings:");
-                // Settings.PrintSettings();
             }
             else
             {

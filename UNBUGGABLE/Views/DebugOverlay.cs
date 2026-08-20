@@ -66,13 +66,12 @@ public class DebugOverlay : Control
             var chartDebug = Chart.DebugInfo;
             column1Strings.Add($"""
                                 --- chart ---
-                                playing: {chartDebug.Playing}
                                 song loaded: {chartDebug.SongLoaded}
-                                media time: {chartDebug.MediaPlayerTime}
-                                media state: {chartDebug.MediaPlayerState}
-                                last vlc output: {chartDebug.LastVlcOutput}
+                                playing: {chartDebug.Playing}
+                                playback state: {chartDebug.PlayerState}
                                 chart time: {chartDebug.ChartTime}
-                                play speed: {chartDebug.PlaySpeed}
+                                player time: {chartDebug.PlayerTime}
+                                time difference: {chartDebug.TimeOffset}
                                 """);
         }
 

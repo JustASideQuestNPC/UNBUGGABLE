@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Transactions;
+using Avalonia.Threading;
 using UNBEATABLEChartEditor;
 using UNBEATABLEChartEditor.Audio;
 
@@ -35,6 +36,13 @@ sealed class Program
         var consoleListener = new ConsoleTraceListener(false);
         consoleListener.TraceOutputOptions = TraceOptions.DateTime;
 
+        AppDomain.CurrentDomain.ProcessExit += (sender, e) =>
+        {
+            UserData.SaveData();
+            SfxEngine.DisposeInstances();
+            Chart.Close();
+        };
+
         Trace.Listeners.Add(fileListener);
         Trace.Listeners.Add(consoleListener);
         Trace.AutoFlush = true;
@@ -43,16 +51,14 @@ sealed class Program
 
         try
         {
-            // apparently, running the app by double-clicking a file will make the working directory the
-            // same place as that file, not the location of the exe
+            // apparently, running the app by double-clicking a file will make the working directory
+            // the same place as that file, not the location of the exe
             if (!Environment.CurrentDirectory.EndsWith("UNBUGGABLE"))
             {
                 Environment.CurrentDirectory =
                     Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ??
                     Environment.CurrentDirectory;
             }
-
-            AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
 
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         }
@@ -68,10 +74,4 @@ sealed class Program
                      .UsePlatformDetect()
                      .WithInterFont()
                      .LogToTrace();
-    
-    private static void OnProcessExit(object? sender, EventArgs e)
-    {
-        UserData.SaveData();
-        SfxEngine.DisposeInstances();
-    }
 }

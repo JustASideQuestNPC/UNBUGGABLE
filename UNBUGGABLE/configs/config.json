@@ -6,7 +6,7 @@
   "enableBreakpoints": true,
   "useLane2AsMarkers": true,
   "saveMarkersAsLane2Notes": false,
-  "alwaysEnableCustomDifficultyName": false,
+  "alwaysEnableCustomDifficultyName": true,
   "autoSelect": "all",
   "selectHoldNotesFromTail": "all",
   "allowTopLaneCopMashes": false,
@@ -55,6 +55,8 @@
   "hitSoundOffset": -30,
   "hardChartOffset": -60,
   "hitSoundTickRate": 180,
+  "playSpeedMode": "resample",
+  "stretchQuality": 1,
   "maxConcurrentHitSounds": 16,
   "autosaveInterval": 600,
   "hitSounds": {
@@ -81,7 +83,7 @@
     "enabled": true,
     "commandStacks": false,
     "inputData": false,
-    "mediaPlayer": false,
+    "mediaPlayer": true,
     "noteTimestamps": true
   },
   "quickScrollBeats": 5,

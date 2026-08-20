@@ -16,6 +16,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DialogHostAvalonia;
 using UNBEATABLEChartEditor;
+using UNBEATABLEChartEditor.Audio;
 using UNBEATABLEChartEditor.Dialogs;
 using UNBUGGABLE.Commands;
 using UNBUGGABLE.Resources;
