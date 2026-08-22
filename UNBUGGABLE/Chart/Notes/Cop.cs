@@ -291,6 +291,17 @@ public class CopNote : NoteBase
         return string.Join(",", chunks);
     }
 
+    public override string ToCopyPasteString(long startTime)
+    {
+        // copy-paste format for cop notes:
+        // type,lane,cop id,time from start,end time from start (or -1 for instant notes),finisher
+        var typeId = (int)Type;
+        var laneId = (int)Lane;
+        var time = Time - startTime;
+        var endTime = Instant ? -1 : EndTime - startTime;
+        return $"{typeId},{laneId},{CopId},{time},{endTime},{(IsFinisher ? 1 : 0)}";
+    }
+
     private void RenderSinglePreview(DrawingContext dc, double x)
     {
         if (Time < Chart.CurrentTimeRaw || Time > Chart.CurrentTimeRaw + 1000)

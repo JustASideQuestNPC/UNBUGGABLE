@@ -38,8 +38,6 @@ public static class ChartBuilder
     // 0 for normal notes, 1-4 for cop notes
     public static int CopId { get; private set; } = 0;
     
-    private static List<NoteBase> _clipboard = [];
-    
     private static readonly List<string> NoteTypeNames = [
         "notes", "cop 1", "cop 2", "cop 3", "cop 4"];
     
@@ -249,33 +247,49 @@ public static class ChartBuilder
         SelectedNotes = Chart.Notes.Where(n => n.Lane == lane).ToList();
     }
     
-    public static void Cut()
+    public static async Task Cut()
     {
-        _clipboard = new List<NoteBase>([..SelectedNotes]);
+        var segmentStartTime = SelectedNotes.Min(n => n.Time);
+        var serialized =
+            string.Join(";", SelectedNotes.Select(n => n.ToCopyPasteString(segmentStartTime))
+                                          .ToList());
+        await App.TopLevel.Clipboard.SetTextAsync(serialized);
+        
         ChartBuilderCommandInvoker.Execute(new DeleteNotesCommand([..SelectedNotes]));
     }
     
-    public static void Copy()
+    public static async Task Copy()
     {
-        _clipboard = new List<NoteBase>([..SelectedNotes]);
+        var segmentStartTime = SelectedNotes.Min(n => n.Time);
+        var serialized =
+            string.Join(";", SelectedNotes.Select(n => n.ToCopyPasteString(segmentStartTime))
+                                          .ToList());
+        await App.TopLevel.Clipboard.SetTextAsync(serialized);
     }
     
-    public static void Paste()
+    public static async Task Paste()
     {
-        if (_clipboard.Count == 0)
+        List<NoteBase> pasted = [];
+        var clipboardText = await App.TopLevel.Clipboard.GetTextAsync();
+        var noteStrings = clipboardText.Split(';');
+        foreach (var noteString in noteStrings)
+        {
+            var note = NoteBase.FromCopyPasteString(noteString, Chart.CurrentTime);
+            if (note == null)
+            {
+                Trace.WriteLine($"Failed to parse note from clipboard: {noteString}");
+                return;
+            }
+            
+            pasted.Add(note);
+        }
+        
+        if (pasted.Count == 0)
         {
             return;
         }
         
-        var timeOffset = Chart.CurrentTime - _clipboard[0].Time;
-        
-        List<NoteBase> newNotes = [];
-        foreach (var note in _clipboard)
-        {
-            newNotes.Add(note.Clone(note.Time + timeOffset));
-        }
-        
-        ChartBuilderCommandInvoker.Execute(new PasteNotesCommand(newNotes));
+        ChartBuilderCommandInvoker.Execute(new PasteNotesCommand(pasted));
     }
     
     public static void ClearSelection()

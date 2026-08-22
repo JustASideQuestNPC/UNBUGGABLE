@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia;
 using Avalonia.Media;
@@ -7,12 +8,12 @@ using UNBUGGABLE.Views;
 
 namespace UNBUGGABLE;
 
-public class MarkerDummyNote : NoteBase
+public class MarkerNote : NoteBase
 {
     private static readonly List<SolidColorBrush> Brushes = [];
     private static readonly List<TransformGroup> Transforms = [];
     
-    public override NoteType Type => NoteType.MARKER_DUMMY;
+    public override NoteType Type => NoteType.MARKER;
     public override NoteLane Lane => NoteLane.MARKER;
 
     public bool Color1
@@ -59,7 +60,7 @@ public class MarkerDummyNote : NoteBase
         }
     }
 
-    public MarkerDummyNote(long time)
+    public MarkerNote(long time)
     {
         Time = time;
     }
@@ -117,6 +118,16 @@ public class MarkerDummyNote : NoteBase
         }
 
         return "";
+    }
+
+    public override string ToCopyPasteString(long startTime)
+    {
+        var type = (int)Type;
+        var time = Time - startTime;
+        var colorString = Convert.ToInt32(
+            $"{(_colorStates[0] ? 1 : 0)}{(_colorStates[1] ? 1 : 0)}{(_colorStates[2] ? 1 : 0)}",
+            2);
+        return $"{type},{time},{colorString}";
     }
 
     public override string ToString() => $"Marker: Colors={string.Join(",", _colorStates)} " +

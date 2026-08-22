@@ -32,7 +32,7 @@ public class CutAction(List<string> keybinds) : InputActionBase(keybinds)
 {
     public override async Task OnPress()
     {
-        ChartBuilder.Cut();
+        await ChartBuilder.Cut();
     }
 }
 
@@ -40,7 +40,7 @@ public class CopyAction(List<string> keybinds) : InputActionBase(keybinds)
 {
     public override async Task OnPress()
     {
-        ChartBuilder.Copy();
+        await ChartBuilder.Copy();
     }
 }
 
@@ -48,7 +48,7 @@ public class PasteAction(List<string> keybinds) : InputActionBase(keybinds)
 {
     public override async Task OnPress()
     {
-        ChartBuilder.Paste();
+        await ChartBuilder.Paste();
     }
 }
 

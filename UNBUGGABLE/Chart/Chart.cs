@@ -93,10 +93,10 @@ public static partial class Chart
     public static ReadOnlyCollection<NoteBase> Notes => _notes.AsReadOnly();
 
     public static ReadOnlyCollection<NoteBase> NonMarkerNotes =>
-        _notes.Where(n => n is not MarkerDummyNote).ToList().AsReadOnly();
+        _notes.Where(n => n is not MarkerNote).ToList().AsReadOnly();
     
     public static ReadOnlyCollection<NoteBase> MarkerNotes =>
-        _notes.Where(n => n is MarkerDummyNote).ToList().AsReadOnly();
+        _notes.Where(n => n is MarkerNote).ToList().AsReadOnly();
     
     private static List<BpmRegion> _bpmRegions = [];
     public static ReadOnlyCollection<BpmRegion> BpmRegions => _bpmRegions.AsReadOnly();
@@ -280,9 +280,8 @@ public static partial class Chart
     // used for keeping track of the song's actual play position
     private static Stopwatch _stopwatch = null!;
 
-    // private static double _lastSongTime = 0;
+    private static long _lastSongTime = 0;
     private static double _lastStopwatchTime = 0;
-    // no field for camera swaps because camera swaps do nothing if you give them a duration
     
     private static int _beatSnapIndex = 0;
     
@@ -554,10 +553,18 @@ public static partial class Chart
                 _mediaPlayer.Play();
                 // CurrentTime = AdjustedOffset;
             }
-            else if (CurrentTimeRaw > Length)
+            else
             {
-                Playing = false;
-                CurrentTimeRaw = Length;
+                // resynchronize with the audio when possible
+                if (_mediaPlayer.Time != _lastSongTime)
+                {
+                    CurrentTimeRaw = _mediaPlayer.Time - AdjustedOffset;
+                }
+                if (CurrentTimeRaw > Length)
+                {
+                    Playing = false;
+                    CurrentTimeRaw = Length;
+                }
             }
             
             foreach (var note in Notes)
@@ -919,7 +926,7 @@ public static partial class Chart
         var marker = MarkerNotes.FirstOrDefault(n => n.Time == time);
         if (marker == null)
         {
-            AddNote(new MarkerDummyNote(time)
+            AddNote(new MarkerNote(time)
             {
                 Color1 = true,
                 Color2 = false,
@@ -1100,7 +1107,7 @@ public static partial class Chart
         var existing = MarkerNotes.FirstOrDefault(n => n.Time == time);
         if (existing != null)
         {
-            var m = (MarkerDummyNote)existing;
+            var m = (MarkerNote)existing;
             if (color1)
             {
                 m.Color1 = !m.Color1;
@@ -1123,7 +1130,7 @@ public static partial class Chart
         }
         else
         {
-            AddNote(new MarkerDummyNote(time)
+            AddNote(new MarkerNote(time)
             {
                 Color1 = color1,
                 Color2 = color2,
@@ -1423,7 +1430,8 @@ public static partial class Chart
         {
             return;
         }
-        
+
+        _lastSongTime = _mediaPlayer.Time;
         Playing = true;
         if (CurrentTimeRaw + AdjustedOffset >= 0)
         {
@@ -1520,8 +1528,6 @@ public static partial class Chart
             var media = new Media(_libVlc, path);
             _mediaPlayer.Media = media;
             _mediaPlayer.SeekTo(TimeSpan.FromMilliseconds(-AdjustedOffset));
-            // DisposeSongPlayer();
-            // _songPlayer = new ChartSongPlayer(path);
             AudioFileName = Path.GetFileName(path);
             
             await media.Parse();
@@ -1983,7 +1989,7 @@ public static partial class Chart
         List<string> markerStrings = [];
         foreach (var marker in MarkerNotes)
         {
-            var m = (MarkerDummyNote)marker;
+            var m = (MarkerNote)marker;
             var colorStatesString = (m.Color1 ? "1" : "0") +
                                     (m.Color2 ? "1" : "0") +
                                     (m.Color3 ? "1" : "0");

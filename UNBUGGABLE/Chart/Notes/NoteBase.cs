@@ -26,7 +26,7 @@ public enum NoteType
     COP_SINGLE,
     COP_HOLD,
     COP_MASH,
-    MARKER_DUMMY
+    MARKER
 }
 
 public enum NoteLane
@@ -276,6 +276,197 @@ public abstract partial class NoteBase
         return note;
     }
 
+    public static NoteBase? FromCopyPasteString(string copyPasteString, long startTime)
+    {
+        var rawChunks = copyPasteString.Split(',').ToList();
+        List<long> chunks = [];
+        foreach (var chunk in rawChunks)
+        {
+            if (long.TryParse(chunk, out var parsedChunk))
+            {
+                chunks.Add(parsedChunk);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        if (chunks[0] < 0 || chunks[0] >= Enum.GetNames<NoteType>().Length)
+        {
+            return null;
+        }
+        
+        var type = (NoteType)chunks[0];
+        long time;
+        
+        if (type == NoteType.MARKER)
+        {
+            if (chunks.Count != 3)
+            {
+                return null;
+            }
+            
+            // start time
+            if (chunks[1] < 0)
+            {
+                return null;
+            }
+            time = chunks[1] + startTime;
+            
+            if (time < 0)
+            {
+                return null;
+            }
+            
+            var colorString = Convert.ToString(chunks[2], 2).PadLeft(3, '0');
+            if (colorString.Length != 3)
+            {
+                return null;
+            }
+            
+            return new MarkerNote(time)
+            {
+                Color1 = colorString[0] == '1',
+                Color2 = colorString[1] == '1',
+                Color3 = colorString[2] == '1'
+            };
+        }
+        
+        if (chunks[1] < 0 || chunks[1] >= Enum.GetNames<NoteLane>().Length)
+        {
+            return null;
+        }
+        
+        var lane = (NoteLane)chunks[1];
+        
+        if (type is NoteType.COP_SINGLE or NoteType.COP_HOLD or NoteType.COP_MASH)
+        {
+            // copy-paste format for cop notes:
+            // type,lane,cop id,time from start,end time from start (or -1 for instant notes),
+            // finisher
+            if (chunks.Count != 6)
+            {
+                return null;
+            }
+            
+            var copId = chunks[2];
+            if (copId is < 1 or > 4)
+            {
+                return null;
+            }
+            
+            // start time
+            if (chunks[3] < 0)
+            {
+                return null;
+            }
+            time = chunks[3] + startTime;
+                
+            // finisher
+            if (chunks[5] != 0 && chunks[5] != 1)
+            {
+                return null;
+            }
+
+            if (type == NoteType.COP_SINGLE)
+            {
+                return new CopNote(NoteType.COP_SINGLE, (int)copId, chunks[5] == 1)
+                {
+                    Time = time
+                };
+            }
+
+            // end time
+            if (chunks[4] < time)
+            {
+                return null;
+            }
+            
+            return new CopNote(NoteType.COP_HOLD, (int)copId, chunks[5] == 1)
+            {
+                Time = time,
+                EndTime = chunks[4] + startTime
+            };
+        }
+
+        if (chunks.Count != 5)
+        {
+            return null;
+        }
+        
+        // start time
+        if (chunks[2] < 0)
+        {
+            return null;
+        }
+        time = chunks[2] + startTime;
+        
+        var flagString = Convert.ToString(chunks[4], 2).PadLeft(4, '0');
+        if (flagString.Length != 4)
+        {
+            return null;
+        }
+        
+        var flags = new NoteFlags(flagString[0] == '1', flagString[1] == '1', flagString[2] == '1',
+                                  flagString[3] == '1');
+
+        if (type is NoteType.HOLD or NoteType.DOUBLE or NoteType.MASH)
+        {
+            if ((chunks[3] + startTime) < time)
+            {
+                return null;
+            }
+
+            if (type is NoteType.HOLD or NoteType.DOUBLE)
+            {
+                return new HoldNote
+                {
+                    Time = time,
+                    Lane = lane,
+                    EndTime = chunks[3] + startTime,
+                    Flags = flags
+                };
+            }
+
+            return new MashNote
+            {
+                Time = time,
+                // no lane because mashes are always in the center
+                EndTime = chunks[3] + startTime,
+                Flags = flags
+            };
+        }
+        
+        if (type is NoteType.SINGLE or NoteType.SPIKE)
+        {
+            return new SingleNote
+            {
+                Time = time,
+                Lane = lane,
+                Flags = flags
+            };
+        }
+
+        if (type is NoteType.FREESTYLE or NoteType.NEGATIVE_MASH)
+        {
+            return new FreestyleNote
+            {
+                Time = time,
+                // no lane because freestyles are always in the center
+                Flags = flags
+            };
+        }
+        
+        // by process of elimination, any note that gets here must be a camera note
+        return new CameraChange
+        {
+            Time = time,
+            // no lane because camera notes are always in the camera lane
+            Flags = flags
+        };
+    }
+
     protected NoteBase(NoteFlags? startingFlags = null)
     {
         Flags = startingFlags ?? new NoteFlags(false, false, false);
@@ -360,6 +551,19 @@ public abstract partial class NoteBase
         chunks.Add(paramString);
 
         return string.Join(",", chunks);
+    }
+
+    public virtual string ToCopyPasteString(long startTime)
+    {
+        // copy-paste format for non-cop notes:
+        // type,lane,time from start,end time from start (or -1 for instant notes),flags as [cfwn]
+        var typeId = (int)Type;
+        var laneId = (int)Lane;
+        var time = Time - startTime;
+        var endTime = Instant ? -1 : EndTime - startTime;
+        var flagNumber = Convert.ToInt32(
+            $"{(Flags.C ? 1 : 0)}{(Flags.F ? 1 : 0)}{(Flags.W ? 1 : 0)}{(Flags.N ? 1 : 0)}", 2);
+        return $"{typeId},{laneId},{time},{endTime},{flagNumber}";
     }
 
     protected void RenderFlags(DrawingContext dc, int x, double y, NoteFlags? flags = null)

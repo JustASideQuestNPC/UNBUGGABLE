@@ -1097,7 +1097,7 @@ public static class ThemeManager
         CopNote.UpdateStyles();
         FreestyleNote.UpdateStyles();
         HoldNote.UpdateStyles();
-        MarkerDummyNote.UpdateStyles();
+        MarkerNote.UpdateStyles();
         MashNote.UpdateStyles();
         SingleNote.UpdateStyles();
         DebugOverlay.UpdateStyles();
