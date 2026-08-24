@@ -538,6 +538,25 @@ public static class Config
                     loadError = true;
                 }
 
+                if (settings.DefaultDifficulty != "beginner" &&
+                    settings.DefaultDifficulty != "normal" &&
+                    settings.DefaultDifficulty != "hard" &&
+                    settings.DefaultDifficulty != "expert" &&
+                    settings.DefaultDifficulty != "unbeatable" &&
+                    settings.DefaultDifficulty != "UNBEATABLE" &&
+                    settings.DefaultDifficulty != "star")
+                {
+                    Trace.WriteLine("Invalid default difficulty: Should be \"beginner\"," +
+                                    "\"normal\", \"hard\", \"expert\", \"UNBEATABLE\", or" +
+                                    "\"star\"");
+                    settings.DefaultDifficulty = "beginner";
+                    loadError = true;
+                }
+                else
+                {
+                    settings.DefaultDifficulty = settings.DefaultDifficulty.ToLower();
+                }
+
                 Settings = settings;
                 // Trace.WriteLine("Loaded settings:");
                 // Settings.PrintSettings();

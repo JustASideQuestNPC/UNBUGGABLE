@@ -229,6 +229,15 @@ public class Settings
     [JsonRequired][JsonPropertyName("enableLivePlacement")]
     public bool EnableLivePlacement { get; set; } = false;
     
+    [JsonRequired][JsonPropertyName("defaultCharterName")]
+    public string DefaultCharterName { get; set; } = "";
+    
+    [JsonRequired][JsonPropertyName("useAudioFileMetadata")]
+    public bool UseAudioFileMetadata { get; set; } = true;
+    
+    [JsonRequired][JsonPropertyName("defaultDifficulty")]
+    public string DefaultDifficulty { get; set; } = "beginner";
+    
     public void PrintSettings()
     {
         Trace.WriteLine($"""
@@ -263,6 +272,7 @@ public class Settings
                          hit sounds: {HitSounds.GetFormattedString()}
                          quick scroll beats: {QuickScrollBeats}
                          slider increment: {SliderIncrement}
+                         default charter name: {DefaultCharterName}
                          debug mode: {DebugToggles.Enabled}
                          {DebugToggles.GetFormattedString()}
                          """);

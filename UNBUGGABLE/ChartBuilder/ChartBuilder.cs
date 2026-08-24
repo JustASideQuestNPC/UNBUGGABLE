@@ -249,6 +249,11 @@ public static class ChartBuilder
     
     public static async Task Cut()
     {
+        if (SelectedNotes.Count == 0)
+        {
+            return;
+        }
+        
         var segmentStartTime = SelectedNotes.Min(n => n.Time);
         var serialized =
             string.Join(";", SelectedNotes.Select(n => n.ToCopyPasteString(segmentStartTime))
@@ -260,6 +265,11 @@ public static class ChartBuilder
     
     public static async Task Copy()
     {
+        if (SelectedNotes.Count == 0)
+        {
+            return;
+        }
+        
         var segmentStartTime = SelectedNotes.Min(n => n.Time);
         var serialized =
             string.Join(";", SelectedNotes.Select(n => n.ToCopyPasteString(segmentStartTime))

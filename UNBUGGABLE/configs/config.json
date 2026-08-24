@@ -1,6 +1,9 @@
 {
   "colorTheme": "default",
   "useBeatFiles": true,
+  "useAudioFileMetadata": true,
+  "defaultCharterName": "NPC",
+  "defaultDifficulty": "star",
   "enhancedPreview": true,
   "alwaysShowAllNoteFlags": false,
   "enableBreakpoints": true,

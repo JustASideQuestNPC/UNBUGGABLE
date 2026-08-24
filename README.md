@@ -116,7 +116,20 @@ folder (case sensitive).
 ## useBeatFiles
 Whether UNBUGGABLE should default to saving charts as .beat.txt files, or as standard .txt files.
 
-## enancedPreview
+## useAudioFileMetadata
+Whether the editor should automatically set a chart's title and artist name using the metadata from
+its audio file, if that metadata exists. This only applies when you create a new chart from an
+audio file.
+
+## defaultCharterName
+When creating a new chart from an audio file, the charter name will automatically be set to this.
+
+## defaultDifficulty
+When creating a new chart from an audio file, the difficulty slot will be set to this. Can be
+"beginner", "normal", "hard", "expert", "UNBEATABLE", or "star". If the default difficulty is Star,
+the difficulty name defaults to "Star".
+
+## enhancedPreview
 If true, the in-game preview shows an indicator of where doubles will land, and gives mash notes a
 "tail" like hold notes have. Set this to false to make the preview more closely match what you
 actually see in-game.

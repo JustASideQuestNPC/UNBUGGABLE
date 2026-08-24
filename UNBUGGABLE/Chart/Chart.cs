@@ -18,6 +18,7 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Threading;
 using LibVLCSharp.Shared;
+using NAudio.Wave;
 using Tmds.DBus.Protocol;
 using UNBEATABLEChartEditor;
 using UNBEATABLEChartEditor.Audio;
@@ -556,10 +557,14 @@ public static partial class Chart
             else
             {
                 // resynchronize with the audio when possible
-                if (_mediaPlayer.Time != _lastSongTime)
-                {
-                    CurrentTimeRaw = _mediaPlayer.Time - AdjustedOffset;
-                }
+                // if (_mediaPlayer.Time != _lastSongTime)
+                // {
+                //     if (_lastSongTime != -1)
+                //     {
+                //         CurrentTimeRaw = _mediaPlayer.Time - AdjustedOffset;
+                //     }
+                //     _lastSongTime = _mediaPlayer.Time;
+                // }
                 if (CurrentTimeRaw > Length)
                 {
                     Playing = false;
@@ -626,8 +631,50 @@ public static partial class Chart
         Trace.WriteLine("Creating chart from audio file...");
         
         App.MainWindow.PlaySpeedSlider.Value = PlaySpeed;
-        
+
         Metadata = new MetadataContainer();
+
+        if (Config.Settings.UseAudioFileMetadata)
+        {
+            var tFile = TagLib.File.Create(path);
+            Trace.WriteLine($"""
+                             File metadata:
+                                 Title: {tFile.Tag.Title}
+                                 Artist: {tFile.Tag.FirstPerformer}
+                             """);
+        
+            if (tFile.Tag.Title != "")
+            {
+                Metadata.SongName = tFile.Tag.Title;
+            }
+
+            if (tFile.Tag.FirstPerformer != "")
+            {
+                Metadata.ArtistName = tFile.Tag.FirstPerformer;
+            }
+
+            if (tFile.Tag.FirstPerformer != "")
+            {
+                Metadata.ArtistName = tFile.Tag.FirstPerformer;
+            }
+        }
+
+        Metadata.CharterName = Config.Settings.DefaultCharterName;
+        Metadata.DifficultySlot = Config.Settings.DefaultDifficulty switch
+        {
+            "beginner" => DifficultySlot.BEGINNER,
+            "easy" => DifficultySlot.NORMAL,
+            "normal" => DifficultySlot.HARD,
+            "hard" => DifficultySlot.EXPERT,
+            "unbeatable" => DifficultySlot.UNBEATABLE,
+            _ => DifficultySlot.STAR
+        };
+
+        if (Metadata.DifficultySlot == DifficultySlot.STAR)
+        {
+            Metadata.DifficultyName = "Star";
+        }
+        
         _notes = [];
         _labels = [];
         ChartBuilder.ClearSelection();
@@ -1145,7 +1192,7 @@ public static partial class Chart
     /// Returns the label at a specific time, or null if it doesn't exist.
     /// </summary>
     public static Label? GetLabel(long time) =>
-        _labels.FirstOrDefault(x => x.Time == time);
+        _labels.FirstOrDefault(x => x.Time == time + Metadata.ChartOffset);
     
     public static void AddLabel(Label label)
     {
@@ -1430,8 +1477,8 @@ public static partial class Chart
         {
             return;
         }
-
-        _lastSongTime = _mediaPlayer.Time;
+        
+        _lastSongTime = -1; // avoids a few edge cases
         Playing = true;
         if (CurrentTimeRaw + AdjustedOffset >= 0)
         {
