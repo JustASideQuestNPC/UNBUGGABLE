@@ -271,8 +271,7 @@ public class LineTheme
     }
 }
 
-public class NoteViewerTheme(NoteViewerThemeJson json, ref List<string> errorMessages) :
-    ElementTheme(json, "noteViewer", ref errorMessages)
+public class NoteViewerTheme : ElementTheme
 {
     public class LaneNumberTheme
     {
@@ -443,28 +442,49 @@ public class NoteViewerTheme(NoteViewerThemeJson json, ref List<string> errorMes
         }
     }
     
-    public readonly Color SelectDragColor = ThemeUtils.ParseColor(json.SelectDragColor,
-                                                                  "noteViewer.selectDragColor",
-                                                                  ref errorMessages);
-    public readonly Color DeleteDragColor = ThemeUtils.ParseColor(json.DeleteDragColor,
-                                                                  "noteViewer.deleteDragColor",
-                                                                  ref errorMessages);
-    public readonly LaneNumberTheme LaneNumbers = new(json.LaneNumbers, ref errorMessages);
-    public readonly LabeledLineTheme BpmChange = new(json.BpmChanges, "noteViewer.bpmChange",
-                                                     ref errorMessages);
-    public readonly LabeledLineTheme Label = new(json.Labels, "noteViewer.label",
-                                                 ref errorMessages);
-    public readonly FullBeatSnapLineTheme FullBeatSnapLine = new(json.FullBeatSnapLine,
-                                                                 ref errorMessages);
-    public readonly LineTheme SubBeatSnapLine = new(json.SubBeatSnapLine,
-                                                    "noteViewer.subBeatSnapLine",
-                                                    ref errorMessages);
-    public readonly LineTheme CurrentTimeLine = new(json.CurrentTimeLine,
-                                                    "noteViewer.currentTimeLine",
-                                                    ref errorMessages);
-    public readonly MarkersTheme Markers = new(json.Markers, ref errorMessages);
-    public readonly BreakpointTheme Breakpoint = new(json.Breakpoint, ref errorMessages);
-    public readonly NoteLaneThemes NoteLanes = new(json.NoteLanes, ref errorMessages);
+    public readonly Color SelectDragColor;
+    public readonly Color DeleteDragColor;
+    public readonly LaneNumberTheme LaneNumbers;
+    public readonly LabeledLineTheme BpmChange;
+    public readonly LabeledLineTheme Label;
+    public readonly FullBeatSnapLineTheme FullBeatSnapLine;
+    public readonly LineTheme SubBeatSnapLine;
+    public readonly LineTheme CurrentTimeLine;
+    public readonly MarkersTheme Markers;
+    public readonly BreakpointTheme Breakpoint;
+    public readonly NoteLaneThemes NoteLanes;
+    public readonly Color NoteDirectionArrowColor;
+    public readonly double NoteDirectionArrowScale;
+    
+    public NoteViewerTheme(NoteViewerThemeJson json, ref List<string> errorMessages) :
+        base(json, "noteViewer", ref errorMessages)
+    {
+        SelectDragColor = ThemeUtils.ParseColor(json.SelectDragColor, "noteViewer.selectDragColor",
+                                                ref errorMessages);
+        DeleteDragColor = ThemeUtils.ParseColor(json.DeleteDragColor, "noteViewer.deleteDragColor",
+                                                ref errorMessages);
+        NoteDirectionArrowColor = ThemeUtils.ParseColor(json.NoteDirectionArrowColor,
+                                                   "noteViewer.noteDirectionArrowColor",
+                                                   ref errorMessages);
+        LaneNumbers = new LaneNumberTheme(json.LaneNumbers, ref errorMessages);
+        BpmChange = new LabeledLineTheme(json.BpmChanges, "noteViewer.bpmChange",
+                                         ref errorMessages);
+        Label = new LabeledLineTheme(json.Labels, "noteViewer.label", ref errorMessages);
+        FullBeatSnapLine = new FullBeatSnapLineTheme(json.FullBeatSnapLine, ref errorMessages);
+        SubBeatSnapLine = new LineTheme(json.SubBeatSnapLine, "noteViewer.subBeatSnapLine",
+                                        ref errorMessages);
+        CurrentTimeLine = new LineTheme(json.CurrentTimeLine, "noteViewer.currentTimeLine",
+                                        ref errorMessages);
+        Markers = new MarkersTheme(json.Markers, ref errorMessages);
+        Breakpoint = new BreakpointTheme(json.Breakpoint, ref errorMessages);
+        NoteLanes = new NoteLaneThemes(json.NoteLanes, ref errorMessages);
+        
+        NoteDirectionArrowScale = json.NoteDirectionArrowScale;
+        if (NoteDirectionArrowScale < 0)
+        {
+            errorMessages.Add("noteViewer.noteDirectionArrowScale cannot be negative");
+        }
+    }
 }
 
 public class GamePreviewTheme : ElementTheme

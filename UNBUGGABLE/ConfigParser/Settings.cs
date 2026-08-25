@@ -127,6 +127,9 @@ public class Settings
     [JsonRequired][JsonPropertyName("enhancedPreview")]
     public bool EnhancedPreview { get; set; } = true;
 
+    [JsonRequired][JsonPropertyName("showNoteDirections")]
+    public bool ShowNoteDirections { get; set; } = true;
+
     [JsonRequired] [JsonPropertyName("alwaysShowAllNoteFlags")]
     public bool AlwaysShowAllFlags { get; set; } = false;
 

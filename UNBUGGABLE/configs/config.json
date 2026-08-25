@@ -3,7 +3,7 @@
   "useBeatFiles": true,
   "useAudioFileMetadata": true,
   "defaultCharterName": "NPC",
-  "defaultDifficulty": "star",
+  "defaultDifficulty": "beginner",
   "enhancedPreview": true,
   "alwaysShowAllNoteFlags": false,
   "enableBreakpoints": true,

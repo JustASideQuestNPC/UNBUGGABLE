@@ -57,7 +57,7 @@ public static partial class Chart
     /// </summary>
     public class Label(long time, string text)
     {
-        public long Time => time;
+        public long Time { get; set; } = time;
         public string Text => text;
     }
     
@@ -141,17 +141,26 @@ public static partial class Chart
 
             if (_bpmRegions.Count != 0 && _bpmRegions[0].StartTime != _metadata.ChartOffset)
             {
+                var delta = _bpmRegions[0].StartTime - _metadata.ChartOffset;
                 _bpmRegions[0].StartTime = _metadata.ChartOffset;
 
                 if (_bpmRegions.Count > 1)
                 {
                     foreach (var region in _bpmRegions.Skip(1))
                     {
-                        region.StartTime -= _metadata.ChartOffset - _metadata.ChartOffset;
+                        region.StartTime -= delta;
                     }
                 }
                 
                 RebuildSnapLineSets();
+            }
+
+            if (_labels.Count != 0 && value.ChartOffset != _metadata.ChartOffset)
+            {
+                foreach (var label in _labels)
+                {
+                    label.Time -= (value.ChartOffset - _metadata.ChartOffset);
+                }
             }
             
             if (canSave)
@@ -489,7 +498,7 @@ public static partial class Chart
             var time = _jumpTargets.Find(
                 t => t - Metadata.ChartOffset > GetNextSnapTime());
             //Trace.WriteLine($"Moving to label {_labels.IndexOf(previousLabel)} at {previousLabel.Time - Metadata.ChartOffset} (raw {CurrentTimeRaw}, {CurrentTime})");
-            CurrentTimeRaw = time - Metadata.ChartOffset;
+            CurrentTimeRaw = time;
         }
         else
         {
@@ -520,7 +529,7 @@ public static partial class Chart
             var time = _jumpTargets.FindLast(
                 t => t - Metadata.ChartOffset < GetPreviousSnapTime());
             //Trace.WriteLine($"Moving to label {_labels.IndexOf(previousLabel)} at {previousLabel.Time - Metadata.ChartOffset} (raw {CurrentTimeRaw}, {CurrentTime})");
-            CurrentTimeRaw = time - Metadata.ChartOffset;
+            CurrentTimeRaw = time;
         }
         else
         {
@@ -1361,12 +1370,12 @@ public static partial class Chart
         _jumpTargets = [];
         if (Config.Settings.JumpTargets.Contains("labels"))
         {
-            _jumpTargets.AddRange(_labels.Select(l => l.Time));
+            _jumpTargets.AddRange(_labels.Select(l => l.Time - Metadata.ChartOffset));
         }
 
         if (Config.Settings.JumpTargets.Contains("bpmChanges"))
         {
-            _jumpTargets.AddRange(_bpmRegions.Select(r => r.StartTime));
+            _jumpTargets.AddRange(_bpmRegions.Select(r => r.StartTime - Metadata.ChartOffset));
         }
 
         if (Config.Settings.JumpTargets.Contains("firstNote") && NonMarkerNotes.Count > 0)
@@ -1377,6 +1386,11 @@ public static partial class Chart
         if (Config.Settings.JumpTargets.Contains("lastNote") && NonMarkerNotes.Count > 0)
         {
             _jumpTargets.Add(NonMarkerNotes[^1].Time);
+        }
+
+        if (Config.Settings.JumpTargets.Contains("secondLastNote") && NonMarkerNotes.Count > 1)
+        {
+            _jumpTargets.Add(NonMarkerNotes[^2].Time);
         }
         
         if (Config.Settings.JumpTargets.Contains("firstMarker") && MarkerNotes.Count > 0)

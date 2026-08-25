@@ -1,0 +1,354 @@
+{
+    "mainWindow": {
+        "backgroundColor": "#1B1F21",
+        "eventIndicator": {
+            "backgroundColor": "#FF4B7E",
+            "textColor": "#161616",
+            "textSize": 16
+        }
+    },
+    "topBar": {
+        "backgroundColor": "#FAF7D6",
+        "sliders": {
+            "topColor": "#FF4B7E",
+            "bottomColor": "#C9C9A5",
+            "iconColor": "#FF4B7E",
+            "handleColor": "#FF4B7E",
+            "topThickness": 4,
+            "bottomThickness": 4,
+            "handleWidth": 18,
+            "handleHeight": 18
+        },
+        "buttons": {
+            "backgroundColor": "#00000000",
+            "outlineColor": "#FF4B7E",
+            "outlineThickness": 2,
+            "cornerRadius": 4,
+            "iconColor": "#FF4B7E",
+            "hovered": {
+                "backgroundColor": "#C9C9A5",
+                "outlineColor": "",
+                "iconColor": ""
+            }
+        },
+        "tooltips": {
+            "backgroundColor": "#FAF7D6",
+            "outlineColor": "#FF4B7E",
+            "outlineThickness": 2,
+            "cornerRadius": 0,
+            "textColor": "#161616",
+            "textSize": 14
+        },
+        "saveFileContextMenu": {
+            "backgroundColor": "#1B1F21",
+            "outlineColor": "#FF4B7E",
+            "outlineThickness": 0,
+            "cornerRadius": 4,
+            "textColor": "#FFFFFF",
+            "textSize": 14
+        }
+    },
+    "dialogs": {
+        "backgroundColor": "#FAF7D6",
+        "outlineColor": "#FF4B7E",
+        "outlineThickness": 6,
+        "cornerRadius": 6,
+        "textColor": "#161616",
+        "textSize": 22,
+        "inputBoxes": {
+            "backgroundColor": "#C9C9A5",
+            "outlineColor": "#FF4B7E",
+            "outlineThickness": 2,
+            "cornerRadius": 0,
+            "textColor": "#161616",
+            "textSize": 18
+        },
+        "buttons": {
+            "backgroundColor": "#00000000",
+            "outlineColor": "#FF4B7E",
+            "outlineThickness": 2,
+            "cornerRadius": 4,
+            "iconColor": "#FF4B7E",
+            "hovered": {
+                "backgroundColor": "#C9C9A5",
+                "outlineColor": "",
+                "iconColor": ""
+            }
+        }
+    },
+    "quickInfo": {
+        "titleColor": "#D0D0D0",
+        "titleSize": 15,
+        "infoColor": "#FFFFFF",
+        "infoSize": 22
+    },
+    "noteViewer": {
+        "backgroundColor": "#1B1F21",
+        "outlineColor": "#FF4B7E",
+        "outlineThickness": 4,
+        "cornerRadius": 0,
+        "selectDragColor": "#FFFFFF64",
+        "deleteDragColor": "#FF000064",
+        "noteDirectionArrowColor": "#FBB7DE96",
+        "noteDirectionArrowScale": 1.0,
+        "noteLanes": {
+            "topColor": "#9C999C19",
+            "topWidth": 32,
+            "bottomColor": "#9C999C19",
+            "bottomWidth": 32,
+            "centerColor": "#FF9A9A19",
+            "centerWidth": 32,
+            "cameraColor": "#FBB7DE19",
+            "cameraWidth": 32
+        },
+        "laneNumbers": {
+            "color": "#FFFFFF",
+            "outlineColor": "#161616",
+            "outlineThickness": 2,
+            "textSize": 40
+        },
+        "fullBeatSnapLine": {
+            "color": "#E0E0E096",
+            "thickness": 3,
+            "textSize": 16
+        },
+        "subBeatSnapLine": {
+            "color": "#80808096",
+            "thickness": 3
+        },
+        "currentTimeLine": {
+            "color": "#FF000064",
+            "thickness": 8
+        },
+        "breakpoint": {
+            "color": "#FF0000",
+            "thickness": 3,
+            "arrowScale": 1.0
+        },
+        "bpmChange": {
+            "color": "#0981EA",
+            "lineThickness": 5,
+            "textSize": 22
+        },
+        "label": {
+            "color": "#EADF09",
+            "lineThickness": 5,
+            "textSize": 16
+        },
+        "markers": {
+            "color1": "#40DB11",
+            "color2": "#0979EA",
+            "color3": "#B609EA",
+            "arrowScale": 1.0
+        }
+    },
+    "gamePreview": {
+        "backgroundColor": "#1B1F21",
+        "outlineColor": "#FF4B7E",
+        "outlineThickness": 4,
+        "cornerRadius": 0,
+        "copColor": "#FF4B7E",
+        "viewableArea": {
+            "outlineColor": "#FBB7DE",
+            "outlineThickness": 5
+        },
+        "cameraArrowColor": "#FBB7DE80",
+        "cameraArrowScale": 1.0,
+        "noteTargets": {
+            "lineColor": "#808080",
+            "lineThickness": 2,
+            "circles": {
+                "radius": 30,
+                "fillColor": "#00000000",
+                "outlineColor": "#FF4B7E",
+                "outlineThickness": 5
+            }
+        }
+    },
+    "placementPriorityList": {
+        "backgroundColor": "#1B1F21",
+        "outlineColor": "#FF4B7E",
+        "outlineThickness": 4,
+        "cornerRadius": 0,
+        "titleColor": "#D0D0D0",
+        "titleSize": 15,
+        "listEntries": {
+            "backgroundColor": "#1B1F21",
+            "outlineColor": "#FF4B7E",
+            "outlineThickness": 2,
+            "cornerRadius": 4,
+            "textColor": "#FFFFFF",
+            "textSize": 22,
+            "reorderIconColor": "#FF4B7E"
+        }
+    },
+    "notes": {
+        "common": {
+            "flagTextColor": "#FFFFFF",
+            "flagTextSize": 40,
+            "flagTextOutlineColor": "#161616",
+            "flagTextOutlineThickness": 2
+        },
+        "single": {
+            "fillColor": "#9C999C",
+            "outlineColor": "#000000",
+            "outlineThickness": 4,
+            "selected": {
+                "fillColor": "",
+                "outlineColor": "#FFFFFF",
+                "outlineThickness": -1
+            }
+        },
+        "spike": {
+            "fillColor": "#FFCC00",
+            "outlineColor": "#000000",
+            "outlineThickness": 4,
+            "selected": {
+                "fillColor": "",
+                "outlineColor": "#FFFFFF",
+                "outlineThickness": -1
+            }
+        },
+        "hold": {
+            "fillColor": "#9C999C",
+            "outlineColor": "#000000",
+            "outlineThickness": 4,
+            "tailColor": "#9C999C96",
+            "tailOutlineColor": "#00000000",
+            "tailOutlineThickness": 0,
+            "selected": {
+                "fillColor": "",
+                "outlineColor": "#FFFFFF",
+                "outlineThickness": -1,
+                "tailColor": "",
+                "tailOutlineColor": "#FFFFFF",
+                "tailOutlineThickness": 2
+            }
+        },
+        "double": {
+            "fillColor": "#65CCFF",
+            "outlineColor": "#000000",
+            "outlineThickness": 4,
+            "tailColor": "#65CCFF96",
+            "tailOutlineColor": "#00000000",
+            "tailOutlineThickness": 0,
+            "selected": {
+                "fillColor": "",
+                "outlineColor": "#FFFFFF",
+                "outlineThickness": -1,
+                "tailColor": "",
+                "tailOutlineColor": "#FFFFFF",
+                "tailOutlineThickness": 2
+            }
+        },
+        "freestyle": {
+            "fillColor": "#FF9A9A",
+            "outlineColor": "#000000",
+            "outlineThickness": 4,
+            "selected": {
+                "fillColor": "",
+                "outlineColor": "#FFFFFF",
+                "outlineThickness": -1
+            }
+        },
+        "mash": {
+            "fillColor": "#FF9A9A",
+            "outlineColor": "#000000",
+            "outlineThickness": 4,
+            "tailColor": "#FF9A9A96",
+            "tailOutlineColor": "#00000000",
+            "tailOutlineThickness": 0,
+            "selected": {
+                "fillColor": "",
+                "outlineColor": "#FFFFFF",
+                "outlineThickness": -1,
+                "tailColor": "",
+                "tailOutlineColor": "#FFFFFF",
+                "tailOutlineThickness": 2
+            }
+        },
+        "camera": {
+            "fillColor": "#FBB7DE",
+            "outlineColor": "#000000",
+            "outlineThickness": 4,
+            "selected": {
+                "fillColor": "",
+                "outlineColor": "#FFFFFF",
+                "outlineThickness": -1
+            }
+        },
+        "cop1": {
+            "fillColor": "#3259E5",
+            "outlineColor": "#000000",
+            "outlineThickness": 4,
+            "tailColor": "#3259E596",
+            "tailOutlineColor": "#00000000",
+            "tailOutlineThickness": 0,
+            "selected": {
+                "fillColor": "",
+                "outlineColor": "#FFFFFF",
+                "outlineThickness": -1,
+                "tailColor": "",
+                "tailOutlineColor": "#FFFFFF",
+                "tailOutlineThickness": 2
+            }
+        },
+        "cop2": {
+            "fillColor": "#ED4964",
+            "outlineColor": "#000000",
+            "outlineThickness": 4,
+            "tailColor": "#ED496496",
+            "tailOutlineColor": "#00000000",
+            "tailOutlineThickness": 0,
+            "selected": {
+                "fillColor": "",
+                "outlineColor": "#FFFFFF",
+                "outlineThickness": -1,
+                "tailColor": "",
+                "tailOutlineColor": "#FFFFFF",
+                "tailOutlineThickness": 2
+            }
+        },
+        "cop3": {
+            "fillColor": "#44F430",
+            "outlineColor": "#000000",
+            "outlineThickness": 4,
+            "tailColor": "#44F43096",
+            "tailOutlineColor": "#00000000",
+            "tailOutlineThickness": 0,
+            "selected": {
+                "fillColor": "",
+                "outlineColor": "#FFFFFF",
+                "outlineThickness": -1,
+                "tailColor": "",
+                "tailOutlineColor": "#FFFFFF",
+                "tailOutlineThickness": 2
+            }
+        },
+        "cop4": {
+            "fillColor": "#F4E430",
+            "outlineColor": "#000000",
+            "outlineThickness": 4,
+            "tailColor": "#F4E43096",
+            "tailOutlineColor": "#00000000",
+            "tailOutlineThickness": 0,
+            "selected": {
+                "fillColor": "",
+                "outlineColor": "#FFFFFF",
+                "outlineThickness": -1,
+                "tailColor": "",
+                "tailOutlineColor": "#FFFFFF",
+                "tailOutlineThickness": 2
+            }
+        }
+    },
+    "debugInfo": {
+        "overlayBackgroundColor": "#00000080",
+        "overlayTextColor": "#FFFFFF",
+        "overlayTextSize": 14,
+        "noteTimestampTextColor": "#FFFFFF80",
+        "noteTimestampTextOutlineColor": "#16161680",
+        "noteTimestampTextOutlineThickness": 1,
+        "noteTimestampTextSize": 20
+    }
+}

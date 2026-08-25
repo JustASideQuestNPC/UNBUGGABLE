@@ -239,9 +239,9 @@ order where the center lane is on the right, change this setting to
 
 ## jumpTargets
 Determines where the "jump to previous/next label" keybinds can send you to. Allowed values are
-`"labels"`, `"bpmChanges"`, `"breakpoint"`, `"firstNote"`, `"lastNote"`, `"firstMarker"`,
-`"lastMarker"`, `"chartStart"`, and `"chartEnd"`. **Note:** Values in this array can be in any
-order. The editor will automatically sort them.
+`"labels"`, `"bpmChanges"`, `"breakpoint"`, `"firstNote"`, `"lastNote"`, `"secondLastNote`,
+`"firstMarker"`, `"lastMarker"`, `"chartStart"`, and `"chartEnd"`. **Note:** Values in this array
+can be in any order. The editor will automatically sort them.
 
 ## doublePreviewAlpha
 Opacity of doubles in the in-game preview while they are moving toward their landing point. Between

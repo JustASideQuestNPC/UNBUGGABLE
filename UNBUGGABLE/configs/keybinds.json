@@ -50,16 +50,16 @@
         "right"
     ],
     "placeTopLane": [
-        "d3"
+        "d2"
     ],
     "placeBottomLane": [
-        "d5"
+        "d4"
     ],
     "placeCameraLane": [
-        "d6"
+        "d5"
     ],
     "placeCenterLane": [
-        "d4"
+        "d3"
     ],
     "nudgeForward": [
         "alt+s"
@@ -80,16 +80,16 @@
         "ctrl+shift+a"
     ],
     "selectAllTopLane": [
-        "alt+d3"
+        "alt+d2"
     ],
     "selectAllBottomLane": [
-        "alt+d5"
+        "alt+d4"
     ],
     "selectAllCameraLane": [
-        "alt+d6"
+        "alt+d5"
     ],
     "selectAllCenterLane": [
-        "alt+d4"
+        "alt+d3"
     ],
     "selectAllMarkers": [
         "alt+q"
