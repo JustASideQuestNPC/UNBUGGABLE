@@ -420,9 +420,18 @@ public partial class MainWindowViewModel : ViewModelBase
             {
                 SongNameText = Chart.Metadata.SongName;
                 ArtistNameText = Chart.Metadata.ArtistName;
-                DifficultyText = $"{Chart.Metadata.DifficultyName} " +
-                                 $"{Chart.Metadata.DifficultyLevel}";
+                var difficultySlotName = Chart.Metadata.DifficultySlot switch
+                {
+                    DifficultySlot.BEGINNER => "Beginner",
+                    DifficultySlot.NORMAL => "Normal",
+                    DifficultySlot.HARD => "Hard",
+                    DifficultySlot.EXPERT => "Expert",
+                    DifficultySlot.UNBEATABLE => "UNBEATABLE",
+                    _ => "Star"
+                };
+                DifficultyText = $"{difficultySlotName} {Chart.Metadata.DifficultyLevel}";
                 App.MainWindow.BeatSnapText.Text = Chart.BeatSnap.ToString();
+                Trace.WriteLine($"\n{Chart.Metadata.DifficultySlot}\n");
             }
         }
     }
@@ -562,8 +571,16 @@ public partial class MainWindowViewModel : ViewModelBase
             Chart.Metadata = result.Value;
             SongNameText = Chart.Metadata.SongName;
             ArtistNameText = Chart.Metadata.ArtistName;
-            DifficultyText = $"{Chart.Metadata.DifficultyName} " +
-                             $"{Chart.Metadata.DifficultyLevel}";
+            var difficultySlotName = Chart.Metadata.DifficultySlot switch
+            {
+                DifficultySlot.BEGINNER => "Beginner",
+                DifficultySlot.NORMAL => "Normal",
+                DifficultySlot.HARD => "Hard",
+                DifficultySlot.EXPERT => "Expert",
+                DifficultySlot.UNBEATABLE => "UNBEATABLE",
+                _ => "Star"
+            };
+            DifficultyText = $"{difficultySlotName} {Chart.Metadata.DifficultyLevel}";
         }
     }
 

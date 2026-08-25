@@ -847,6 +847,18 @@ public static partial class Chart
                 NoteViewer.SetZoom(1);
             }
 
+            var difficultySlotName = Metadata.DifficultySlot switch
+            {
+                DifficultySlot.BEGINNER => "Beginner",
+                DifficultySlot.NORMAL => "Normal",
+                DifficultySlot.HARD => "Hard",
+                DifficultySlot.EXPERT => "Expert",
+                DifficultySlot.UNBEATABLE => "UNBEATABLE",
+                _ => "Star"
+            };
+            App.MainWindowViewModel.DifficultyText = $"{difficultySlotName} " +
+                                                     $"{Metadata.DifficultyLevel}";
+            
             ChartBuilder.CheckExistingBreakpoint();
             SetTimeToNearestSnap();
             _canAutosave = true;
@@ -1896,7 +1908,17 @@ public static partial class Chart
         
         App.MainWindowViewModel.SongNameText = Metadata.SongName;
         App.MainWindowViewModel.ArtistNameText = Metadata.ArtistName;
-        App.MainWindowViewModel.DifficultyText = $"{Metadata.DifficultyName} " +
+
+        var difficultySlotName = Metadata.DifficultySlot switch
+        {
+            DifficultySlot.BEGINNER => "Beginner",
+            DifficultySlot.NORMAL => "Normal",
+            DifficultySlot.HARD => "Hard",
+            DifficultySlot.EXPERT => "Expert",
+            DifficultySlot.UNBEATABLE => "UNBEATABLE",
+            _ => "Star"
+        };
+        App.MainWindowViewModel.DifficultyText = $"{difficultySlotName} " +
                                                  $"{Metadata.DifficultyLevel}";
         App.MainWindowViewModel.CanSave = (_metadata.SongName != "" &&
                                            _metadata.ArtistName != "" &&
