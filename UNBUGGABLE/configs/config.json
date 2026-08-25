@@ -2,7 +2,7 @@
   "colorTheme": "default",
   "useBeatFiles": true,
   "useAudioFileMetadata": true,
-  "defaultCharterName": "NPC",
+  "defaultCharterName": "",
   "defaultDifficulty": "beginner",
   "enhancedPreview": true,
   "alwaysShowAllNoteFlags": false,
