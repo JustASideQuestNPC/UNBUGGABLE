@@ -460,6 +460,7 @@ public static class Config
                         "bpmChanges",
                         "firstNote",
                         "lastNote",
+                        "secondLastNote",
                         "firstMarker",
                         "lastMarker",
                         "chartStart",

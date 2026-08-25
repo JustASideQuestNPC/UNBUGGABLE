@@ -24,19 +24,19 @@ public partial class MainWindow : Window
 
     private async void OnKeyDown(TopLevel sender, KeyEventArgs e)
     {
-        await InputManager.OnKeyDown(e.Key);
+        await InputManager.OnKeyDown(e);
     }
     
     private async void OnKeyUp(TopLevel sender, KeyEventArgs e)
     {
-        await InputManager.OnKeyUp(e.Key);
+        await InputManager.OnKeyUp(e);
     }
     
     private async void OnPointerWheelChanged(TopLevel sender, PointerWheelEventArgs e)
     {
         if (e.Delta.X == 0)
         {
-            await InputManager.OnScroll(e.Delta.Y);
+            await InputManager.OnScroll(e);
         }
     }
 
@@ -47,28 +47,16 @@ public partial class MainWindow : Window
 
     private async void OnNoteViewerPointerPress(object? sender, PointerPressedEventArgs e)
     {
-        await InputManager.OnMousePress(e.Properties.IsRightButtonPressed,
-                                        e.Properties.IsMiddleButtonPressed);
+        await InputManager.OnMousePress(e);
     }
 
     private async void OnNoteViewerPointerRelease(object? sender, PointerReleasedEventArgs e)
     {
-        await InputManager.OnMouseRelease(e.Properties.IsRightButtonPressed,
-                                          e.Properties.IsMiddleButtonPressed);
+        await InputManager.OnMouseRelease(e);
     }
 
     private void OnWindowLoseFocus(object? sender, RoutedEventArgs e)
     {
         InputManager.ResetInputStates();
-    }
-
-    private void OnDialogOpened(object sender, DialogOpenedEventArgs eventArgs)
-    {
-        App.DialogIsOpen = true;
-    }
-    
-    private void OnDialogClosed(object sender, DialogOpenedEventArgs eventArgs)
-    {
-        App.DialogIsOpen = false;
     }
 }

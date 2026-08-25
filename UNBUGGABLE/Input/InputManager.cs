@@ -39,12 +39,15 @@ public static class InputManager
         ChartBuilder.ResetInputStates();
     }
 
-    public static async Task OnKeyDown(Key k)
+    public static async Task OnKeyDown(KeyEventArgs e)
     {
         if (!Chart.SongLoaded || App.DialogIsOpen)
         {
             return;
         }
+
+        e.Handled = true;
+        var k = e.Key;
         
         LastPressedKey = k;
         // only call once until the key is released
@@ -55,12 +58,15 @@ public static class InputManager
         _keyStates[k] = true;
     }
 
-    public static async Task OnKeyUp(Key k)
+    public static async Task OnKeyUp(KeyEventArgs e)
     {
         if (!Chart.SongLoaded || App.DialogIsOpen)
         {
             return;
         }
+        
+        e.Handled = true;
+        var k = e.Key;
         
         // only call once until the key is pressed (this check is probably unnecessary but i don't
         // want to have to go fix this bug for the fourth time)
@@ -71,45 +77,52 @@ public static class InputManager
         _keyStates[k] = false;
     }
 
-    public static async Task OnScroll(double scrollAmount)
+    public static async Task OnScroll(PointerWheelEventArgs e)
     {
         if (!Chart.SongLoaded || App.DialogIsOpen)
         {
             return;
         }
+        
+        e.Handled = true;
+        var scrollAmount = e.Delta.Y;
         
         // the scroll wheel doesn't go in the state dictionary because it can never be "released"
         var button = scrollAmount < 0 ? MouseButton.WHEEL_UP : MouseButton.WHEEL_DOWN;
         await RunCallbacks(CallbackType.MOUSE_PRESS, button);
     }
 
-    public static async Task OnMousePress(bool isRightButton, bool isMiddleButton)
+    public static async Task OnMousePress(PointerPressedEventArgs e)
     {
         if (!Chart.SongLoaded || App.DialogIsOpen)
         {
             return;
         }
         
-        var button = isRightButton ? MouseButton.RIGHT : isMiddleButton ? MouseButton.MIDDLE :
-            MouseButton.LEFT;
+        e.Handled = true;
+        var button = e.Properties.IsRightButtonPressed ? MouseButton.RIGHT :
+            e.Properties.IsMiddleButtonPressed ? MouseButton.MIDDLE : MouseButton.LEFT;
+        
         if (!_mouseButtonStates.GetValueOrDefault(button))
         {
             await RunCallbacks(CallbackType.MOUSE_PRESS, button);
         }
         _mouseButtonStates[button] = true;
+        
         // the chart builder doesn't care if this gets called repeatedly
-        await ChartBuilder.OnMousePress(isRightButton);
+        await ChartBuilder.OnMousePress(e.Properties.IsRightButtonPressed);
     }
 
-    public static async Task OnMouseRelease(bool isRightButton, bool isMiddleButton)
+    public static async Task OnMouseRelease(PointerReleasedEventArgs e)
     {
         if (!Chart.SongLoaded || App.DialogIsOpen)
         {
             return;
         }
         
-        var button = isRightButton ? MouseButton.RIGHT : isMiddleButton ? MouseButton.MIDDLE :
-            MouseButton.LEFT;
+        e.Handled = true;
+        var button = e.Properties.IsRightButtonPressed ? MouseButton.RIGHT :
+            e.Properties.IsMiddleButtonPressed ? MouseButton.MIDDLE : MouseButton.LEFT;
         
         if (_mouseButtonStates.GetValueOrDefault(button))
         {

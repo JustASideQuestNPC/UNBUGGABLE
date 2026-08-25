@@ -63,7 +63,7 @@ public class PlacementPriorityListEntry : ViewModelBase
             };
         }
     }
-};
+}
 
 public partial class MainWindowViewModel : ViewModelBase
 {

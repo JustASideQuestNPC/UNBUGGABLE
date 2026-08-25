@@ -5,37 +5,37 @@ public class MainWindowThemeJson
 {
     public class EventIndicatorThemeJson
     {
-        [JsonRequired][JsonPropertyName("backgroundColor")]
-        public string BackgroundColor { get; set; } = "";
-        [JsonRequired][JsonPropertyName("textColor")]
-        public string TextColor { get; set; } = "";
-        [JsonRequired][JsonPropertyName("textSize")]
-        public double TextSize { get; set; } = 0;
+        [JsonPropertyName("backgroundColor")]
+        public string BackgroundColor { get; set; } = "#FF4B7E";
+        [JsonPropertyName("textColor")]
+        public string TextColor { get; set; } = "#161616";
+        [JsonPropertyName("textSize")]
+        public double TextSize { get; set; } = 16;
     }
 
-    [JsonRequired][JsonPropertyName("backgroundColor")]
-    public string BackgroundColor { get; set; } = "";
-    [JsonRequired][JsonPropertyName("eventIndicator")]
+    [JsonPropertyName("backgroundColor")]
+    public string BackgroundColor { get; set; } = "#1B1F21";
+    [JsonPropertyName("eventIndicator")]
     public EventIndicatorThemeJson EventIndicator { get; set; } = new();
 }
 
 public class ElementThemeJson
 {
-    [JsonRequired][JsonPropertyName("backgroundColor")]
+    [JsonPropertyName("backgroundColor")]
     public string BackgroundColor { get; set; } = "";
-    [JsonRequired][JsonPropertyName("outlineColor")]
+    [JsonPropertyName("outlineColor")]
     public string OutlineColor { get; set; } = "";
-    [JsonRequired][JsonPropertyName("outlineThickness")]
+    [JsonPropertyName("outlineThickness")]
     public double OutlineThickness { get; set; } = 0;
-    [JsonRequired][JsonPropertyName("cornerRadius")]
+    [JsonPropertyName("cornerRadius")]
     public double CornerRadius { get; set; } = 0;
 }
 
 public class TextElementThemeJson : ElementThemeJson
 {
-    [JsonRequired][JsonPropertyName("textColor")]
+    [JsonPropertyName("textColor")]
     public string TextColor { get; set; } = "";
-    [JsonRequired][JsonPropertyName("textSize")]
+    [JsonPropertyName("textSize")]
     public double TextSize { get; set; } = 0;
 }
 
@@ -43,18 +43,18 @@ public class ButtonThemeJson : ElementThemeJson
 {
     public class HoveredThemeJson
     {
-        [JsonRequired][JsonPropertyName("backgroundColor")]
+        [JsonPropertyName("backgroundColor")]
         public string BackgroundColor { get; set; } = "";
-        [JsonRequired][JsonPropertyName("outlineColor")]
+        [JsonPropertyName("outlineColor")]
         public string OutlineColor { get; set; } = "";
-        [JsonRequired][JsonPropertyName("iconColor")]
+        [JsonPropertyName("iconColor")]
         public string IconColor { get; set; } = "";
     }
     
-    [JsonRequired][JsonPropertyName("iconColor")]
+    [JsonPropertyName("iconColor")]
     public string IconColor { get; set; } = "";
     
-    [JsonRequired][JsonPropertyName("hovered")]
+    [JsonPropertyName("hovered")]
     public HoveredThemeJson Hovered { get; set; } = new();
 }
 
@@ -62,84 +62,84 @@ public class TopBarThemeJson
 {
     public class SliderThemeJson
     {
-        [JsonRequired][JsonPropertyName("topColor")]
-        public string TopColor { get; set; } = "";
-        [JsonRequired][JsonPropertyName("bottomColor")]
-        public string BottomColor { get; set; } = "";
-        [JsonRequired][JsonPropertyName("iconColor")]
-        public string IconColor { get; set; } = "";
-        [JsonRequired][JsonPropertyName("handleColor")]
-        public string HandleColor { get; set; } = "";
-        [JsonRequired][JsonPropertyName("topThickness")]
-        public double TopThickness { get; set; } = 0;
-        [JsonRequired][JsonPropertyName("bottomThickness")]
-        public double BottomThickness { get; set; } = 0;
-        [JsonRequired][JsonPropertyName("handleWidth")]
-        public double HandleWidth { get; set; } = 0;
-        [JsonRequired][JsonPropertyName("handleHeight")]
-        public double HandleHeight { get; set; } = 0;
+        [JsonPropertyName("topColor")]
+        public string TopColor { get; set; } = "#FF4B7E";
+        [JsonPropertyName("bottomColor")]
+        public string BottomColor { get; set; } = "#C9C9A5";
+        [JsonPropertyName("iconColor")]
+        public string IconColor { get; set; } = "#FF4B7E";
+        [JsonPropertyName("handleColor")]
+        public string HandleColor { get; set; } = "#FF4B7E";
+        [JsonPropertyName("topThickness")]
+        public double TopThickness { get; set; } = 4;
+        [JsonPropertyName("bottomThickness")]
+        public double BottomThickness { get; set; } = 4;
+        [JsonPropertyName("handleWidth")]
+        public double HandleWidth { get; set; } = 18;
+        [JsonPropertyName("handleHeight")]
+        public double HandleHeight { get; set; } = 18;
     }
     
-    [JsonRequired][JsonPropertyName("backgroundColor")]
-    public string BackgroundColor { get; set; } = "";
+    [JsonPropertyName("backgroundColor")]
+    public string BackgroundColor { get; set; } = "#FAF7D6";
     
-    [JsonRequired][JsonPropertyName("sliders")]
+    [JsonPropertyName("sliders")]
     public SliderThemeJson Sliders { get; set; } = new();
     
-    [JsonRequired][JsonPropertyName("buttons")]
+    [JsonPropertyName("buttons")]
     public ButtonThemeJson Buttons { get; set; } = new();
     
-    [JsonRequired][JsonPropertyName("tooltips")]
+    [JsonPropertyName("tooltips")]
     public TextElementThemeJson Tooltips { get; set; } = new();
     
-    [JsonRequired][JsonPropertyName("saveFileContextMenu")]
+    [JsonPropertyName("saveFileContextMenu")]
     public TextElementThemeJson SaveFileContextMenu { get; set; } = new();
 }
 
 public class DialogThemeJson : TextElementThemeJson
 {
-    [JsonRequired][JsonPropertyName("inputBoxes")]
+    [JsonPropertyName("inputBoxes")]
     public TextElementThemeJson InputBoxes { get; set; } = new();
-    [JsonRequired][JsonPropertyName("buttons")]
+    [JsonPropertyName("buttons")]
     public ButtonThemeJson Buttons { get; set; } = new();
 }
 
 public class QuickInfoThemeJson {
-    [JsonRequired][JsonPropertyName("titleColor")]
+    [JsonPropertyName("titleColor")]
     public string TitleColor { get; set; } = "";
-    [JsonRequired][JsonPropertyName("titleSize")]
+    [JsonPropertyName("titleSize")]
     public double TitleSize { get; set; } = 0;
-    [JsonRequired][JsonPropertyName("infoColor")]
+    [JsonPropertyName("infoColor")]
     public string InfoColor { get; set; } = "";
-    [JsonRequired][JsonPropertyName("infoSize")]
+    [JsonPropertyName("infoSize")]
     public double InfoSize { get; set; } = 0;
 }
 
 public class LineThemeJson
 {
-    [JsonRequired][JsonPropertyName("color")]
+    [JsonPropertyName("color")]
     public string Color { get; set; } = "";
-    [JsonRequired][JsonPropertyName("thickness")]
+    [JsonPropertyName("thickness")]
     public double Thickness { get; set; } = 0;
 }
 
 public class NoteLaneThemesJson
 {
-    [JsonRequired][JsonPropertyName("topColor")]
+    [JsonPropertyName("topColor")]
     public string TopColor { get; set; } = "";
-    [JsonRequired][JsonPropertyName("topWidth")]
+    [JsonPropertyName("topWidth")]
     public double TopWidth { get; set; } = 0;
-    [JsonRequired][JsonPropertyName("bottomColor")]
+    [JsonPropertyName("bottomColor")]
     public string BottomColor { get; set; } = "";
-    [JsonRequired][JsonPropertyName("bottomWidth")]
+    [JsonPropertyName("bottomWidth")]
     public double BottomWidth { get; set; } = 0;
-    [JsonRequired][JsonPropertyName("centerColor")]
+    [JsonPropertyName("centerColor")]
     public string CenterColor { get; set; } = "";
-    [JsonRequired][JsonPropertyName("centerWidth")]
+    [JsonPropertyName("centerWidth")]
     public double CenterWidth { get; set; } = 0;
-    [JsonRequired][JsonPropertyName("cameraColor")]
+    [JsonPropertyName("cameraColor")]
     public string CameraColor { get; set; } = "";
-    [JsonRequired][JsonPropertyName("cameraWidth")]
+    [JsonPropertyName("cameraWidth")]
     public double CameraWidth { get; set; } = 0;
 }
 
@@ -147,82 +147,87 @@ public class NoteViewerThemeJson : ElementThemeJson
 {
     public class LaneNumberThemeJson
     {
-        [JsonRequired][JsonPropertyName("color")]
+        [JsonPropertyName("color")]
         public string Color { get; set; } = "";
-        [JsonRequired][JsonPropertyName("outlineColor")]
+        [JsonPropertyName("outlineColor")]
         public string OutlineColor { get; set; } = "";
-        [JsonRequired][JsonPropertyName("outlineThickness")]
+        [JsonPropertyName("outlineThickness")]
         public double OutlineThickness { get; set; } = 0;
-        [JsonRequired][JsonPropertyName("textSize")]
+        [JsonPropertyName("textSize")]
         public double TextSize { get; set; } = 0;   
     }
     
     public class LabeledLineThemeJson
     {
-        [JsonRequired][JsonPropertyName("color")]
+        [JsonPropertyName("color")]
         public string Color { get; set; } = "";
-        [JsonRequired][JsonPropertyName("lineThickness")]
+        [JsonPropertyName("lineThickness")]
         public double LineThickness { get; set; } = 0;
-        [JsonRequired][JsonPropertyName("textSize")]
+        [JsonPropertyName("textSize")]
         public double TextSize { get; set; } = 0;   
     }
     
     public class FullBeatSnapLineThemeJson : LineThemeJson
     {
-        [JsonRequired][JsonPropertyName("textSize")]
+        [JsonPropertyName("textSize")]
         public double TextSize { get; set; } = 0;  
     }
     
     public class MarkersThemeJson
     {
-        [JsonRequired][JsonPropertyName("color1")]
+        [JsonPropertyName("color1")]
         public string Color1 { get; set; } = "";
-        [JsonRequired][JsonPropertyName("color2")]
+        [JsonPropertyName("color2")]
         public string Color2 { get; set; } = "";
-        [JsonRequired][JsonPropertyName("color3")]
+        [JsonPropertyName("color3")]
         public string Color3 { get; set; } = "";
-        [JsonRequired][JsonPropertyName("arrowScale")]
+        [JsonPropertyName("arrowScale")]
         public double ArrowScale { get; set; } = 0;
     }
     
     public class BreakpointThemeJson : LineThemeJson
     {
-        [JsonRequired][JsonPropertyName("arrowScale")]
+        [JsonPropertyName("arrowScale")]
         public double ArrowScale { get; set; } = 0;
     }
     
-    [JsonRequired][JsonPropertyName("selectDragColor")]
+    [JsonPropertyName("selectDragColor")]
     public string SelectDragColor { get; set; } = "";
-    [JsonRequired][JsonPropertyName("deleteDragColor")]
+    [JsonPropertyName("deleteDragColor")]
     public string DeleteDragColor { get; set; } = "";
     
-    [JsonRequired][JsonPropertyName("noteLanes")]
+    [JsonPropertyName("noteLanes")]
     public NoteLaneThemesJson NoteLanes { get; set; } = new();
-    [JsonRequired][JsonPropertyName("laneNumbers")]
+    [JsonPropertyName("laneNumbers")]
     public LaneNumberThemeJson LaneNumbers { get; set; } = new();
-    [JsonRequired][JsonPropertyName("bpmChange")]
+    [JsonPropertyName("bpmChange")]
     public LabeledLineThemeJson BpmChanges { get; set; } = new();   
-    [JsonRequired][JsonPropertyName("label")]
+    [JsonPropertyName("label")]
     public LabeledLineThemeJson Labels { get; set; } = new();
-    [JsonRequired][JsonPropertyName("fullBeatSnapLine")]
+    [JsonPropertyName("fullBeatSnapLine")]
     public FullBeatSnapLineThemeJson FullBeatSnapLine { get; set; } = new();
-    [JsonRequired][JsonPropertyName("subBeatSnapLine")]
+    [JsonPropertyName("subBeatSnapLine")]
     public LineThemeJson SubBeatSnapLine { get; set; } = new();
-    [JsonRequired][JsonPropertyName("currentTimeLine")]
+    [JsonPropertyName("currentTimeLine")]
     public LineThemeJson CurrentTimeLine { get; set; } = new();
-    [JsonRequired][JsonPropertyName("markers")]
+    [JsonPropertyName("markers")]
     public MarkersThemeJson Markers { get; set; } = new();   
-    [JsonRequired][JsonPropertyName("breakpoint")]
-    public BreakpointThemeJson Breakpoint { get; set; } = new();  
+    [JsonPropertyName("breakpoint")]
+    public BreakpointThemeJson Breakpoint { get; set; } = new();
+    
+    [JsonPropertyName("noteDirectionArrowColor")]
+    public string NoteDirectionArrowColor { get; set; } = "";
+    [JsonPropertyName("noteDirectionArrowScale")]
+    public double NoteDirectionArrowScale { get; set; } = 0;
 }
 
 public class GamePreviewThemeJson : ElementThemeJson
 {
     public class ViewableAreaThemeJson
     {
-        [JsonRequired][JsonPropertyName("outlineColor")]
+        [JsonPropertyName("outlineColor")]
         public string OutlineColor { get; set; } = "";
-        [JsonRequired][JsonPropertyName("outlineThickness")]
+        [JsonPropertyName("outlineThickness")]
         public double OutlineThickness { get; set; } = 0;
     }
 
@@ -230,33 +235,33 @@ public class GamePreviewThemeJson : ElementThemeJson
     {
         public class TargetCirclesThemeJson
         {
-            [JsonRequired][JsonPropertyName("radius")]
+            [JsonPropertyName("radius")]
             public double Radius { get; set; } = 0;
-            [JsonRequired][JsonPropertyName("fillColor")]
+            [JsonPropertyName("fillColor")]
             public string FillColor { get; set; } = "";
-            [JsonRequired][JsonPropertyName("outlineColor")]
+            [JsonPropertyName("outlineColor")]
             public string OutlineColor { get; set; } = "";
-            [JsonRequired][JsonPropertyName("outlineThickness")]
+            [JsonPropertyName("outlineThickness")]
             public double OutlineThickness { get; set; } = 0;
         }
         
-        [JsonRequired][JsonPropertyName("lineColor")]
+        [JsonPropertyName("lineColor")]
         public string LineColor { get; set; } = "";
-        [JsonRequired][JsonPropertyName("lineThickness")]
+        [JsonPropertyName("lineThickness")]
         public double LineThickness { get; set; } = 0;
-        [JsonRequired][JsonPropertyName("circles")]
+        [JsonPropertyName("circles")]
         public TargetCirclesThemeJson TargetCircles { get; set; } = new();
     }
     
-    [JsonRequired][JsonPropertyName("copColor")]
+    [JsonPropertyName("copColor")]
     public string CopColor { get; set; } = "";
-    [JsonRequired][JsonPropertyName("viewableArea")]
+    [JsonPropertyName("viewableArea")]
     public ViewableAreaThemeJson ViewableArea { get; set; } = new();
-    [JsonRequired][JsonPropertyName("cameraArrowColor")]
+    [JsonPropertyName("cameraArrowColor")]
     public string CameraArrowColor { get; set; } = "";
-    [JsonRequired][JsonPropertyName("cameraArrowScale")]
+    [JsonPropertyName("cameraArrowScale")]
     public double CameraArrowScale { get; set; } = 0;
-    [JsonRequired][JsonPropertyName("noteTargets")]
+    [JsonPropertyName("noteTargets")]
     public NoteTargetsThemeJson NoteTargets { get; set; } = new();
 }
 
@@ -264,15 +269,15 @@ public class PlacementPriorityListThemeJson : ElementThemeJson
 {
     public class ListEntryThemeJson : TextElementThemeJson
     {
-        [JsonRequired][JsonPropertyName("reorderIconColor")]
+        [JsonPropertyName("reorderIconColor")]
         public string ReorderIconColor { get; set; } = "";   
     }
     
-    [JsonRequired][JsonPropertyName("titleColor")]
+    [JsonPropertyName("titleColor")]
     public string TitleColor { get; set; } = "";
-    [JsonRequired][JsonPropertyName("titleSize")]
+    [JsonPropertyName("titleSize")]
     public double TitleSize { get; set; } = 0;
-    [JsonRequired][JsonPropertyName("listEntries")]
+    [JsonPropertyName("listEntries")]
     public ListEntryThemeJson ListEntries { get; set; } = new();
 }
 
@@ -280,22 +285,22 @@ public class InstantNoteThemeJson
 {
     public class SelectedThemeJson
     {
-        [JsonRequired][JsonPropertyName("fillColor")]
+        [JsonPropertyName("fillColor")]
         public string FillColor { get; set; } = "";
-        [JsonRequired][JsonPropertyName("outlineColor")]
+        [JsonPropertyName("outlineColor")]
         public string OutlineColor { get; set; } = "";
-        [JsonRequired][JsonPropertyName("outlineThickness")]
+        [JsonPropertyName("outlineThickness")]
         public double OutlineThickness { get; set; } = 0;
         
     }
     
-    [JsonRequired][JsonPropertyName("fillColor")]
+    [JsonPropertyName("fillColor")]
     public string FillColor { get; set; } = "";
-    [JsonRequired][JsonPropertyName("outlineColor")]
+    [JsonPropertyName("outlineColor")]
     public string OutlineColor { get; set; } = "";
-    [JsonRequired][JsonPropertyName("outlineThickness")]
+    [JsonPropertyName("outlineThickness")]
     public double OutlineThickness { get; set; } = 0;
-    [JsonRequired][JsonPropertyName("selected")]
+    [JsonPropertyName("selected")]
     public SelectedThemeJson Selected { get; set; } = new();   
 }
 
@@ -303,33 +308,33 @@ public class NonInstantNoteThemeJson
 {
     public class SelectedThemeJson
     {
-        [JsonRequired][JsonPropertyName("fillColor")]
+        [JsonPropertyName("fillColor")]
         public string FillColor { get; set; } = "";
-        [JsonRequired][JsonPropertyName("outlineColor")]
+        [JsonPropertyName("outlineColor")]
         public string OutlineColor { get; set; } = "";
-        [JsonRequired][JsonPropertyName("outlineThickness")]
+        [JsonPropertyName("outlineThickness")]
         public double OutlineThickness { get; set; } = 0;
-        [JsonRequired][JsonPropertyName("tailColor")]
+        [JsonPropertyName("tailColor")]
         public string TailColor { get; set; } = "";
-        [JsonRequired][JsonPropertyName("tailOutlineColor")]
+        [JsonPropertyName("tailOutlineColor")]
         public string TailOutlineColor { get; set; } = "";
-        [JsonRequired][JsonPropertyName("tailOutlineThickness")]
+        [JsonPropertyName("tailOutlineThickness")]
         public double TailOutlineThickness { get; set; } = 0;
     }
     
-    [JsonRequired][JsonPropertyName("fillColor")]
+    [JsonPropertyName("fillColor")]
     public string FillColor { get; set; } = "";
-    [JsonRequired][JsonPropertyName("outlineColor")]
+    [JsonPropertyName("outlineColor")]
     public string OutlineColor { get; set; } = "";
-    [JsonRequired][JsonPropertyName("outlineThickness")]
+    [JsonPropertyName("outlineThickness")]
     public double OutlineThickness { get; set; } = 0;
-    [JsonRequired][JsonPropertyName("tailColor")]
+    [JsonPropertyName("tailColor")]
     public string TailColor { get; set; } = "";
-    [JsonRequired][JsonPropertyName("tailOutlineColor")]
+    [JsonPropertyName("tailOutlineColor")]
     public string TailOutlineColor { get; set; } = "";
-    [JsonRequired][JsonPropertyName("tailOutlineThickness")]
+    [JsonPropertyName("tailOutlineThickness")]
     public double TailOutlineThickness { get; set; } = 0;
-    [JsonRequired][JsonPropertyName("selected")]
+    [JsonPropertyName("selected")]
     public SelectedThemeJson Selected { get; set; } = new();
 }
 
@@ -337,78 +342,474 @@ public class NoteThemesJson
 {
     public class CommonThemeJson
     {
-        [JsonRequired][JsonPropertyName("flagTextColor")]
+        [JsonPropertyName("flagTextColor")]
         public string FlagTextColor { get; set; } = "";
-        [JsonRequired][JsonPropertyName("flagTextOutlineColor")]
+        [JsonPropertyName("flagTextOutlineColor")]
         public string FlagTextOutlineColor { get; set; } = "";
-        [JsonRequired][JsonPropertyName("flagTextOutlineThickness")]
+        [JsonPropertyName("flagTextOutlineThickness")]
         public double FlagTextOutlineThickness { get; set; } = 0;
-        [JsonRequired][JsonPropertyName("flagTextSize")]
+        [JsonPropertyName("flagTextSize")]
         public double FlagTextSize { get; set; } = 0;   
     }
     
-    [JsonRequired][JsonPropertyName("common")]
+    [JsonPropertyName("common")]
     public CommonThemeJson Common { get; set; } = new();
-    [JsonRequired][JsonPropertyName("single")]
+    [JsonPropertyName("single")]
     public InstantNoteThemeJson Single { get; set; } = new();
-    [JsonRequired][JsonPropertyName("spike")]
+    [JsonPropertyName("spike")]
     public InstantNoteThemeJson Spike { get; set; } = new();
-    [JsonRequired][JsonPropertyName("hold")]
+    [JsonPropertyName("hold")]
     public NonInstantNoteThemeJson Hold { get; set; } = new();
-    [JsonRequired][JsonPropertyName("double")]
+    [JsonPropertyName("double")]
     public NonInstantNoteThemeJson Double { get; set; } = new();
-    [JsonRequired][JsonPropertyName("freestyle")]
+    [JsonPropertyName("freestyle")]
     public InstantNoteThemeJson Freestyle { get; set; } = new();
-    [JsonRequired][JsonPropertyName("mash")]
+    [JsonPropertyName("mash")]
     public NonInstantNoteThemeJson Mash { get; set; } = new();
-    [JsonRequired][JsonPropertyName("camera")]
+    [JsonPropertyName("camera")]
     public InstantNoteThemeJson Camera { get; set; } = new();
-    [JsonRequired][JsonPropertyName("cop1")]
+    [JsonPropertyName("cop1")]
     public NonInstantNoteThemeJson Cop1 { get; set; } = new();
-    [JsonRequired][JsonPropertyName("cop2")]
+    [JsonPropertyName("cop2")]
     public NonInstantNoteThemeJson Cop2 { get; set; } = new();
-    [JsonRequired][JsonPropertyName("cop3")]
+    [JsonPropertyName("cop3")]
     public NonInstantNoteThemeJson Cop3 { get; set; } = new();
-    [JsonRequired][JsonPropertyName("cop4")]
+    [JsonPropertyName("cop4")]
     public NonInstantNoteThemeJson Cop4 { get; set; } = new();
 }
 
 public class DebugInfoThemeJson
 {
-    [JsonRequired][JsonPropertyName("overlayBackgroundColor")]
+    [JsonPropertyName("overlayBackgroundColor")]
     public string OverlayBackgroundColor { get; set; } = "";
-    [JsonRequired][JsonPropertyName("overlayTextColor")]
+    [JsonPropertyName("overlayTextColor")]
     public string OverlayTextColor { get; set; } = "";
-    [JsonRequired][JsonPropertyName("overlayTextSize")]
+    [JsonPropertyName("overlayTextSize")]
     public double OverlayTextSize { get; set; } = 0;
-    [JsonRequired][JsonPropertyName("noteTimestampTextColor")]
+    [JsonPropertyName("noteTimestampTextColor")]
     public string NoteTimestampTextColor { get; set; } = "";
-    [JsonRequired][JsonPropertyName("noteTimestampTextOutlineColor")]
+    [JsonPropertyName("noteTimestampTextOutlineColor")]
     public string NoteTimestampTextOutlineColor { get; set; } = "";
-    [JsonRequired][JsonPropertyName("noteTimestampTextOutlineThickness")]
+    [JsonPropertyName("noteTimestampTextOutlineThickness")]
     public double NoteTimestampTextOutlineThickness { get; set; } = 0;
-    [JsonRequired][JsonPropertyName("noteTimestampTextSize")]
+    [JsonPropertyName("noteTimestampTextSize")]
     public double NoteTimestampTextSize { get; set; } = 0;
 }
 
 public class ColorThemeJson
 {
-    [JsonRequired][JsonPropertyName("mainWindow")]
-    public MainWindowThemeJson MainWindow { get; set; } = new();
-    [JsonRequired][JsonPropertyName("topBar")]
-    public TopBarThemeJson TopBar { get; set; } = new();
-    [JsonRequired][JsonPropertyName("dialogs")]
-    public DialogThemeJson Dialogs { get; set; } = new();
-    [JsonRequired][JsonPropertyName("quickInfo")]
-    public QuickInfoThemeJson QuickInfo { get; set; } = new();
-    [JsonRequired][JsonPropertyName("noteViewer")]
-    public NoteViewerThemeJson NoteViewer { get; set; } = new();
-    [JsonRequired][JsonPropertyName("gamePreview")]
-    public GamePreviewThemeJson GamePreview { get; set; } = new();
-    [JsonRequired][JsonPropertyName("placementPriorityList")]
-    public PlacementPriorityListThemeJson PlacementPriorityList { get; set; } = new();
-    [JsonRequired][JsonPropertyName("notes")]
-    public NoteThemesJson NoteThemes { get; set; } = new();
-    [JsonRequired][JsonPropertyName("debugInfo")]
-    public DebugInfoThemeJson DebugInfo { get; set; } = new();
+    [JsonPropertyName("mainWindow")]
+    public MainWindowThemeJson MainWindow { get; set; } = new()
+    {
+        BackgroundColor = "#1B1F21",
+        EventIndicator = new()
+        {
+            BackgroundColor = "#FF4B7E",
+            TextColor = "#161616",
+            TextSize = 16
+        }
+    };
+    [JsonPropertyName("topBar")]
+    public TopBarThemeJson TopBar { get; set; } = new()
+    {
+        BackgroundColor = "#FAF7D6",
+        Sliders = new()
+        {
+            TopColor = "#FF4B7E",
+            BottomColor = "#C9C9A5",
+            IconColor = "#FF4B7E",
+            HandleColor = "#FF4B7E",
+            TopThickness = 4,
+            BottomThickness = 4,
+            HandleWidth = 18,
+        },
+        Buttons = new()
+        {
+            BackgroundColor = "#00000000",
+            OutlineColor = "#FF4B7E",
+            OutlineThickness = 2,
+            CornerRadius = 4,
+            IconColor = "#FF4B7E",
+            Hovered = new()
+            {
+                BackgroundColor = "#C9C9A5",
+                OutlineColor = "",
+                IconColor = ""
+            }
+        },
+        Tooltips = new()
+        {
+            BackgroundColor = "#FAF7D6",
+            OutlineColor = "#FF4B7E",
+            OutlineThickness = 2,
+            CornerRadius = 0,
+            TextColor = "#161616",
+            TextSize = 14
+        },
+        SaveFileContextMenu = new()
+        {
+            BackgroundColor = "#1B1F21",
+            OutlineColor = "#FF4B7E",
+            OutlineThickness = 0,
+            CornerRadius = 4,
+            TextColor = "#FFFFFF",
+            TextSize = 14
+        }
+    };
+    [JsonPropertyName("dialogs")]
+    public DialogThemeJson Dialogs { get; set; } = new()
+    {
+        BackgroundColor = "#FAF7D6",
+        OutlineColor = "#FF4B7E",
+        OutlineThickness = 6,
+        CornerRadius = 6,
+        TextColor = "#161616",
+        TextSize = 22,
+        InputBoxes = new()
+        {
+            BackgroundColor = "#C9C9A5",
+            OutlineColor = "#FF4B7E",
+            OutlineThickness = 2,
+            CornerRadius = 0,
+            TextColor = "#161616",
+            TextSize = 18
+        },
+        Buttons = new()
+        {
+            BackgroundColor = "#00000000",
+            OutlineColor = "#FF4B7E",
+            OutlineThickness = 2,
+            CornerRadius = 4,
+            IconColor = "#FF4B7E",
+            Hovered = new()
+            {
+                BackgroundColor = "#C9C9A5",
+                OutlineColor = "",
+                IconColor = ""
+            }
+        },
+    };
+    [JsonPropertyName("quickInfo")]
+    public QuickInfoThemeJson QuickInfo { get; set; } = new()
+    {
+        TitleColor = "#D0D0D0",
+        TitleSize = 15,
+        InfoColor = "#FFFFFF",
+        InfoSize = 22
+    };
+    [JsonPropertyName("noteViewer")]
+    public NoteViewerThemeJson NoteViewer { get; set; } = new()
+    {
+        BackgroundColor = "#1B1F21",
+        OutlineColor = "#FF4B7E",
+        OutlineThickness = 4,
+        CornerRadius = 0,
+        SelectDragColor = "#FFFFFF64",
+        DeleteDragColor = "#FF000064",
+        NoteDirectionArrowColor = "#FBB7DE96",
+        NoteDirectionArrowScale = 1.0,
+        NoteLanes = new()
+        {
+            TopColor = "#9C999C19",
+            TopWidth = 32,
+            BottomColor = "#9C999C19",
+            BottomWidth = 32,
+            CenterColor = "#FF9A9A19",
+            CenterWidth = 32,
+            CameraColor = "#FBB7DE19",
+            CameraWidth = 32
+        },
+        LaneNumbers = new()
+        {
+            Color = "#FFFFFF",
+            OutlineColor = "#161616",
+            OutlineThickness = 2,
+            TextSize = 40
+        },
+        FullBeatSnapLine = new()
+        {
+            Color = "#E0E0E096",
+            Thickness = 3,
+            TextSize = 16
+        },
+        SubBeatSnapLine = new()
+        {
+            Color = "#80808096",
+            Thickness = 3
+        },
+        CurrentTimeLine = new()
+        {
+            Color = "#FF000064",
+            Thickness = 8
+        },
+        Breakpoint = new()
+        {
+            Color = "#FF0000",
+            Thickness = 3,
+            ArrowScale = 1.0
+        },
+        BpmChanges = new()
+        {
+            Color = "#0981EA",
+            LineThickness = 5,
+            TextSize = 22
+        },
+        Labels = new()
+        {
+            Color = "#EADF09",
+            LineThickness = 5,
+            TextSize = 16
+        },
+        Markers = new()
+        {
+            Color1 = "#40DB11",
+            Color2 = "#0979EA",
+            Color3 = "#B609EA",
+            ArrowScale = 1.0
+        }
+    };
+    [JsonPropertyName("gamePreview")]
+    public GamePreviewThemeJson GamePreview { get; set; } = new()
+    {
+        BackgroundColor = "#1B1F21",
+        OutlineColor = "#FF4B7E",
+        OutlineThickness = 4,
+        CornerRadius = 0,
+        CopColor = "#FF4B7E",
+        ViewableArea = new()
+        {
+            OutlineColor = "#FBB7DE",
+            OutlineThickness = 5
+        },
+        CameraArrowColor = "#FBB7DE80",
+        CameraArrowScale = 1.0,
+        NoteTargets = new()
+        {
+            LineColor = "#808080",
+            LineThickness = 2,
+            TargetCircles = {
+                Radius = 30,
+                FillColor = "#00000000",
+                OutlineColor = "#FF4B7E",
+                OutlineThickness = 5
+            }
+        }
+    };
+    [JsonPropertyName("placementPriorityList")]
+    public PlacementPriorityListThemeJson PlacementPriorityList { get; set; } =
+        new()
+    {
+        BackgroundColor = "#1B1F21",
+        OutlineColor = "#FF4B7E",
+        OutlineThickness = 4,
+        CornerRadius = 0,
+        TitleColor = "#D0D0D0",
+        TitleSize = 15,
+        ListEntries = new()
+        {
+            BackgroundColor = "#1B1F21",
+            OutlineColor = "#FF4B7E",
+            OutlineThickness = 2,
+            CornerRadius = 4,
+            TextColor = "#FFFFFF",
+            TextSize = 22,
+            ReorderIconColor = "#FF4B7E"
+        }
+    };
+    [JsonPropertyName("notes")]
+    public NoteThemesJson NoteThemes { get; set; } = new()
+    {
+        Common = new()
+        {
+            FlagTextColor = "#FFFFFF",
+            FlagTextSize = 40,
+            FlagTextOutlineColor = "#161616",
+            FlagTextOutlineThickness = 2
+        },
+        Single = new()
+        {
+            FillColor = "#9C999C",
+            OutlineColor = "#000000",
+            OutlineThickness = 4,
+            Selected = new()
+            {
+                FillColor = "",
+                OutlineColor = "#FFFFFF",
+                OutlineThickness = -1
+            }
+        },
+        Spike = new()
+        {
+            FillColor = "#FFCC00",
+            OutlineColor = "#000000",
+            OutlineThickness = 4,
+            Selected = new()
+            {
+                FillColor = "",
+                OutlineColor = "#FFFFFF",
+                OutlineThickness = -1
+            }
+        },
+        Hold = new()
+        {
+            FillColor = "#9C999C",
+            OutlineColor = "#000000",
+            OutlineThickness = 4,
+            TailColor = "#9C999C96",
+            TailOutlineColor = "#00000000",
+            TailOutlineThickness = 0,
+            Selected = new()
+            {
+                FillColor = "",
+                OutlineColor = "#FFFFFF",
+                OutlineThickness = -1,
+                TailColor = "",
+                TailOutlineColor = "#FFFFFF",
+                TailOutlineThickness = 2
+            }
+        },
+        Double = new()
+        {
+            FillColor = "#65CCFF",
+            OutlineColor = "#000000",
+            OutlineThickness = 4,
+            TailColor = "#65CCFF96",
+            TailOutlineColor = "#00000000",
+            TailOutlineThickness = 0,
+            Selected = new()
+            {
+                FillColor = "",
+                OutlineColor = "#FFFFFF",
+                OutlineThickness = -1,
+                TailColor = "",
+                TailOutlineColor = "#FFFFFF",
+                TailOutlineThickness = 2
+            }
+        },
+        Freestyle = new()
+        {
+            FillColor = "#FF9A9A",
+            OutlineColor = "#000000",
+            OutlineThickness = 4,
+            Selected = new()
+            {
+                FillColor = "",
+                OutlineColor = "#FFFFFF",
+                OutlineThickness = -1
+            }
+        },
+        Mash = new()
+        {
+            FillColor = "#FF9A9A",
+            OutlineColor = "#000000",
+            OutlineThickness = 4,
+            TailColor = "#FF9A9A96",
+            TailOutlineColor = "#00000000",
+            TailOutlineThickness = 0,
+            Selected = new()
+            {
+                FillColor = "",
+                OutlineColor = "#FFFFFF",
+                OutlineThickness = -1,
+                TailColor = "",
+                TailOutlineColor = "#FFFFFF",
+                TailOutlineThickness = 2
+            }
+        },
+        Camera = new()
+        {
+            FillColor = "#FBB7DE",
+            OutlineColor = "#000000",
+            OutlineThickness = 4,
+            Selected = new()
+            {
+                FillColor = "",
+                OutlineColor = "#FFFFFF",
+                OutlineThickness = -1
+            }
+        },
+        Cop1 = new()
+        {
+            FillColor = "#3259E5",
+            OutlineColor = "#000000",
+            OutlineThickness = 4,
+            TailColor = "#3259E596",
+            TailOutlineColor = "#00000000",
+            TailOutlineThickness = 0,
+            Selected = new()
+            {
+                FillColor = "",
+                OutlineColor = "#FFFFFF",
+                OutlineThickness = -1,
+                TailColor = "",
+                TailOutlineColor = "#FFFFFF",
+                TailOutlineThickness = 2
+            }
+        },
+        Cop2 = new()
+        {
+            FillColor = "#ED4964",
+            OutlineColor = "#000000",
+            OutlineThickness = 4,
+            TailColor = "#ED496496",
+            TailOutlineColor = "#00000000",
+            TailOutlineThickness = 0,
+            Selected = new()
+            {
+                FillColor = "",
+                OutlineColor = "#FFFFFF",
+                OutlineThickness = -1,
+                TailColor = "",
+                TailOutlineColor = "#FFFFFF",
+                TailOutlineThickness = 2
+            }
+        },
+        Cop3 = new()
+        {
+            FillColor = "#44F430",
+            OutlineColor = "#000000",
+            OutlineThickness = 4,
+            TailColor = "#44F43096",
+            TailOutlineColor = "#00000000",
+            TailOutlineThickness = 0,
+            Selected = new()
+            {
+                FillColor = "",
+                OutlineColor = "#FFFFFF",
+                OutlineThickness = -1,
+                TailColor = "",
+                TailOutlineColor = "#FFFFFF",
+                TailOutlineThickness = 2
+            }
+        },
+        Cop4 = new()
+        {
+            FillColor = "#F4E430",
+            OutlineColor = "#000000",
+            OutlineThickness = 4,
+            TailColor = "#F4E43096",
+            TailOutlineColor = "#00000000",
+            TailOutlineThickness = 0,
+            Selected = new()
+            {
+                FillColor = "",
+                OutlineColor = "#FFFFFF",
+                OutlineThickness = -1,
+                TailColor = "",
+                TailOutlineColor = "#FFFFFF",
+                TailOutlineThickness = 2
+            }
+        }
+    };
+    [JsonPropertyName("debugInfo")]
+    public DebugInfoThemeJson DebugInfo { get; set; } = new()
+    {
+        OverlayBackgroundColor = "#00000080",
+        OverlayTextColor = "#FFFFFF",
+        OverlayTextSize = 14,
+        NoteTimestampTextColor = "#FFFFFF80",
+        NoteTimestampTextOutlineColor = "#16161680",
+        NoteTimestampTextOutlineThickness = 1,
+        NoteTimestampTextSize = 20
+    };
 }
