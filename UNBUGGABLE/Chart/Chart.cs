@@ -127,8 +127,6 @@ public static partial class Chart
                 return;
             }
             
-            _metadata = value;
-            
             // technically the chart can only be saved if it has a difficulty slot, but the way the
             // enum is set up makes it impossible to not have one
             var canSave = (_metadata.SongName != "" && _metadata.ArtistName != "" &&
@@ -139,35 +137,37 @@ public static partial class Chart
             // least once (or were loaded from a chart file and the metadata hasn't changed)
             _canAutosave = false;
 
-            if (_bpmRegions.Count != 0 && _bpmRegions[0].StartTime != _metadata.ChartOffset)
+            if (_metadata.ChartOffset != value.ChartOffset)
             {
-                var delta = _bpmRegions[0].StartTime - _metadata.ChartOffset;
-                _bpmRegions[0].StartTime = _metadata.ChartOffset;
-
-                if (_bpmRegions.Count > 1)
+                var delta = value.ChartOffset - _metadata.ChartOffset;
+                
+                if (_bpmRegions.Count != 0)
                 {
-                    foreach (var region in _bpmRegions.Skip(1))
+                    foreach (var region in _bpmRegions)
                     {
-                        region.StartTime -= delta;
+                        region.StartTime += delta;
+                    }
+                
+                    RebuildSnapLineSets();
+                }
+
+                if (_labels.Count != 0)
+                {
+                    foreach (var label in _labels)
+                    {
+                        label.Time -= delta;
                     }
                 }
                 
-                RebuildSnapLineSets();
+                _jumpTargetsOutOfDate = true;
             }
-
-            if (_labels.Count != 0 && value.ChartOffset != _metadata.ChartOffset)
-            {
-                foreach (var label in _labels)
-                {
-                    label.Time -= (value.ChartOffset - _metadata.ChartOffset);
-                }
-            }
+            
+            _metadata = value;
             
             if (canSave)
             {
                 ChartFileName = GetChartFileName();
                 Trace.WriteLine($"chart file name: \"{ChartFileName}\"");
-                
             }
             
             UpdateWindowTitle();
@@ -180,7 +180,8 @@ public static partial class Chart
     public static string ChartFolderName { get; private set; } = "";
     public static string ChartFileName { get; private set; } = "";
     
-    public static long Length => _mediaPlayer.Media.Duration - AdjustedOffset;
+    public static long Length => _mediaPlayer.Media != null ? 
+        _mediaPlayer.Media.Duration - AdjustedOffset : -1;
 
     public static long AdjustedOffset => Metadata.ChartOffset + Config.Settings.HardChartOffset;
 
@@ -493,11 +494,9 @@ public static partial class Chart
         // skip labels within the next snap - this may end up jumping past the next label (but that
         // shouldn't be an issue unless you have multiple labels within a single beat) but prevents
         // an infinite loop if the next label isn't quite on a snap line
-        if (_jumpTargets.Any(t => t - Metadata.ChartOffset > GetNextSnapTime()))
+        if (_jumpTargets.Any(t => t > GetNextSnapTime()))
         {
-            var time = _jumpTargets.Find(
-                t => t - Metadata.ChartOffset > GetNextSnapTime());
-            //Trace.WriteLine($"Moving to label {_labels.IndexOf(previousLabel)} at {previousLabel.Time - Metadata.ChartOffset} (raw {CurrentTimeRaw}, {CurrentTime})");
+            var time = _jumpTargets.Find( t => t > GetNextSnapTime());
             CurrentTimeRaw = time;
         }
         else
@@ -506,6 +505,7 @@ public static partial class Chart
         }
         
         SetTimeToNearestSnap();
+        App.MainWindowViewModel.UpdatePriorityListEntries();
     }
     
     public static void MoveToPreviousLabel()
@@ -524,11 +524,9 @@ public static partial class Chart
         // skip labels within the previous snap - this may end up jumping past the actual previous
         // label (but that shouldn't be an issue unless you have multiple labels within a single
         // beat) but prevents an infinite loop if the previous label isn't quite on a snap line
-        if (_jumpTargets.Any(t => t - Metadata.ChartOffset < GetPreviousSnapTime()))
+        if (_jumpTargets.Any(t => t < GetPreviousSnapTime()))
         {
-            var time = _jumpTargets.FindLast(
-                t => t - Metadata.ChartOffset < GetPreviousSnapTime());
-            //Trace.WriteLine($"Moving to label {_labels.IndexOf(previousLabel)} at {previousLabel.Time - Metadata.ChartOffset} (raw {CurrentTimeRaw}, {CurrentTime})");
+            var time = _jumpTargets.FindLast(t => t < GetPreviousSnapTime());
             CurrentTimeRaw = time;
         }
         else
@@ -537,6 +535,7 @@ public static partial class Chart
         }
         
         SetTimeToNearestSnap();
+        App.MainWindowViewModel.UpdatePriorityListEntries();
     }
 
     public static void MoveToBreakpoint()
@@ -799,6 +798,7 @@ public static partial class Chart
             i += temp;
         }
 
+        // check for an alternate audio format
         var result = await TryLoadAudioFile(audioPath);
         if (result.Item1)
         {
@@ -1287,11 +1287,8 @@ public static partial class Chart
                     region.Next = _bpmRegions[i + 2];
                     _bpmRegions[i + 2].Previous = region;
 
-                    if (i > 0)
-                    {
-                        _bpmRegions[i - 1].Next = region;
-                        region.Previous = _bpmRegions[i - 1];
-                    }
+                    _bpmRegions[i].Next = region;
+                    region.Previous = _bpmRegions[i];
                     break;
                 }
             }
@@ -1359,8 +1356,10 @@ public static partial class Chart
                     nextTime = (bpmRegion.EndTime +
                                      bpmRegion.Next.MsPerBeat / snapValue *
                                      snapFractionAfterRegion);
+                    
                     bpmRegion = bpmRegion.Next;
                 }
+                
                 time = nextTime;
                 snapLineSet.Add((long)Math.Round(time));
             }
@@ -1387,7 +1386,7 @@ public static partial class Chart
 
         if (Config.Settings.JumpTargets.Contains("bpmChanges"))
         {
-            _jumpTargets.AddRange(_bpmRegions.Select(r => r.StartTime - Metadata.ChartOffset));
+            _jumpTargets.AddRange(_bpmRegions.Select(r => r.StartTime));
         }
 
         if (Config.Settings.JumpTargets.Contains("firstNote") && NonMarkerNotes.Count > 0)
@@ -1420,19 +1419,11 @@ public static partial class Chart
         {
             _jumpTargets.Add(ChartBuilder.BreakpointTime);
         }
-
-        if (Config.Settings.JumpTargets.Contains("chartStart"))
-        {
-            _jumpTargets.Add(0);
-        }
-        
-        if (Config.Settings.JumpTargets.Contains("chartEnd"))
-        {
-            _jumpTargets.Add(Length);
-        }
         
         _jumpTargets = _jumpTargets.Distinct().ToList();
         _jumpTargets.Sort();
+
+        Trace.WriteLine($"Jump targets:\r\n{string.Join("\r\n", _jumpTargets)}");
     }
 
     private static void ClearChart()
@@ -1594,8 +1585,8 @@ public static partial class Chart
         {
             if (!File.Exists(path))
             {
-                Trace.WriteLine("Could not load audio file: File not found.");
-                return (false, "Could not load audio file: File not found.");
+                Trace.WriteLine($"Could not load audio file \"{path}\": File not found.");
+                return (false, $"Could not load audio file \"{path}\": File not found.");
             }
             
             var media = new Media(_libVlc, path);
@@ -1607,8 +1598,8 @@ public static partial class Chart
         }
         catch (Exception e)
         {
-            Trace.WriteLine($"Could not load audio file: {e.Message}");
-            return (false, $"Could not load audio file: {e.Message}");
+            Trace.WriteLine($"Could not load audio file \"{path}\": {e.Message}");
+            return (false, $"Could not load audio file \"{path}\": {e.Message}");
         }
         
         return (true, "");
@@ -1958,14 +1949,11 @@ public static partial class Chart
                 if (_bpmRegions.Count == 0)
                 {
                     Metadata.ChartOffset = regionStart;
-                    _bpmRegions.Add(new BpmRegion(regionStart, 60000 / msPerBeat));
                 }
-                else
-                {
-                    _bpmRegions.Add(new BpmRegion(regionStart - Metadata.ChartOffset,
-                                                  60000 / msPerBeat));
-                }
-                
+
+                _bpmRegions.Add(new BpmRegion(regionStart - Metadata.ChartOffset,
+                                              60000 / msPerBeat));
+
                 if (_bpmRegions.Count > 1)
                 {
                     _bpmRegions[^2].Next = _bpmRegions[^1];
@@ -2120,8 +2108,7 @@ public static partial class Chart
         var first = true;
         foreach (var bpmRegion in _bpmRegions)
         {
-            var time = bpmRegion == _bpmRegions[0] ? bpmRegion.StartTime :
-                bpmRegion.StartTime + Metadata.ChartOffset;
+            var time = bpmRegion.StartTime + Metadata.ChartOffset;
             
             // why does this use 9 decimal places???
             var line = $"{time},{bpmRegion.MsPerBeat:0.000000000}";

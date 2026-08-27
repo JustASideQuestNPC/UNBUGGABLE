@@ -68,7 +68,6 @@ public static class ChartBuilder
 
         if (MouseDragStart == null)
         {
-            Trace.WriteLine($"Mouse press: {rightButton}");
             RightMouseDrag = rightButton;
             MouseDragStart = new Point(MousePosition.X, MousePosition.Y);
             MouseDragStartTime = NoteViewer.ScreenCoordsToTime(MouseDragStart.Value.Y);
@@ -197,16 +196,7 @@ public static class ChartBuilder
 
     public static async void TryAutoLoadChartFile()
     {
-        // command line arguments are used for file association
-        Trace.WriteLine(Environment.CommandLine);
-        var i = Environment.CommandLine.IndexOf(' ');
-        if (i != -1)
-        {
-            // creating a dialog if the chart doesn't load here will crash because the dialog host
-            // doesn't exist yet
-            await TryLoadChartFile(Environment.CommandLine[(i + 1)..], true);
-        }
-        else if (UserData.LastOpenedChartFile != "")
+        if (UserData.LastOpenedChartFile != "")
         {
             await TryLoadChartFile(UserData.LastOpenedChartFile, true);
         }
@@ -281,13 +271,19 @@ public static class ChartBuilder
     {
         List<NoteBase> pasted = [];
         var clipboardText = await App.TopLevel.Clipboard.GetTextAsync();
+        if (clipboardText is null or "")
+        {
+            Trace.WriteLine("Paste failed: clipboard is empty or contains non-text");
+            return;
+        }
+        
         var noteStrings = clipboardText.Split(';');
         foreach (var noteString in noteStrings)
         {
             var note = NoteBase.FromCopyPasteString(noteString, Chart.CurrentTime);
             if (note == null)
             {
-                Trace.WriteLine($"Failed to parse note from clipboard: {noteString}");
+                Trace.WriteLine($"Paste failed: {noteString} is invalid");
                 return;
             }
             
@@ -352,22 +348,14 @@ public static class ChartBuilder
                                               Math.Round(region.Bpm, 2)).ShowAsync();
         if (bpm.HasValue && bpm.Value.SoftNotEquals(region.Bpm, 0.0001))
         {
-            if (region.Previous != null)
-            {
-                Trace.WriteLine(
-                    $"Edit bpm region: {bpm.Value} -> {region.Previous.Bpm}");
-            }
-                    
             // setting a region's bpm to the same as the previous region merges them
             if (region.Previous != null &&
                 bpm.Value.SoftEquals(region.Previous.Bpm, 0.0001))
             {
-                Trace.WriteLine("Merge bpm regions");
                 ChartBuilderCommandInvoker.Execute(new RemoveBpmRegionCommand(region));
             }
             else
             {
-                Trace.WriteLine("Edit bpm region");
                 ChartBuilderCommandInvoker.Execute(new EditBpmRegionCommand(region, bpm.Value));
             }
         }
@@ -375,7 +363,6 @@ public static class ChartBuilder
 
     public static void DeleteBpmRegion(BpmRegion region)
     {
-        Trace.WriteLine($"Remove bpm region at {region.StartTime} ms");
         ChartBuilderCommandInvoker.Execute(new RemoveBpmRegionCommand(region));
     }
 
@@ -397,7 +384,6 @@ public static class ChartBuilder
     {
         if (TopLaneStartTime == -1000)
         {
-            Trace.WriteLine($"start top lane placement: {Chart.CurrentTime}");
             TopLaneStartTime = Chart.CurrentTime;
         }
     }
@@ -406,7 +392,6 @@ public static class ChartBuilder
     {
         if (TopLaneStartTime != -1000)
         {
-            Trace.WriteLine($"end top lane placement: {Chart.CurrentTime}");
             var start = Math.Min(TopLaneStartTime, Chart.CurrentTime);
             var end = Math.Max(TopLaneStartTime, Chart.CurrentTime);
             CheckForNoteOperation(NoteLane.TOP, start, end);
@@ -418,7 +403,6 @@ public static class ChartBuilder
     {
         if (BottomLaneStartTime == -1000)
         {
-            Trace.WriteLine($"start bottom lane placement: {Chart.CurrentTime}");
             BottomLaneStartTime = Chart.CurrentTime;
         }
     }
@@ -427,7 +411,6 @@ public static class ChartBuilder
     {
         if (BottomLaneStartTime != -1000)
         {
-            Trace.WriteLine($"end bottom lane placement: {Chart.CurrentTime}");
             var start = Math.Min(BottomLaneStartTime, Chart.CurrentTime);
             var end = Math.Max(BottomLaneStartTime, Chart.CurrentTime);
             CheckForNoteOperation(NoteLane.BOTTOM, start, end);
@@ -439,7 +422,6 @@ public static class ChartBuilder
     {
         if (CenterLaneStartTime == -1000)
         {
-            Trace.WriteLine($"start center lane placement: {Chart.CurrentTime}");
             CenterLaneStartTime = Chart.CurrentTime;
         }
     }
@@ -448,7 +430,6 @@ public static class ChartBuilder
     {
         if (CenterLaneStartTime != -1000)
         {
-            Trace.WriteLine($"end center lane placement: {Chart.CurrentTime}");
             var start = Math.Min(CenterLaneStartTime, Chart.CurrentTime);
             var end = Math.Max(CenterLaneStartTime, Chart.CurrentTime);
             CheckForNoteOperation(NoteLane.CENTER, start, end);
@@ -522,7 +503,6 @@ public static class ChartBuilder
             var bpm = await new NumberEntryDialog("add bpm change").ShowAsync();
             if (bpm.HasValue && bpm.Value != 0.0)
             {
-                Trace.WriteLine($"Add bpm region at {time} ms");
                 ChartBuilderCommandInvoker.Execute(new AddBpmRegionCommand(time, bpm.Value));
             }
         }
@@ -535,7 +515,6 @@ public static class ChartBuilder
         // the first bpm region can't be removed for obvious reasons
         if (existingRegion != null && existingRegion != Chart.BpmRegions[0])
         {
-            Trace.WriteLine($"Remove bpm region at {time} ms");
             ChartBuilderCommandInvoker.Execute(new RemoveBpmRegionCommand(existingRegion));
         }
     }
@@ -609,12 +588,14 @@ public static class ChartBuilder
             l => l.StartsWith($"{Chart.Metadata.SongName.ToLowerInvariant()}:"));
         if (index == -1)
         {
-            lines.Add($"{Chart.Metadata.SongName.ToLowerInvariant()}:{BreakpointTime}");
+            lines.Add($"{Chart.Metadata.SongName.ToLowerInvariant()}:" +
+                      $"{BreakpointTime + Chart.Metadata.ChartOffset}");
         }
         else
         {
             lines[index] =
-                $"{Chart.Metadata.SongName.ToLowerInvariant()}:{BreakpointTime}";
+                $"{Chart.Metadata.SongName.ToLowerInvariant()}:" +
+                $"{BreakpointTime + Chart.Metadata.ChartOffset}";
         }
         File.WriteAllLines(Config.PracticeModConfigPath, lines);
     }
@@ -661,7 +642,7 @@ public static class ChartBuilder
             l => l.StartsWith($"{Chart.Metadata.SongName.ToLowerInvariant()}:"));
         if (index != -1 && long.TryParse(lines[index].Split(':')[1], out var time))
         {
-            BreakpointTime = time;
+            BreakpointTime = time - Chart.Metadata.ChartOffset;
             App.MainWindowViewModel.BreakpointTimeText = TimeSpan.FromMilliseconds(BreakpointTime)
                                                                  .ToString(@"mm\:ss\.fff");
             Trace.WriteLine($"Found existing breakpoint at {BreakpointTime}");
@@ -793,7 +774,6 @@ public static class ChartBuilder
     private static void CheckForNoteOperation(NoteLane lane, long start, long end)
     {
         var oldNote = Chart.GetNote(start, lane, 1);
-        Trace.WriteLine(oldNote);
         // hold notes can also extend from the start of the note
         if (oldNote == null && end != start)
         {
@@ -801,7 +781,6 @@ public static class ChartBuilder
                 Chart.GetNote(end, lane, Config.Settings.HoldExtensionSearchThreshold) ??
                 Chart.GetNoteFromEnd(start, lane, Config.Settings.HoldExtensionSearchThreshold);
         }
-        Trace.WriteLine(oldNote);
         
         if (oldNote != null)
         {

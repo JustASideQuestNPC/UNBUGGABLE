@@ -103,6 +103,9 @@ public static class InputManager
         var button = e.Properties.IsRightButtonPressed ? MouseButton.RIGHT :
             e.Properties.IsMiddleButtonPressed ? MouseButton.MIDDLE : MouseButton.LEFT;
         
+        Trace.WriteLine($"Mouse press ({button}) at " +
+                        $"({ChartBuilder.MousePosition.X}, {ChartBuilder.MousePosition.Y})");
+        
         if (!_mouseButtonStates.GetValueOrDefault(button))
         {
             await RunCallbacks(CallbackType.MOUSE_PRESS, button);
@@ -123,6 +126,9 @@ public static class InputManager
         e.Handled = true;
         var button = e.Properties.IsRightButtonPressed ? MouseButton.RIGHT :
             e.Properties.IsMiddleButtonPressed ? MouseButton.MIDDLE : MouseButton.LEFT;
+        
+        Trace.WriteLine($"Mouse release ({button}) at " +
+                        $"({ChartBuilder.MousePosition.X}, {ChartBuilder.MousePosition.Y})");
         
         if (_mouseButtonStates.GetValueOrDefault(button))
         {

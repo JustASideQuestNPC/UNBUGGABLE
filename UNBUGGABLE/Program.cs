@@ -2,22 +2,43 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Transactions;
+using CommandLine;
 using UNBEATABLEChartEditor;
 using UNBEATABLEChartEditor.Audio;
+using UNBUGGABLE.Resources;
 
 namespace UNBUGGABLE;
 
 sealed class Program
 {
+    public class Options
+    {
+        [Option('c', "config", Required = true, HelpText = "Alternate path to a config file.")]
+        public string ConfigPath { get; set; } = "";
+        [Option('k', "keybinds", Required = false, HelpText = "Alternate path to a keybinds file.")]
+        public string KeybindsPath { get; set; } = "";
+    }
+    
     // Initialization code. Don't use any Avalonia, third-party APIs or any
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
     // yet and stuff might break.
     [STAThread]
     public static void Main(string[] args)
     {
+        Parser.Default.ParseArguments<Options>(args).WithParsed(o =>
+        {
+            if (o.ConfigPath != "")
+            {
+                Config.ConfigFilePath = Path.Combine(Environment.CurrentDirectory, o.ConfigPath);
+            }
+            
+            if (o.KeybindsPath != "")
+            {
+                Config.KeybindFilePath = Path.Combine(Environment.CurrentDirectory, o.KeybindsPath);
+            }
+        });
+        
         Trace.Listeners.Clear();
 
         var filePath = Path.Combine(Environment.CurrentDirectory,
@@ -43,8 +64,8 @@ sealed class Program
 
         try
         {
-            // apparently, running the app by double-clicking a file will make the working directory the
-            // same place as that file, not the location of the exe
+            // apparently, running the app by double-clicking a file will make the working directory
+            // the same place as that file, not the location of the exe
             if (!Environment.CurrentDirectory.EndsWith("UNBUGGABLE"))
             {
                 Environment.CurrentDirectory =
@@ -58,7 +79,7 @@ sealed class Program
         }
         catch (Exception e)
         {
-            Trace.WriteLine($"FATAL ERROR!!!\n{e}");
+            Trace.WriteLine($"FATAL ERROR!!!\r\n{e}");
         }
     }
 

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using UNBUGGABLE.Commands;
 
@@ -23,6 +24,7 @@ public static class ChartBuilderCommandInvoker
 
     public static void Reset()
     {
+        Trace.WriteLine("Clearing command stack");
         CommandStack.Clear();
         RedoStack.Clear();
     }
@@ -32,6 +34,7 @@ public static class ChartBuilderCommandInvoker
         CommandStack.Push(command);
         RedoStack.Clear();
         command.Execute();
+        Trace.WriteLine($"Executed command: {command}");
         if (command.UpdatesPriorityList)
         {
             App.MainWindowViewModel.UpdatePriorityListEntries();
@@ -48,6 +51,7 @@ public static class ChartBuilderCommandInvoker
         var command = CommandStack.Pop();
         command.Undo();
         RedoStack.Push(command);
+        Trace.WriteLine($"Undid command: {command}");
         if (command.UpdatesPriorityList)
         {
             App.MainWindowViewModel.UpdatePriorityListEntries();
@@ -64,6 +68,7 @@ public static class ChartBuilderCommandInvoker
         var command = RedoStack.Pop();
         command.Execute();
         CommandStack.Push(command);
+        Trace.WriteLine($"Redid command: {command}");
         if (command.UpdatesPriorityList)
         {
             App.MainWindowViewModel.UpdatePriorityListEntries();

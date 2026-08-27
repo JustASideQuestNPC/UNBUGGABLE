@@ -25,41 +25,6 @@ namespace UNBUGGABLE.Resources;
 /// </summary>
 public static class Config
 {
-    public static Dictionary<string, Color> CurrentTheme { get; private set; } = new()
-    {
-        { "Accent", Color.Parse("#FF4B7E") },
-        { "WindowBackgroundPrimary", Color.Parse("#FAF7D6") },
-        { "WindowBackgroundSecondary", Color.Parse("#C9C9A5") },
-        { "EditorBackground", Color.Parse("#1B1F21") },
-        { "TextPrimary", Color.Parse("#FFFFFF") },
-        { "TextSecondary", Color.Parse("#D0D0D0") },
-        { "TextDark", Color.Parse("#161616") },
-        { "SingleNote", Color.Parse("#9C999C") },
-        { "Spike", Color.Parse("#FFCC00") },
-        { "DoubleNote", Color.Parse("#65CCFF") },
-        { "Freestyle", Color.Parse("#FF9A9A") },
-        { "NoteOutline", Color.Parse("#000000") },
-        { "SelectedNoteOverlay", Color.Parse("#FFFFFF") },
-        { "SetpieceNoteOverlay", Color.Parse("#FF0000") },
-        { "SelectDragOverlay", Color.Parse("#FFFFFF") },
-        { "DeleteDragOverlay", Color.Parse("#FF0000") },
-        { "CameraChange", Color.Parse("#FBB7DE") },
-        { "ViewableArea", Color.Parse("#FBB7DE") },
-        { "FullBeatSnapLine", Color.Parse("#E0E0E0") },
-        { "SubBeatSnapLine", Color.Parse("#808080") },
-        { "CurrentTimeLine", Color.Parse("#FF0000") },
-        { "Breakpoint", Color.Parse("#FF0000") },
-        { "Marker1", Color.Parse("#40DB11") },
-        { "Marker2", Color.Parse("#0979EA") },
-        { "Marker3", Color.Parse("#B609EA") },
-        { "BpmChange", Color.Parse("#0981EA") },
-        { "Label", Color.Parse("#EADF09") },
-        { "Cop1", Color.Parse("#3259E5") },
-        { "Cop2", Color.Parse("#ED4964") },
-        { "Cop3", Color.Parse("#44F430") },
-        { "Cop4", Color.Parse("#F4E430") },
-    };
-
     public static Settings Settings { get; private set; } = new();
 
     public static bool PracticeModInstalled { get; private set; } = false;
@@ -74,14 +39,14 @@ public static class Config
     /// </summary>
     public static string CustomSongsDirectory { get; private set; } = "";
 
-    private static readonly string ConfigFilePath = Path.Combine(Environment.CurrentDirectory,
-                                                                 "configs/config.json");
+    public static string ConfigFilePath { get; set; } = Path.Combine(Environment.CurrentDirectory,
+                                                                     "configs/config.json");
 
-    private static readonly string KeybindFilePath = Path.Combine(Environment.CurrentDirectory,
-                                                                  "configs/keybinds.json");
+    public static string KeybindFilePath { get; set; } = Path.Combine(Environment.CurrentDirectory,
+                                                                      "configs/keybinds.json");
 
-    private static readonly string ThemesFolderPath = Path.Combine(Environment.CurrentDirectory,
-                                                                   "themes");
+    private static string ThemesFolderPath { get; set; } =
+        Path.Combine(Environment.CurrentDirectory, "themes");
 
     private static readonly Dictionary<string, ColorTheme> ColorThemes = new();
     
@@ -103,7 +68,7 @@ public static class Config
             if (fullCopy)
             {
                 Trace.WriteLine(
-                    "Keybinds.json does not exist (or was invalid), fully copying updated file");
+                    "config file does not exist (or was invalid), fully copying updated file");
                 File.Move(updatedConfigPath, ConfigFilePath);
             }
 
@@ -121,7 +86,7 @@ public static class Config
             if (fullCopy)
             {
                 Trace.WriteLine(
-                    "Keybinds.json does not exist (or was invalid), fully copying updated file");
+                    "keybinds file does not exist (or was invalid), fully copying updated file");
                 File.Move(updatedKeybindsPath, KeybindFilePath);
             }
             
@@ -133,7 +98,7 @@ public static class Config
 
     public static void TryReloadConfig(bool mainWindowInitialized = true)
     {
-        Trace.WriteLine("\n-- Reloading Config --");
+        Trace.WriteLine($"\n-- Reloading Configs --");
         
         var loadError = !TryLoadColorThemes();
         if (!loadError)
@@ -142,7 +107,7 @@ public static class Config
         }
         if (!loadError)
         {
-            loadError = !TryLoadConfig();
+            loadError = !TryLoadSettings();
         }
 
         // load errors and some other things are skipped on the first load -- without this, it'll
@@ -158,9 +123,18 @@ public static class Config
                 return;
             }
         }
-        
-        ThemeManager.ApplyTheme(ColorThemes[Settings.ColorTheme]);
-        Trace.WriteLine($"applied theme \"{Settings.ColorTheme}\"\n");
+
+        if (ColorThemes.TryGetValue(Settings.ColorTheme, out var theme))
+        {
+            ThemeManager.ApplyTheme(theme);
+            Trace.WriteLine($"applied theme \"{Settings.ColorTheme}\"\n{theme.ToString()}");
+        }
+        else
+        {
+            ThemeManager.ApplyTheme(ColorThemes["default"]);
+            Trace.WriteLine($"Color theme \"{Settings.ColorTheme}\" does not exist, falling back " +
+                            $"to default.\r\n{ColorThemes["default"].ToString()}");
+        }
 
         if (Chart.SongLoaded)
         {
@@ -172,7 +146,8 @@ public static class Config
 
     private static bool TryLoadKeybinds()
     {
-        Trace.WriteLine("\n-- Loading Keybinds --");
+        Trace.WriteLine($"\n-- Loading Keybinds from \"{KeybindFilePath}\" --");
+        
         try
         {
             var keybinds = JsonSerializer.Deserialize<Keybinds>(File.ReadAllText(KeybindFilePath));
@@ -327,9 +302,9 @@ public static class Config
         return true;
     }
 
-    private static bool TryLoadConfig()
+    private static bool TryLoadSettings()
     {
-        Trace.WriteLine("\n-- Loading Config --");
+        Trace.WriteLine($"\n-- Loading Settings from \"{ConfigFilePath}\" --");
         
         var loadError = false;
         try
@@ -463,8 +438,6 @@ public static class Config
                         "secondLastNote",
                         "firstMarker",
                         "lastMarker",
-                        "chartStart",
-                        "chartEnd",
                         "breakpoint"
                     ];
                     
@@ -608,6 +581,8 @@ public static class Config
 
     private static bool TryLoadColorThemes()
     {
+        List<string> errors = [];
+        
         if (Directory.Exists(ThemesFolderPath))
         {
             ColorThemes.Clear();
@@ -621,7 +596,7 @@ public static class Config
                         File.ReadAllText(file));
                     if (themeJson != null)
                     {
-                        List<string> errors = [];
+                        errors = [];
                         var theme = new ColorTheme(themeJson, ref errors);
                         
                         if (errors.Count > 0)
@@ -644,8 +619,20 @@ public static class Config
                     Trace.WriteLine($"JSON parse error: {e.Message}");
                 }
             }
+            
+            // ensure that the default theme exists -- this is guaranteed to work because it's using
+            // the hard-coded default json values
+            if (!ColorThemes.ContainsKey("default"))
+            {
+                errors = [];
+                ColorThemes["default"] = new ColorTheme(new ColorThemeJson(), ref errors);
+            }
+            
             return true;
         }
+        
+        errors = [];
+        ColorThemes["default"] = new ColorTheme(new ColorThemeJson(), ref errors);
         
         Trace.WriteLine("Color theme folder not found.");
         return false;

@@ -685,8 +685,8 @@ public static class ThemeManager
             theme.NoteViewer.SelectDragColor;
         _themeColors["NoteViewer.DeleteDragColor"].Color =
             theme.NoteViewer.DeleteDragColor;
-        _themeColors["NoteViewer.NoteDirectionArrowColor"].Color =
-            theme.NoteViewer.NoteDirectionArrowColor;
+        // _themeColors["NoteViewer.NoteDirectionArrowColor"].Color =
+        //     theme.NoteViewer.NoteDirectionArrowColor;
         _themeColors["NoteViewer.NoteLanes.TopColor"].Color =
             theme.NoteViewer.NoteLanes.TopColor;
         _themeColors["NoteViewer.NoteLanes.BottomColor"].Color =
@@ -957,8 +957,8 @@ public static class ThemeManager
             new CornerRadius(theme.NoteViewer.CornerRadius);
         _resources["NoteViewer.LaneNumbers.OutlineThickness"] =
             new Thickness(theme.NoteViewer.LaneNumbers.OutlineThickness);
-        _resources["NoteViewer.NoteDirectionArrowScale"] =
-            theme.NoteViewer.NoteDirectionArrowScale;
+        // _resources["NoteViewer.NoteDirectionArrowScale"] =
+        //     theme.NoteViewer.NoteDirectionArrowScale;
         _resources["NoteViewer.NoteLanes.TopWidth"] =
             theme.NoteViewer.NoteLanes.TopWidth;
         _resources["NoteViewer.NoteLanes.BottomWidth"] =

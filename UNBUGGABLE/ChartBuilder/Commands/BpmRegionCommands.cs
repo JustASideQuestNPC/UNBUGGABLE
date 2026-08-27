@@ -17,14 +17,16 @@ public class AddBpmRegionCommand(long time, double bpm) : ICommand
     {
         Chart.RemoveBpmRegion(_bpmRegion);
     }
+    
+    public override string ToString() => $"{Name} at {time} ({bpm} BPM)";
 }
 
 public class RemoveBpmRegionCommand(BpmRegion region) : ICommand
 {
     public string Name => "Remove BPM Region";
-    
+
     public bool UpdatesPriorityList => false;
-    
+
     public void Execute()
     {
         Chart.RemoveBpmRegion(region);
@@ -34,6 +36,8 @@ public class RemoveBpmRegionCommand(BpmRegion region) : ICommand
     {
         Chart.AddBpmRegion(region);
     }
+
+    public override string ToString() => $"{Name} at {region.StartTime} ({region.Bpm} BPM)";
 }
 
 public class EditBpmRegionCommand(BpmRegion region, double newBpm) : ICommand
@@ -53,4 +57,7 @@ public class EditBpmRegionCommand(BpmRegion region, double newBpm) : ICommand
     {
         Chart.EditBpmRegion(region, _oldBpm);
     }
+    
+    public override string ToString() => $"{Name} at {region.StartTime}: {_oldBpm} BPM -> " +
+                                         $"{newBpm} BPM";
 }

@@ -42,22 +42,6 @@ public partial class App : Application
         AvaloniaXamlLoader.Load(this);
     }
 
-    /// <summary>
-    /// Applies a color theme.
-    /// </summary>
-    public void ApplyColorTheme(Dictionary<string, Color> colorTheme)
-    {
-        foreach (var (brushName, brushColor) in colorTheme)
-        {
-            if (Resources[brushName] is not SolidColorBrush brush)
-            {
-                Resources[brushName] = brush = new SolidColorBrush(brushColor);
-            }
-            brush.Color = brushColor;
-            Console.WriteLine($"Applied {brushColor} to {brushName}");
-        }
-    }
-
     public override void OnFrameworkInitializationCompleted()
     {
         // load configs and apply UI settings
@@ -65,7 +49,6 @@ public partial class App : Application
         Config.InitialLoadAllConfigFiles();
         SfxEngine.Init(Config.Settings.MaxConcurrentSfx);
         UserData.LoadData();
-        ApplyColorTheme(Config.CurrentTheme);
         Chart.Init();
         
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)

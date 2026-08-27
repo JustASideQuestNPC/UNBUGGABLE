@@ -296,7 +296,6 @@ public partial class MainWindowViewModel : ViewModelBase
         // consistent?? why???
         if (ActivePriorityListEntries.Count != _initialNoteOrder.Count)
         {
-            Trace.WriteLine("skipping priority list reorder event");
             return;
         }
         
@@ -310,8 +309,6 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             orderedLaneNames.Add(entry.Note!.Lane.ToString());
         }
-        
-        Trace.WriteLine($"Lane order: {string.Join(",", orderedLaneNames)}");
     }
     
     [RelayCommand]
@@ -404,7 +401,6 @@ public partial class MainWindowViewModel : ViewModelBase
         if (files.Count > 0)
         {
             var path = files[0].Path;
-            Trace.WriteLine($"Loading from {path}");
             
             bool loaded;
             if (path.AbsoluteUri.EndsWith(".mp3") || path.AbsoluteUri.EndsWith(".wav"))
@@ -431,7 +427,6 @@ public partial class MainWindowViewModel : ViewModelBase
                 };
                 DifficultyText = $"{difficultySlotName} {Chart.Metadata.DifficultyLevel}";
                 App.MainWindow.BeatSnapText.Text = Chart.BeatSnap.ToString();
-                Trace.WriteLine($"\n{Chart.Metadata.DifficultySlot}\n");
             }
         }
     }
@@ -466,7 +461,6 @@ public partial class MainWindowViewModel : ViewModelBase
         }
         else
         {
-            Trace.WriteLine($"Saving to {fullPath}");
             await ChartBuilder.SaveToBeatPath(fullPath);
             ShowEventIndicator($"Saved to {Chart.ChartFileName}.beat.txt");
         }
@@ -499,7 +493,6 @@ public partial class MainWindowViewModel : ViewModelBase
         if (file != null)
         {
             var fullPath = file.Path.LocalPath;
-            Trace.WriteLine($"Saving to {fullPath}");
             await ChartBuilder.SaveToBeatPath(fullPath);
             ShowEventIndicator($"Saved to {Chart.ChartFileName}.beat.txt");
         }
@@ -521,8 +514,6 @@ public partial class MainWindowViewModel : ViewModelBase
         }
         else
         {
-            
-            Trace.WriteLine($"Saving to {fullPath}");
             var success = await ChartBuilder.SaveToStandardPath(fullPath);
             ShowEventIndicator(success ? $"Saved to {Chart.ChartFileName}.txt" : "Failed to save");
         }
@@ -555,7 +546,6 @@ public partial class MainWindowViewModel : ViewModelBase
         if (file != null)
         {
             var fullPath = file.Path.LocalPath;
-            Trace.WriteLine($"Saving to {fullPath}");
             var success = await ChartBuilder.SaveToStandardPath(fullPath);
             ShowEventIndicator(success ? $"Saved to {Chart.ChartFileName}.txt" : "Failed to save");
         }

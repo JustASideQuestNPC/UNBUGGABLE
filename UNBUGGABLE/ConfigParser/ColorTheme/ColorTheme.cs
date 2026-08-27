@@ -67,6 +67,17 @@ public class MainWindowTheme(MainWindowThemeJson json, ref List<string> errorMes
                 errorMessages.Add("mainWindow.eventIndicator.textSize must be positive");
             }
         }
+        
+        public string ToString(int indent = 0)
+        {
+            List<string> lines = [
+                $"backgroundColor: {BackgroundColor}",
+                $"textColor: {TextColor}",
+                $"textSize: {TextSize}"
+            ];
+            lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+            return string.Join("\r\n", lines);
+        }
     }
     
     public readonly Color BackgroundColor = ThemeUtils.ParseColor(json.BackgroundColor,
@@ -74,6 +85,16 @@ public class MainWindowTheme(MainWindowThemeJson json, ref List<string> errorMes
                                                                   ref errorMessages);
     public readonly EventIndicatorTheme EventIndicator = new(json.EventIndicator,
                                                              ref errorMessages);
+    
+    public string ToString(int indent = 0)
+    {
+        List<string> lines = [
+            $"backgroundColor: {BackgroundColor}",
+            $"eventIndicator:\r\n{EventIndicator.ToString(indent + 2)}"
+        ];
+        lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+        return string.Join("\r\n", lines);
+    }
 }
 
 public class ElementTheme
@@ -102,6 +123,18 @@ public class ElementTheme
             errorMessages.Add($"{keyName}.cornerRadius cannot be negative");
         }
     }
+
+    public virtual string ToString(int indent = 0)
+    {
+        List<string> lines = [
+            $"backgroundColor: {BackgroundColor}",
+            $"outlineColor: {OutlineColor}",
+            $"outlineThickness: {OutlineThickness}",
+            $"cornerRadius: {CornerRadius}"
+        ];
+        lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+        return string.Join("\r\n", lines);
+    }
 }
 
 public class TextElementTheme : ElementTheme
@@ -120,6 +153,20 @@ public class TextElementTheme : ElementTheme
             errorMessages.Add($"{keyName}.textSize must be positive");
         }
     }
+    
+    public override string ToString(int indent = 0)
+    {
+        List<string> lines = [
+            $"backgroundColor: {BackgroundColor}",
+            $"outlineColor: {OutlineColor}",
+            $"outlineThickness: {OutlineThickness}",
+            $"cornerRadius: {CornerRadius}",
+            $"textColor: {TextColor}",
+            $"textSize: {TextSize}"
+        ];
+        lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+        return string.Join("\r\n", lines);
+    }
 }
 
 public class ButtonTheme : ElementTheme
@@ -129,6 +176,17 @@ public class ButtonTheme : ElementTheme
         public readonly Color BackgroundColor = background;
         public readonly Color OutlineColor = outline;
         public readonly Color IconColor = icon;
+        
+        public string ToString(int indent = 0)
+        {
+            List<string> lines = [
+                $"backgroundColor: {BackgroundColor}",
+                $"outlineColor: {OutlineColor}",
+                $"iconColor: {IconColor}",
+            ];
+            lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+            return string.Join("\r\n", lines);
+        }
     }
     
     public ButtonTheme(ButtonThemeJson json, string keyName, ref List<string> errorMessages) :
@@ -154,6 +212,20 @@ public class ButtonTheme : ElementTheme
 
     public readonly Color IconColor;
     public readonly HoveredTheme Hovered;
+    
+    public override string ToString(int indent = 0)
+    {
+        List<string> lines = [
+            $"backgroundColor: {BackgroundColor}",
+            $"outlineColor: {OutlineColor}",
+            $"outlineThickness: {OutlineThickness}",
+            $"cornerRadius: {CornerRadius}",
+            $"iconColor: {IconColor}",
+            $"hovered:\r\n{Hovered.ToString(indent + 2)}"
+        ];
+        lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+        return string.Join("\r\n", lines);
+    }
 }
 
 public class TopBarTheme(TopBarThemeJson json, ref List<string> errorMessages)
@@ -205,6 +277,22 @@ public class TopBarTheme(TopBarThemeJson json, ref List<string> errorMessages)
                 errorMessages.Add("topBar.sliders.bottomThickness cannot be negative");
             }
         }
+        
+        public string ToString(int indent = 0)
+        {
+            List<string> lines = [
+                $"topColor: {TopColor}",
+                $"bottomColor: {BottomColor}",
+                $"iconColor: {IconColor}",
+                $"handleColor: {HandleColor}",
+                $"handleWidth: {HandleWidth}",
+                $"handleHeight: {HandleHeight}",
+                $"topThickness: {TopThickness}",
+                $"bottomThickness: {BottomThickness}"
+            ];
+            lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+            return string.Join("\r\n", lines);
+        }
     }
 
     public readonly Color BackgroundColor = ThemeUtils.ParseColor(json.BackgroundColor,
@@ -217,6 +305,19 @@ public class TopBarTheme(TopBarThemeJson json, ref List<string> errorMessages)
     public readonly TextElementTheme SaveFileContextMenu = new(json.SaveFileContextMenu,
                                                                "topBar.saveFileContextMenu",
                                                                ref errorMessages);
+    
+    public string ToString(int indent = 0)
+    {
+        List<string> lines = [
+            $"backgroundColor: {BackgroundColor}",
+            $"sliders:\r\n{Sliders.ToString(indent + 2)}",
+            $"buttons:\r\n{Buttons.ToString(indent + 2)}",
+            $"tooltips:\r\n{Tooltips.ToString(indent + 2)}",
+            $"saveFileContextMenu:\r\n{SaveFileContextMenu.ToString(indent + 2)}"
+        ];
+        lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+        return string.Join("\r\n", lines);
+    }
 }
 
 public class DialogTheme(DialogThemeJson json, ref List<string> errorMessages) :
@@ -225,6 +326,20 @@ public class DialogTheme(DialogThemeJson json, ref List<string> errorMessages) :
     public readonly TextElementTheme InputBoxes = new(json.InputBoxes, "dialogs.inputBoxes",
                                                       ref errorMessages);
     public readonly ButtonTheme Buttons = new(json.Buttons, "dialogs.buttons", ref errorMessages);
+    
+    public override string ToString(int indent = 0)
+    {
+        List<string> lines = [
+            $"backgroundColor: {BackgroundColor}",
+            $"outlineColor: {OutlineColor}",
+            $"outlineThickness: {OutlineThickness}",
+            $"cornerRadius: {CornerRadius}",
+            $"buttons:\r\n{Buttons.ToString(indent + 2)}",
+            $"inputBoxes:\r\n{InputBoxes.ToString(indent + 2)}"
+        ];
+        lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+        return string.Join("\r\n", lines);
+    }
 }
 
 public class QuickInfoTheme
@@ -252,6 +367,18 @@ public class QuickInfoTheme
             errorMessages.Add("quickInfo.infoSize must be positive");
         }
     }
+    
+    public string ToString(int indent = 0)
+    {
+        List<string> lines = [
+            $"titleColor: {TitleColor}",
+            $"infoColor: {InfoColor}",
+            $"titleSize: {TitleSize}",
+            $"infoSize: {InfoSize}"
+        ];
+        lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+        return string.Join("\r\n", lines);
+    }
 }
 
 public class LineTheme
@@ -268,6 +395,16 @@ public class LineTheme
         {
             errorMessages.Add($"{keyName}.thickness cannot be negative");
         }
+    }
+    
+    public virtual string ToString(int indent = 0)
+    {
+        List<string> lines = [
+            $"color: {Color}",
+            $"thickness: {Thickness}"
+        ];
+        lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+        return string.Join("\r\n", lines);
     }
 }
 
@@ -301,6 +438,18 @@ public class NoteViewerTheme : ElementTheme
                 errorMessages.Add("noteViewer.laneNumbers.textSize must be positive");
             }
         }
+        
+        public string ToString(int indent = 0)
+        {
+            List<string> lines = [
+                $"color: {Color}",
+                $"outlineColor: {OutlineColor}",
+                $"outlineThickness: {OutlineThickness}",
+                $"textSize: {TextSize}"
+            ];
+            lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+            return string.Join("\r\n", lines);
+        }
     }
     
     public class LabeledLineTheme
@@ -326,6 +475,17 @@ public class NoteViewerTheme : ElementTheme
                 errorMessages.Add($"{keyName}.textSize must be positive");
             }
         }
+        
+        public string ToString(int indent = 0)
+        {
+            List<string> lines = [
+                $"color: {Color}",
+                $"lineThickness: {LineThickness}",
+                $"textSize: {TextSize}"
+            ];
+            lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+            return string.Join("\r\n", lines);
+        }
     }
 
     public class FullBeatSnapLineTheme : LineTheme
@@ -343,6 +503,17 @@ public class NoteViewerTheme : ElementTheme
                 errorMessages.Add(
                     "noteViewer.fullBeatSnapLine.textSize must be positive");
             }
+        }
+        
+        public override string ToString(int indent = 0)
+        {
+            List<string> lines = [
+                $"color: {Color}",
+                $"thickness: {Thickness}",
+                $"textSize: {TextSize}"
+            ];
+            lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+            return string.Join("\r\n", lines);
         }
     }
     
@@ -368,6 +539,18 @@ public class NoteViewerTheme : ElementTheme
                 errorMessages.Add("noteViewer.markers.arrowScale cannot be negative");
             }
         }
+        
+        public string ToString(int indent = 0)
+        {
+            List<string> lines = [
+                $"color1: {Color1}",
+                $"color2: {Color2}",
+                $"color3: {Color3}",
+                $"arrowScale: {ArrowScale}"
+            ];
+            lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+            return string.Join("\r\n", lines);
+        }
     }
     
     public class BreakpointTheme : LineTheme
@@ -383,6 +566,17 @@ public class NoteViewerTheme : ElementTheme
                 errorMessages.Add(
                     "noteViewer.breakpoint.arrowScale cannot be negative");
             }
+        }
+        
+        public override string ToString(int indent = 0)
+        {
+            List<string> lines = [
+                $"color: {Color}",
+                $"thickness: {Thickness}",
+                $"arrowScale: {ArrowScale}"
+            ];
+            lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+            return string.Join("\r\n", lines);
         }
     }
     
@@ -440,6 +634,22 @@ public class NoteViewerTheme : ElementTheme
                     "noteViewer.noteLanes.cameraWidth cannot be negative");
             }
         }
+        
+        public string ToString(int indent = 0)
+        {
+            List<string> lines = [
+                $"topColor: {TopColor}",
+                $"bottomColor: {BottomColor}",
+                $"centerColor: {CenterColor}",
+                $"cameraColor: {CameraColor}",
+                $"topWidth: {TopWidth}",
+                $"bottomWidth: {BottomWidth}",
+                $"centerWidth: {CenterWidth}",
+                $"cameraWidth: {CameraWidth}"
+            ];
+            lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+            return string.Join("\r\n", lines);
+        }
     }
     
     public readonly Color SelectDragColor;
@@ -453,8 +663,8 @@ public class NoteViewerTheme : ElementTheme
     public readonly MarkersTheme Markers;
     public readonly BreakpointTheme Breakpoint;
     public readonly NoteLaneThemes NoteLanes;
-    public readonly Color NoteDirectionArrowColor;
-    public readonly double NoteDirectionArrowScale;
+    // public readonly Color NoteDirectionArrowColor;
+    // public readonly double NoteDirectionArrowScale;
     
     public NoteViewerTheme(NoteViewerThemeJson json, ref List<string> errorMessages) :
         base(json, "noteViewer", ref errorMessages)
@@ -463,9 +673,9 @@ public class NoteViewerTheme : ElementTheme
                                                 ref errorMessages);
         DeleteDragColor = ThemeUtils.ParseColor(json.DeleteDragColor, "noteViewer.deleteDragColor",
                                                 ref errorMessages);
-        NoteDirectionArrowColor = ThemeUtils.ParseColor(json.NoteDirectionArrowColor,
-                                                   "noteViewer.noteDirectionArrowColor",
-                                                   ref errorMessages);
+        // NoteDirectionArrowColor = ThemeUtils.ParseColor(json.NoteDirectionArrowColor,
+        //                                            "noteViewer.noteDirectionArrowColor",
+        //                                            ref errorMessages);
         LaneNumbers = new LaneNumberTheme(json.LaneNumbers, ref errorMessages);
         BpmChange = new LabeledLineTheme(json.BpmChanges, "noteViewer.bpmChange",
                                          ref errorMessages);
@@ -479,11 +689,33 @@ public class NoteViewerTheme : ElementTheme
         Breakpoint = new BreakpointTheme(json.Breakpoint, ref errorMessages);
         NoteLanes = new NoteLaneThemes(json.NoteLanes, ref errorMessages);
         
-        NoteDirectionArrowScale = json.NoteDirectionArrowScale;
-        if (NoteDirectionArrowScale < 0)
-        {
-            errorMessages.Add("noteViewer.noteDirectionArrowScale cannot be negative");
-        }
+        // NoteDirectionArrowScale = json.NoteDirectionArrowScale;
+        // if (NoteDirectionArrowScale < 0)
+        // {
+        //     errorMessages.Add("noteViewer.noteDirectionArrowScale cannot be negative");
+        // }
+    }
+    
+    public override string ToString(int indent = 0)
+    {
+        List<string> lines = [
+            $"backgroundColor: {BackgroundColor}",
+            $"outlineColor: {OutlineColor}",
+            $"outlineThickness: {OutlineThickness}",
+            $"cornerRadius: {CornerRadius}",
+            $"selectDragColor: {SelectDragColor}",
+            $"deleteDragColor: {DeleteDragColor}",
+            $"laneNumbers:\r\n{LaneNumbers.ToString(indent + 2)}",
+            $"bpmChange:\r\n{BpmChange.ToString(indent + 2)}",
+            $"label:\r\n{Label.ToString(indent + 2)}",
+            $"fullBeatSnapLine:\r\n{FullBeatSnapLine.ToString(indent + 2)}",
+            $"subBeatSnapLine:\r\n{SubBeatSnapLine.ToString(indent + 2)}",
+            $"markers:\r\n{Markers.ToString(indent + 2)}",
+            $"breakpoint:\r\n{Breakpoint.ToString(indent + 2)}",
+            $"noteLanes:\r\n{NoteLanes.ToString(indent + 2)}"
+        ];
+        lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+        return string.Join("\r\n", lines);
     }
 }
 
@@ -507,6 +739,16 @@ public class GamePreviewTheme : ElementTheme
                 errorMessages.Add(
                     "gamePreviewer.viewableArea.outlineColor cannot be negative");
             }
+        }
+        
+        public string ToString(int indent = 0)
+        {
+            List<string> lines = [
+                $"outlineColor: {OutlineColor}",
+                $"outlineThickness: {OutlineThickness}"
+            ];
+            lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+            return string.Join("\r\n", lines);
         }
     }
 
@@ -543,6 +785,18 @@ public class GamePreviewTheme : ElementTheme
                         "gamePreview.noteTargets.circles.radius must be positive");
                 }
             }
+            
+            public string ToString(int indent = 0)
+            {
+                List<string> lines = [
+                    $"fillColor: {FillColor}",
+                    $"outlineColor: {OutlineColor}",
+                    $"outlineThickness: {OutlineThickness}",
+                    $"radius: {Radius}"
+                ];
+                lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+                return string.Join("\r\n", lines);
+            }
         }
 
         public readonly Color LineColor;
@@ -562,6 +816,17 @@ public class GamePreviewTheme : ElementTheme
                 errorMessages.Add(
                     "gamePreview.noteTargets.lineThickness cannot be negative");
             }
+        }
+        
+        public string ToString(int indent = 0)
+        {
+            List<string> lines = [
+                $"lineColor: {LineColor}",
+                $"lineThickness: {LineThickness}",
+                $"circles:\r\n{Circles.ToString(indent + 2)}"
+            ];
+            lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+            return string.Join("\r\n", lines);
         }
     }
 
@@ -586,6 +851,19 @@ public class GamePreviewTheme : ElementTheme
             errorMessages.Add("gamePreview.cameraArrowScale cannot be negative");
         }
     }
+    
+    public override string ToString(int indent = 0)
+    {
+        List<string> lines = [
+            $"copColor: {CopColor}",
+            $"cameraArrowColor: {CameraArrowColor}",
+            $"cameraArrowScale: {CameraArrowScale}",
+            $"viewableArea:\r\n{ViewableArea.ToString(indent + 2)}",
+            $"noteTargets:\r\n{NoteTargets.ToString(indent + 2)}"
+        ];
+        lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+        return string.Join("\r\n", lines);
+    }
 }
 
 public class PlacementPriorityListTheme : ElementTheme
@@ -599,6 +877,21 @@ public class PlacementPriorityListTheme : ElementTheme
             ThemeUtils.ParseColor(json.ReorderIconColor,
                                   "placementPriorityList.listEntries.reorderIconColor",
                                   ref errorMessages);
+        
+        public override string ToString(int indent = 0)
+        {
+            List<string> lines = [
+                $"backgroundColor: {BackgroundColor}",
+                $"outlineColor: {OutlineColor}",
+                $"outlineThickness: {OutlineThickness}",
+                $"cornerRadius: {CornerRadius}",
+                $"textColor: {TextColor}",
+                $"textSize: {TextSize}",
+                $"reorderIconColor: {ReorderIconColor}"
+            ];
+            lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+            return string.Join("\r\n", lines);
+        }
     }
 
     public readonly Color TitleColor;
@@ -618,6 +911,21 @@ public class PlacementPriorityListTheme : ElementTheme
             errorMessages.Add("placementPriorityList.titleSize must be positive");
         }
     }
+    
+    public override string ToString(int indent = 0)
+    {
+        List<string> lines = [
+            $"backgroundColor: {BackgroundColor}",
+            $"outlineColor: {OutlineColor}",
+            $"outlineThickness: {OutlineThickness}",
+            $"cornerRadius: {CornerRadius}",
+            $"titleColor: {TitleColor}",
+            $"titleSize: {TitleSize}",
+            $"listEntries:\r\n{ListEntries.ToString(indent + 2)}"
+        ];
+        lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+        return string.Join("\r\n", lines);
+    }
 }
 
 public class InstantNoteTheme
@@ -627,6 +935,17 @@ public class InstantNoteTheme
         public readonly Color FillColor = fill;
         public readonly Color OutlineColor = outline;
         public readonly double OutlineThickness = outlineThickness;
+        
+        public string ToString(int indent = 0)
+        {
+            List<string> lines = [
+                $"fillColor: {FillColor}",
+                $"outlineColor: {OutlineColor}",
+                $"outlineThickness: {OutlineThickness}",
+            ];
+            lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+            return string.Join("\r\n", lines);
+        }
     }
     
     public readonly Color FillColor;
@@ -666,6 +985,18 @@ public class InstantNoteTheme
             json.Selected.OutlineThickness != -1 ? json.Selected.OutlineThickness :
                 OutlineThickness);
     }
+    
+    public string ToString(int indent = 0)
+    {
+        List<string> lines = [
+            $"fillColor: {FillColor}",
+            $"outlineColor: {OutlineColor}",
+            $"outlineThickness: {OutlineThickness}",
+            $"selected:\r\n{Selected.ToString(indent + 2)}"
+        ];
+        lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+        return string.Join("\r\n", lines);
+    }
 }
 
 public class NonInstantNoteTheme
@@ -679,6 +1010,20 @@ public class NonInstantNoteTheme
         public readonly Color TailColor = tailFill;
         public readonly Color TailOutlineColor = tailOutline;
         public readonly double TailOutlineThickness = tailOutlineThickness;
+        
+        public string ToString(int indent = 0)
+        {
+            List<string> lines = [
+                $"fillColor: {FillColor}",
+                $"outlineColor: {OutlineColor}",
+                $"outlineThickness: {OutlineThickness}",
+                $"tailColor: {TailColor}",
+                $"tailOutlineColor: {TailOutlineColor}",
+                $"tailOutlineThickness: {TailOutlineThickness}"
+            ];
+            lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+            return string.Join("\r\n", lines);
+        }
     }
     
     public readonly Color FillColor;
@@ -747,6 +1092,21 @@ public class NonInstantNoteTheme
             json.Selected.OutlineThickness != -1 ?
                 json.Selected.OutlineThickness : OutlineThickness);
     }
+    
+    public string ToString(int indent = 0)
+    {
+        List<string> lines = [
+            $"fillColor: {FillColor}",
+            $"outlineColor: {OutlineColor}",
+            $"outlineThickness: {OutlineThickness}",
+            $"tailColor: {TailColor}",
+            $"tailOutlineColor: {TailOutlineColor}",
+            $"tailOutlineThickness: {TailOutlineThickness}",
+            $"selected:\r\n{Selected.ToString(indent + 2)}"
+        ];
+        lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+        return string.Join("\r\n", lines);
+    }
 }
 
 public class NoteThemes(NoteThemesJson json, ref List<string> errorMessages)
@@ -778,6 +1138,18 @@ public class NoteThemes(NoteThemesJson json, ref List<string> errorMessages)
                 errorMessages.Add("notes.common.flagTextSize must be positive");
             }
         }
+        
+        public string ToString(int indent = 0)
+        {
+            List<string> lines = [
+                $"flagTextColor: {FlagTextColor}",
+                $"flagTextOutlineColor: {FlagTextOutlineColor}",
+                $"flagTextOutlineThickness: {FlagTextOutlineThickness}",
+                $"flagTextSize: {FlagTextSize}"
+            ];
+            lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+            return string.Join("\r\n", lines);
+        }
     }
     
     public readonly CommonTheme Common = new(json.Common, ref errorMessages);
@@ -788,12 +1160,32 @@ public class NoteThemes(NoteThemesJson json, ref List<string> errorMessages)
                                                      ref errorMessages);
     public readonly InstantNoteTheme Freestyle = new(json.Freestyle, "notes.freestyle",
                                                      ref errorMessages);
-    public readonly InstantNoteTheme Camera = new (json.Camera, "notes.camera", ref errorMessages);
     public readonly NonInstantNoteTheme Mash = new(json.Mash, "notes.mash", ref errorMessages);
+    public readonly InstantNoteTheme Camera = new (json.Camera, "notes.camera", ref errorMessages);
     public readonly NonInstantNoteTheme Cop1 = new(json.Cop1, "notes.cop1", ref errorMessages);
     public readonly NonInstantNoteTheme Cop2 = new(json.Cop2, "notes.cop2", ref errorMessages);
     public readonly NonInstantNoteTheme Cop3 = new(json.Cop3, "notes.cop3", ref errorMessages);
     public readonly NonInstantNoteTheme Cop4 = new(json.Cop4, "notes.cop4", ref errorMessages);
+    
+    public string ToString(int indent = 0)
+    {
+        List<string> lines = [
+            $"common:\r\n{Common.ToString(indent + 2)}",
+            $"single:\r\n{Single.ToString(indent + 2)}",
+            $"spike:\r\n{Spike.ToString(indent + 2)}",
+            $"hold:\r\n{Hold.ToString(indent + 2)}",
+            $"double:\r\n{Double.ToString(indent + 2)}",
+            $"freestyle:\r\n{Freestyle.ToString(indent + 2)}",
+            $"mash:\r\n{Mash.ToString(indent + 2)}",
+            $"camera:\r\n{Camera.ToString(indent + 2)}",
+            $"cop1:\r\n{Cop1.ToString(indent + 2)}",
+            $"cop2:\r\n{Cop2.ToString(indent + 2)}",
+            $"cop3:\r\n{Cop3.ToString(indent + 2)}",
+            $"cop4:\r\n{Cop4.ToString(indent + 2)}"
+        ];
+        lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+        return string.Join("\r\n", lines);
+    }
 }
 
 public class DebugInfoTheme
@@ -837,6 +1229,21 @@ public class DebugInfoTheme
                 "debugInfo.noteTimestampTextOutlineThickness cannot be negative");
         }
     }
+    
+    public string ToString(int indent = 0)
+    {
+        List<string> lines = [
+            $"overlayBackgroundColor: {OverlayBackgroundColor}",
+            $"overlayTextColor: {OverlayTextColor}",
+            $"overlayTextSize: {OverlayTextSize}",
+            $"noteTimestampTextColor: {NoteTimestampTextColor}",
+            $"noteTimestampTextOutlineColor: {NoteTimestampTextOutlineColor}",
+            $"noteTimestampTextOutlineThickness: {NoteTimestampTextOutlineThickness}",
+            $"noteTimestampTextSize: {NoteTimestampTextSize}"
+        ];
+        lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+        return string.Join("\r\n", lines);
+    }
 }
 
 public class ColorTheme(ColorThemeJson json, ref List<string> errorMessages)
@@ -851,4 +1258,21 @@ public class ColorTheme(ColorThemeJson json, ref List<string> errorMessages)
         new(json.PlacementPriorityList, ref errorMessages);
     public readonly NoteThemes Notes = new(json.NoteThemes, ref errorMessages);
     public readonly DebugInfoTheme DebugInfo = new(json.DebugInfo, ref errorMessages);
+    
+    public string ToString(int indent = 0)
+    {
+        List<string> lines = [
+            $"mainWindow:\r\n{MainWindow.ToString(indent + 2)}",
+            $"topBar:\r\n{TopBar.ToString(indent + 2)}",
+            $"dialogs:\r\n{Dialogs.ToString(indent + 2)}",
+            $"quickInfo:\r\n{QuickInfo.ToString(indent + 2)}",
+            $"noteViewer:\r\n{NoteViewer.ToString(indent + 2)}",
+            $"gamePreview:\r\n{GamePreview.ToString(indent + 2)}",
+            $"placementPriorityList:\r\n{PlacementPriorityList.ToString(indent + 2)}",
+            $"notes:\r\n{Notes.ToString(indent + 2)}",
+            $"debugInfo:\r\n{DebugInfo.ToString(indent + 2)}"
+        ];
+        lines = lines.Select(line => $"{new string(' ', indent)}{line}").ToList();
+        return string.Join("\r\n", lines);
+    }
 }

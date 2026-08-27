@@ -50,7 +50,7 @@
         "right"
     ],
     "placeTopLane": [
-        "d2"
+        "d3"
     ],
     "placeBottomLane": [
         "d4"
@@ -59,7 +59,7 @@
         "d5"
     ],
     "placeCenterLane": [
-        "d3"
+        "d6"
     ],
     "nudgeForward": [
         "alt+s"
@@ -80,7 +80,7 @@
         "ctrl+shift+a"
     ],
     "selectAllTopLane": [
-        "alt+d2"
+        "alt+d3"
     ],
     "selectAllBottomLane": [
         "alt+d4"
@@ -89,7 +89,7 @@
         "alt+d5"
     ],
     "selectAllCenterLane": [
-        "alt+d3"
+        "alt+d6"
     ],
     "selectAllMarkers": [
         "alt+q"

@@ -506,8 +506,8 @@ public class ColorThemeJson
         CornerRadius = 0,
         SelectDragColor = "#FFFFFF64",
         DeleteDragColor = "#FF000064",
-        NoteDirectionArrowColor = "#FBB7DE96",
-        NoteDirectionArrowScale = 1.0,
+        // NoteDirectionArrowColor = "#FBB7DE96",
+        // NoteDirectionArrowScale = 1.0,
         NoteLanes = new()
         {
             TopColor = "#9C999C19",

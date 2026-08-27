@@ -74,7 +74,7 @@ public partial class ChartMetadataDialog : BaseDialog<Chart.MetadataContainer>
             "Star"       => DifficultySlot.STAR,
             _ => _difficultySlot
         };
-        Trace.WriteLine($"Difficulty slot changed to {newSelection}");
+        
         if (DifficultyNameBox != null)
         {
             if (_difficultySlot == DifficultySlot.STAR ||

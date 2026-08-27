@@ -36,6 +36,8 @@ public class AddNotesCommand(List<NoteBase> notes) : ICommand
             Chart.RemoveNote(note);
         }
     }
+
+    public override string ToString() => $"Add {notes.Count} note(s)";
 }
 
 public class PasteNotesCommand : ICommand
@@ -121,6 +123,9 @@ public class PasteNotesCommand : ICommand
             Chart.AddNote(note);
         }
     }
+
+    public override string ToString() => $"Paste {_addedNotes.Count} note(s) (overwrites " +
+                                         $"{_removedNotes.Count} existing note(s))";
 }
 
 public class DeleteNotesCommand(List<NoteBase> notes) : ICommand
@@ -146,6 +151,8 @@ public class DeleteNotesCommand(List<NoteBase> notes) : ICommand
             Chart.AddNote(note);
         }
     }
+    
+    public override string ToString() => $"Delete {notes.Count} note(s)";
 }
 
 public class UpdateNotesCommand(List<NoteBase> oldNotes, List<NoteBase> newNotes,
@@ -196,6 +203,9 @@ public class UpdateNotesCommand(List<NoteBase> oldNotes, List<NoteBase> newNotes
             Chart.AddNote(note);
         }
     }
+    
+    public override string ToString() => $"Update {newNotes.Count} note(s), " +
+                                         $"transferSelected = {transferSelected}";
 }
 
 public class MirrorNotesCommand(List<NoteBase> notes) : ICommand
@@ -231,6 +241,8 @@ public class MirrorNotesCommand(List<NoteBase> notes) : ICommand
             note.Lane = NoteLane.TOP;
         }
     }
+    
+    public override string ToString() => $"Mirror {notes.Count} note(s)";
 }
 
 public class SetFlagsCommand(char flag, bool newValue, List<(NoteBase, bool)> notes) : ICommand
@@ -292,6 +304,9 @@ public class SetFlagsCommand(char flag, bool newValue, List<(NoteBase, bool)> no
             }
         }   
     }
+
+    public override string ToString() => $"Set flag {char.ToUpper(flag)} to {newValue} on " +
+                                         $"{notes.Count} note(s)";
 }
 
 public class SetNotesCopIdCommand : ICommand
@@ -326,6 +341,10 @@ public class SetNotesCopIdCommand : ICommand
         }
         ChartBuilder.SelectedNotes = _oldNotes;
     }
+
+    // all the new notes will have the same cop id
+    public override string ToString() => $"Set cop ID to {_newNotes[0].CopId} on " +
+                                         $"{_newNotes.Count} note(s)";
 
     /// <summary>
     /// Attempts to return a copy of a note with a new cop id. When converting non-cop notes to cop
@@ -412,7 +431,11 @@ public class ReorderNotesCommand(List<(NoteBase, int)> indexedOldOrder, List<Not
         Chart.SetNoteOrder(_oldOrder);
         App.MainWindowViewModel.UpdatePriorityListEntries(indexedOldOrder);
         Trace.WriteLine(string.Join(',', indexedOldOrder.Select(n => n.Item1.Lane)));
-    }   
+    }
+    
+    public override string ToString() =>
+        $"Reorder {_oldOrder.Count} note(s) to order " +
+        $"[{string.Join(',', _indexedNewOrder.Select(n => n.Item1.Lane))}]";
 }
 
 public class NudgeNotesCommand(List<(NoteBase, int, int)> nudges) : ICommand
@@ -456,6 +479,8 @@ public class NudgeNotesCommand(List<(NoteBase, int, int)> nudges) : ICommand
         }
         App.MainWindowViewModel.UpdatePriorityListEntries(Chart.GetNotesAtCurrentTime());
     }
+    
+    public override string ToString() => $"Nudge {nudges.Count} note(s) by {nudges[0].Item2} ms";
 }
 
 public class UpdateMarkerCommand(long time, int type) : ICommand
@@ -474,4 +499,6 @@ public class UpdateMarkerCommand(long time, int type) : ICommand
         // this stays the same because AddOrUpdateMarker toggles colors rather than setting them
         Chart.AddOrUpdateMarker(time, type == 0, type == 1, type == 2);
     }
+    
+    public override string ToString() => $"Update marker at {time} (color {type})";
 }

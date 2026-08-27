@@ -17,6 +17,8 @@ public class AddLabelCommand(long time, string text) : ICommand
     {
         Chart.RemoveLabel(_label);
     }
+    
+    public override string ToString() => $"{Name} at {time} ({text})";
 }
 
 public class RemoveLabelCommand(Chart.Label label) : ICommand
@@ -34,6 +36,8 @@ public class RemoveLabelCommand(Chart.Label label) : ICommand
     {
         Chart.AddLabel(label);
     }
+    
+    public override string ToString() => $"{Name} at {label.Time} ({label.Text})";
 }
 
 public class EditLabelCommand(Chart.Label oldLabel, string newText) : ICommand
@@ -55,4 +59,7 @@ public class EditLabelCommand(Chart.Label oldLabel, string newText) : ICommand
         Chart.RemoveLabel(_newLabel);
         Chart.AddLabel(oldLabel);
     }
+    
+    public override string ToString() => $"{Name} at {oldLabel.Time} ({oldLabel.Text} -> " +
+                                         $"{newText})";
 }
