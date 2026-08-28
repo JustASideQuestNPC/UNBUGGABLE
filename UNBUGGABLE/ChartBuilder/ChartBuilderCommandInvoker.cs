@@ -19,12 +19,14 @@ public static class ChartBuilderCommandInvoker
         RedoStackNames = RedoStack.ToList().Select(c => c.Name).ToList()
     };
     
+    private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+    
     private static readonly Stack<ICommand> CommandStack = new();
     private static readonly Stack<ICommand> RedoStack = new();
 
     public static void Reset()
     {
-        Trace.WriteLine("Clearing command stack");
+        Logger.Debug("Clearing command stacks");
         CommandStack.Clear();
         RedoStack.Clear();
     }
@@ -34,7 +36,7 @@ public static class ChartBuilderCommandInvoker
         CommandStack.Push(command);
         RedoStack.Clear();
         command.Execute();
-        Trace.WriteLine($"Executed command: {command}");
+        Logger.Debug("Executed command: {0}", command);
         if (command.UpdatesPriorityList)
         {
             App.MainWindowViewModel.UpdatePriorityListEntries();
@@ -51,7 +53,7 @@ public static class ChartBuilderCommandInvoker
         var command = CommandStack.Pop();
         command.Undo();
         RedoStack.Push(command);
-        Trace.WriteLine($"Undid command: {command}");
+        Logger.Debug("Undid command: {0}", command);
         if (command.UpdatesPriorityList)
         {
             App.MainWindowViewModel.UpdatePriorityListEntries();
@@ -68,7 +70,7 @@ public static class ChartBuilderCommandInvoker
         var command = RedoStack.Pop();
         command.Execute();
         CommandStack.Push(command);
-        Trace.WriteLine($"Redid command: {command}");
+        Logger.Debug("Redid command: {0}", command);
         if (command.UpdatesPriorityList)
         {
             App.MainWindowViewModel.UpdatePriorityListEntries();

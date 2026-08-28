@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Authentication.ExtendedProtection;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Avalonia.Controls;
@@ -44,16 +45,34 @@ public static class Config
 
     public static string KeybindFilePath { get; set; } = Path.Combine(Environment.CurrentDirectory,
                                                                       "configs/keybinds.json");
+    
+    private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
     private static string ThemesFolderPath { get; set; } =
         Path.Combine(Environment.CurrentDirectory, "themes");
 
     private static readonly Dictionary<string, ColorTheme> ColorThemes = new();
+
+    public static void ApplyCurrentTheme()
+    {
+        if (ColorThemes.TryGetValue(Settings.ColorTheme, out var theme))
+        {
+            ThemeManager.ApplyTheme(theme);
+            Logger.Debug("applied theme \"{0}\"", Settings.ColorTheme);
+        }
+        else
+        {
+            ThemeManager.ApplyTheme(ColorThemes["default"]);
+            Logger.Warn("color theme \"{0}\" does not exist, falling back to default",
+                        Settings.ColorTheme);
+        }
+    }
     
     /// <summary>
-    /// Loads and parses user settings and color themes.
+    /// Checks whether the settings and keybinds files need to be updated, then loads the settings
+    /// file. This <i>does not</i> apply the current color theme.
     /// </summary>
-    public static void InitialLoadAllConfigFiles()
+    public static void CheckConfigFileUpdate()
     {
         // updatedConfig and updatedKeybinds are temporary files used for preserving existing
         // settings after an update
@@ -92,13 +111,11 @@ public static class Config
             
             File.Delete(updatedKeybindsPath);
         }
-        
-        TryReloadConfig(false);
     }
 
-    public static void TryReloadConfig(bool mainWindowInitialized = true)
+    public static void TryReloadAllConfigs()
     {
-        Trace.WriteLine($"\n-- Reloading Configs --");
+        Logger.Info("-- Reloading Configs --");
         
         var loadError = !TryLoadColorThemes();
         if (!loadError)
@@ -112,29 +129,17 @@ public static class Config
 
         // load errors and some other things are skipped on the first load -- without this, it'll
         // try to spawn ui components that can't exist and the entire thing will crash and burn
-        if (mainWindowInitialized)
+        App.MainWindowViewModel.SliderIncrement = Settings.SliderIncrement;
+        if (loadError)
         {
-            App.MainWindowViewModel.SliderIncrement = Settings.SliderIncrement;
-            if (loadError)
-            {
-                LoadError = true;
-                // line break between the end of config loading and everything else
-                Trace.WriteLine("\n");
-                return;
-            }
-        }
-
-        if (ColorThemes.TryGetValue(Settings.ColorTheme, out var theme))
-        {
-            ThemeManager.ApplyTheme(theme);
-            Trace.WriteLine($"applied theme \"{Settings.ColorTheme}\"\n{theme.ToString()}");
-        }
-        else
-        {
+            LoadError = true;
+            
             ThemeManager.ApplyTheme(ColorThemes["default"]);
-            Trace.WriteLine($"Color theme \"{Settings.ColorTheme}\" does not exist, falling back " +
-                            $"to default.\r\n{ColorThemes["default"].ToString()}");
+            Logger.Error("Config loading failed, falling back to default color theme");
+            return;
         }
+        
+        ApplyCurrentTheme();
 
         if (Chart.SongLoaded)
         {
@@ -143,10 +148,286 @@ public static class Config
         
         LoadError = false;
     }
-
-    private static bool TryLoadKeybinds()
+    
+    public static bool TryLoadSettings()
     {
-        Trace.WriteLine($"\n-- Loading Keybinds from \"{KeybindFilePath}\" --");
+        Logger.Info("Loading settings from \"{0}\"", ConfigFilePath);
+        
+        var loadError = false;
+        try
+        {
+            var settings = JsonSerializer.Deserialize<Settings>(File.ReadAllText(ConfigFilePath));
+            if (settings != null)
+            {
+                if (settings.MinZoom <= 0)
+                {
+                    Logger.Warn("min zoom must be > 0");
+                    settings.MinZoom = 0.5;
+                    loadError = true;
+                }
+
+                if (settings.MaxZoom <= 0)
+                {
+                    Logger.Warn("max zoom must be > 0");
+                    settings.MaxZoom = 7.5;
+                    loadError = true;
+                }
+
+                if (settings.MinZoom > settings.MaxZoom)
+                {
+                    Logger.Warn("min zoom must be <= max zoom");
+                    settings.MinZoom = 0.5;
+                    settings.MaxZoom = 7.5;
+                    loadError = true;
+                }
+
+                if (settings.ZoomIncrement == 0)
+                {
+                    Logger.Warn("zoom increment must be nonzero");
+                    settings.ZoomIncrement = 0.25;
+                    loadError = true;
+                }
+                
+                if (settings.QuickScrollBeats <= 0)
+                {
+                    Logger.Warn("quick scroll beats must be > 0");
+                    settings.QuickScrollBeats = 5;
+                    loadError = true;
+                }
+                
+                if (settings.SliderIncrement <= 0)
+                {
+                    Logger.Warn("slider increment must be > 0");
+                    settings.SliderIncrement = 5;
+                    loadError = true;
+                }
+
+                if (settings.BeatSnaps.Count == 0)
+                {
+                    Logger.Warn("no beat snaps");
+                    settings.BeatSnaps = [1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 20, 5, 9, 11, 13];
+                    loadError = true;
+                }
+
+                if (settings.BeatSnaps.Any(snap => snap <= 0))
+                {
+                    Logger.Warn("beat snaps must be > 0");
+                    settings.BeatSnaps = [1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 20, 5, 9, 11, 13];
+                    loadError = true;
+                }
+
+                settings.BeatSnaps = settings.BeatSnaps.Distinct().ToList();
+                // TONS of things in the chart code depend on the first beat snap being one beat
+                if (settings.BeatSnaps[0] != 1)
+                {
+                    settings.BeatSnaps.Remove(1);
+                    settings.BeatSnaps.Insert(0, 1);
+                }
+
+                var invalidLaneOrder = (settings.LaneOrder.Count != 4 ||
+                                        settings.LaneOrder.Count !=
+                                        settings.LaneOrder.Distinct().Count());
+
+                if (!invalidLaneOrder)
+                {
+                    bool hasTop = false, hasBottom = false, hasCamera = false, hasCenter = false;
+                    foreach (var lane in settings.LaneOrder)
+                    {
+                        switch (lane)
+                        {
+                            case "top":
+                                hasTop = true;
+                                break;
+                            case "bottom":
+                                hasBottom = true;
+                                break;
+                            case "camera":
+                                hasCamera = true;
+                                break;
+                            case "center":
+                                hasCenter = true;
+                                break;
+                        }
+                    }
+                    
+                    invalidLaneOrder = !hasTop || !hasBottom || !hasCamera || !hasCenter;
+                }
+
+                if (invalidLaneOrder)
+                {
+                    Logger.Warn("Invalid lane order");
+                    settings.LaneOrder = ["top", "center", "bottom", "camera"];
+                    loadError = true;
+                }
+
+                if (settings.JumpTargets.Count == 0)
+                {
+                    Logger.Warn("No jump targets.");
+                    settings.JumpTargets = [
+                        "labels",
+                        "bpmChanges",
+                        "firstNote",
+                        "lastNote",
+                        "chartStart",
+                        "chartEnd"
+                    ];
+                    loadError = true;
+                }
+                else
+                {
+                    settings.JumpTargets = settings.JumpTargets.Distinct().ToList();
+                    var invalidJumpTarget = false;
+                    List<string> allowedTargets = [
+                        "labels",
+                        "bpmChanges",
+                        "firstNote",
+                        "lastNote",
+                        "secondLastNote",
+                        "firstMarker",
+                        "lastMarker",
+                        "breakpoint"
+                    ];
+                    
+                    foreach (var target in settings.JumpTargets)
+                    {
+                        if (!allowedTargets.Contains(target))
+                        {
+                            invalidJumpTarget = true;
+                            Logger.Warn($"Invalid jump target \"{target}\"");
+                        }
+                    }
+
+                    if (invalidJumpTarget)
+                    {
+                        settings.JumpTargets = [
+                            "labels",
+                            "bpmChanges",
+                            "firstNote",
+                            "lastNote",
+                            "chartStart",
+                            "chartEnd"
+                        ];
+                        loadError = true;
+                    }
+                }
+
+                if (settings.PasteBehavior != "none" && settings.PasteBehavior != "notes" &&
+                    settings.PasteBehavior != "region")
+                {
+                    Logger.Warn("Invalid paste overwrite setting: must be \"none\", " +
+                                "\"notes\", or \"region\".");
+                    settings.PasteBehavior = "region";
+                    loadError = true;
+                }
+
+                if (settings.AutoSelectBehavior != "none" &&
+                    settings.AutoSelectBehavior != "pasted" && settings.AutoSelectBehavior != "all")
+                {
+                    Logger.Warn("Invalid auto select setting: must be \"none\", " +
+                                "\"pasted\", or \"all\".");
+                    settings.AutoSelectBehavior = "pasted";
+                    loadError = true;
+                }
+
+                if (settings.HoldTailSelect != "first" && settings.HoldTailSelect != "last" &&
+                    settings.HoldTailSelect != "all" && settings.HoldTailSelect != "none")
+                {
+                    Logger.Warn("Invalid hold tail select settings: must be \"first\", " +
+                                "\"last\", \"all\", or \"none\"");
+                    settings.HoldTailSelect = "all";
+                    loadError = true;
+                }
+
+                if (settings.QuickScrollBeats <= 0)
+                {
+                    Logger.Warn("Quick scroll beats must be > 0");
+                    settings.QuickScrollBeats = 5;
+                    loadError = true;
+                }
+
+                if (settings.SliderIncrement <= 0)
+                {
+                    Logger.Warn("Slider increment must be > 0");
+                    settings.SliderIncrement = 5;
+                    loadError = true;
+                }
+
+                if (settings.HoldExtensionSearchThreshold < 0)
+                {
+                    Logger.Warn("Hold extension search threshold must be >= 0");
+                    settings.HoldExtensionSearchThreshold = 2;
+                    loadError = true;
+                }
+
+                if (settings.DefaultDifficulty != "beginner" &&
+                    settings.DefaultDifficulty != "normal" &&
+                    settings.DefaultDifficulty != "hard" &&
+                    settings.DefaultDifficulty != "expert" &&
+                    settings.DefaultDifficulty != "unbeatable" &&
+                    settings.DefaultDifficulty != "UNBEATABLE" &&
+                    settings.DefaultDifficulty != "star")
+                {
+                    Logger.Warn("Invalid default difficulty: Should be \"beginner\"," +
+                                "\"normal\", \"hard\", \"expert\", \"UNBEATABLE\", or" +
+                                "\"star\"");
+                    settings.DefaultDifficulty = "beginner";
+                    loadError = true;
+                }
+                else
+                {
+                    settings.DefaultDifficulty = settings.DefaultDifficulty.ToLower();
+                }
+
+                Settings = settings;
+                Logger.Info("Loaded settings:");
+            }
+            else
+            {
+                Logger.Error("Could not parse config: file is empty.");
+                loadError = true;
+            }
+        }
+        catch (JsonException e)
+        {
+            Logger.Error(e, "JSON error while parsing config");
+            loadError = true;
+        }
+        // Settings.PrintSettings();
+
+        // look for your custom songs directory
+        var gameDataDirectory = Path.GetFullPath(
+            "../LocalLow/D-CELL GAMES/UNBEATABLE",
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+        CustomSongsDirectory = (Directory.Exists(Path.Combine(gameDataDirectory, "CustomSongs"))
+            ? Path.Combine(gameDataDirectory, "CustomSongs")
+            : Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+
+        // breakpoints also require stefy's practice mod to be installed
+        if (Settings.EnableBreakpoints)
+        {
+            PracticeModConfigPath = Path.Combine(gameDataDirectory, "practice-mode-settings.txt");
+            if (File.Exists(PracticeModConfigPath))
+            {
+                Logger.Info("Found Practice Mod, enabling breakpoints.");
+                PracticeModInstalled = true;
+            }
+            else
+            {
+                Logger.Warn("Install Practice Mod to enable breakpoints.");
+                PracticeModInstalled = false;
+            }
+        }
+
+        if (!loadError)
+        {
+            Logger.Info("Config loaded successfully:\r\n{0}", Settings.ToString());
+        }
+        return !loadError;
+    }
+
+    public static bool TryLoadKeybinds()
+    {
+        Logger.Info("Loading keybinds from \"{0}\"", KeybindFilePath);
         
         try
         {
@@ -226,7 +507,7 @@ public static class Config
         }
         catch (JsonException e)
         {
-            Trace.WriteLine($"JSON parse error: {e.Message}");
+            Logger.Error(e, "JSON error while parsing keybinds");
             return false;
         }
 
@@ -298,288 +579,11 @@ public static class Config
             new EmergencyReloadAction(Keybinds.EmergencyReload)
         ];
 
-        Trace.WriteLine("Keybinds loaded successfully!");
+        Logger.Info("Keybinds loaded successfully!");
         return true;
     }
 
-    private static bool TryLoadSettings()
-    {
-        Trace.WriteLine($"\n-- Loading Settings from \"{ConfigFilePath}\" --");
-        
-        var loadError = false;
-        try
-        {
-            var settings = JsonSerializer.Deserialize<Settings>(File.ReadAllText(ConfigFilePath));
-            if (settings != null)
-            {
-                if (settings.MinZoom <= 0)
-                {
-                    Trace.WriteLine("min zoom must be > 0");
-                    settings.MinZoom = 0.5;
-                    loadError = true;
-                }
-
-                if (settings.MaxZoom <= 0)
-                {
-                    Trace.WriteLine("max zoom must be > 0");
-                    settings.MaxZoom = 7.5;
-                    loadError = true;
-                }
-
-                if (settings.MinZoom > settings.MaxZoom)
-                {
-                    Trace.WriteLine("min zoom must be <= max zoom");
-                    settings.MinZoom = 0.5;
-                    settings.MaxZoom = 7.5;
-                    loadError = true;
-                }
-
-                if (settings.ZoomIncrement == 0)
-                {
-                    Trace.WriteLine("zoom increment must be nonzero");
-                    settings.ZoomIncrement = 0.25;
-                    loadError = true;
-                }
-                
-                if (settings.QuickScrollBeats <= 0)
-                {
-                    Trace.WriteLine("quick scroll beats must be > 0");
-                    settings.QuickScrollBeats = 5;
-                    loadError = true;
-                }
-                
-                if (settings.SliderIncrement <= 0)
-                {
-                    Trace.WriteLine("slider increment must be > 0");
-                    settings.SliderIncrement = 5;
-                    loadError = true;
-                }
-
-                if (settings.BeatSnaps.Count == 0)
-                {
-                    Trace.WriteLine("no beat snaps");
-                    settings.BeatSnaps = [1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 20, 5, 9, 11, 13];
-                    loadError = true;
-                }
-
-                if (settings.BeatSnaps.Any(snap => snap <= 0))
-                {
-                    Trace.WriteLine("beat snaps must be > 0");
-                    settings.BeatSnaps = [1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 20, 5, 9, 11, 13];
-                    loadError = true;
-                }
-
-                settings.BeatSnaps = settings.BeatSnaps.Distinct().ToList();
-                // TONS of things in the chart code depend on the first beat snap being one beat
-                if (settings.BeatSnaps[0] != 1)
-                {
-                    settings.BeatSnaps.Remove(1);
-                    settings.BeatSnaps.Insert(0, 1);
-                }
-
-                var invalidLaneOrder = (settings.LaneOrder.Count != 4 ||
-                                        settings.LaneOrder.Count !=
-                                        settings.LaneOrder.Distinct().Count());
-
-                if (!invalidLaneOrder)
-                {
-                    bool hasTop = false, hasBottom = false, hasCamera = false, hasCenter = false;
-                    foreach (var lane in settings.LaneOrder)
-                    {
-                        switch (lane)
-                        {
-                            case "top":
-                                hasTop = true;
-                                break;
-                            case "bottom":
-                                hasBottom = true;
-                                break;
-                            case "camera":
-                                hasCamera = true;
-                                break;
-                            case "center":
-                                hasCenter = true;
-                                break;
-                        }
-                    }
-                    
-                    invalidLaneOrder = !hasTop || !hasBottom || !hasCamera || !hasCenter;
-                }
-
-                if (invalidLaneOrder)
-                {
-                    Trace.WriteLine("Invalid lane order");
-                    settings.LaneOrder = ["top", "center", "bottom", "camera"];
-                    loadError = true;
-                }
-
-                if (settings.JumpTargets.Count == 0)
-                {
-                    Trace.WriteLine("No jump targets.");
-                    settings.JumpTargets = [
-                        "labels",
-                        "bpmChanges",
-                        "firstNote",
-                        "lastNote",
-                        "chartStart",
-                        "chartEnd"
-                    ];
-                    loadError = true;
-                }
-                else
-                {
-                    settings.JumpTargets = settings.JumpTargets.Distinct().ToList();
-                    var invalidJumpTarget = false;
-                    List<string> allowedTargets = [
-                        "labels",
-                        "bpmChanges",
-                        "firstNote",
-                        "lastNote",
-                        "secondLastNote",
-                        "firstMarker",
-                        "lastMarker",
-                        "breakpoint"
-                    ];
-                    
-                    foreach (var target in settings.JumpTargets)
-                    {
-                        if (!allowedTargets.Contains(target))
-                        {
-                            invalidJumpTarget = true;
-                            Trace.WriteLine($"Invalid jump target \"{target}\"");
-                        }
-                    }
-
-                    if (invalidJumpTarget)
-                    {
-                        settings.JumpTargets = [
-                            "labels",
-                            "bpmChanges",
-                            "firstNote",
-                            "lastNote",
-                            "chartStart",
-                            "chartEnd"
-                        ];
-                        loadError = true;
-                    }
-                }
-
-                if (settings.PasteBehavior != "none" && settings.PasteBehavior != "notes" &&
-                    settings.PasteBehavior != "region")
-                {
-                    Trace.WriteLine("Invalid paste overwrite setting: must be \"none\", " +
-                                      "\"notes\", or \"region\".");
-                    settings.PasteBehavior = "region";
-                    loadError = true;
-                }
-
-                if (settings.AutoSelectBehavior != "none" &&
-                    settings.AutoSelectBehavior != "pasted" && settings.AutoSelectBehavior != "all")
-                {
-                    Trace.WriteLine("Invalid auto select setting: must be \"none\", " +
-                                      "\"pasted\", or \"all\".");
-                    settings.AutoSelectBehavior = "pasted";
-                    loadError = true;
-                }
-
-                if (settings.HoldTailSelect != "first" && settings.HoldTailSelect != "last" &&
-                    settings.HoldTailSelect != "all" && settings.HoldTailSelect != "none")
-                {
-                    Trace.WriteLine("Invalid hold tail select settings: must be \"first\", " +
-                                      "\"last\", \"all\", or \"none\"");
-                    settings.HoldTailSelect = "all";
-                    loadError = true;
-                }
-
-                if (settings.QuickScrollBeats <= 0)
-                {
-                    Trace.WriteLine("Quick scroll beats must be > 0");
-                    settings.QuickScrollBeats = 5;
-                    loadError = true;
-                }
-
-                if (settings.SliderIncrement <= 0)
-                {
-                    Trace.WriteLine("Slider increment must be > 0");
-                    settings.SliderIncrement = 5;
-                    loadError = true;
-                }
-
-                if (settings.HoldExtensionSearchThreshold < 0)
-                {
-                    Trace.WriteLine("Hold extension search threshold must be >= 0");
-                    settings.HoldExtensionSearchThreshold = 2;
-                    loadError = true;
-                }
-
-                if (settings.DefaultDifficulty != "beginner" &&
-                    settings.DefaultDifficulty != "normal" &&
-                    settings.DefaultDifficulty != "hard" &&
-                    settings.DefaultDifficulty != "expert" &&
-                    settings.DefaultDifficulty != "unbeatable" &&
-                    settings.DefaultDifficulty != "UNBEATABLE" &&
-                    settings.DefaultDifficulty != "star")
-                {
-                    Trace.WriteLine("Invalid default difficulty: Should be \"beginner\"," +
-                                    "\"normal\", \"hard\", \"expert\", \"UNBEATABLE\", or" +
-                                    "\"star\"");
-                    settings.DefaultDifficulty = "beginner";
-                    loadError = true;
-                }
-                else
-                {
-                    settings.DefaultDifficulty = settings.DefaultDifficulty.ToLower();
-                }
-
-                Settings = settings;
-                // Trace.WriteLine("Loaded settings:");
-                // Settings.PrintSettings();
-            }
-            else
-            {
-                Trace.WriteLine("Could not parse config: file is empty.");
-                loadError = true;
-            }
-        }
-        catch (JsonException e)
-        {
-            Trace.WriteLine($"JSON parse error: {e.Message}");
-            loadError = true;
-        }
-        // Settings.PrintSettings();
-
-        // look for your custom songs directory
-        var gameDataDirectory = Path.GetFullPath(
-            "../LocalLow/D-CELL GAMES/UNBEATABLE",
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
-        CustomSongsDirectory = (Directory.Exists(Path.Combine(gameDataDirectory, "CustomSongs"))
-            ? Path.Combine(gameDataDirectory, "CustomSongs")
-            : Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
-
-        // breakpoints also require stefy's practice mod to be installed
-        if (Settings.EnableBreakpoints)
-        {
-            PracticeModConfigPath = Path.Combine(gameDataDirectory, "practice-mode-settings.txt");
-            if (File.Exists(PracticeModConfigPath))
-            {
-                Trace.WriteLine("Found Practice Mod, enabling breakpoints.");
-                PracticeModInstalled = true;
-            }
-            else
-            {
-                Trace.WriteLine("Install Practice Mod to enable breakpoints.");
-                PracticeModInstalled = false;
-            }
-        }
-
-        if (!loadError)
-        {
-            Trace.WriteLine("Config loaded successfully!");
-        }
-        return !loadError;
-    }
-
-    private static bool TryLoadColorThemes()
+    public static bool TryLoadColorThemes()
     {
         List<string> errors = [];
         
@@ -588,7 +592,7 @@ public static class Config
             ColorThemes.Clear();
             foreach (var file in Directory.EnumerateFiles(ThemesFolderPath))
             {
-                Trace.WriteLine($"-- Loading color theme file \"{Path.GetFileName(file)}\" --");
+                Logger.Debug("Loading color theme file \"{0}\"", Path.GetFileName(file));
                 var themeName = Path.GetFileNameWithoutExtension(file);
                 try
                 {
@@ -601,22 +605,27 @@ public static class Config
                         
                         if (errors.Count > 0)
                         {
-                            Trace.WriteLine("Errors encountered while loading theme:");
+                            // Logger.Error("Errors encountered while loading theme:");
+
+                            var errorString = new StringBuilder();
                             foreach (var error in errors)
                             {
-                                Trace.WriteLine($"- {error}");
+                                errorString.Append($"- {error}\r\n");
                             }
+                            
+                            Logger.Error("Errors encountered while loading theme \"{0}\":\r\n{1}",
+                                         Path.GetFileName(file), errorString.ToString().Trim());
                         }
                         else
                         {
                             ColorThemes[themeName] = theme;
-                            Trace.WriteLine("Load successful!\n");
+                            Logger.Debug("Load successful!\n");
                         }
                     }
                 }
                 catch (JsonException e)
                 {
-                    Trace.WriteLine($"JSON parse error: {e.Message}");
+                    Logger.Error(e, "JSON error while parsing theme \"{0}\"", themeName);
                 }
             }
             
@@ -649,23 +658,23 @@ public static class Config
         {
             if (str == "")
             {
-                Trace.WriteLine(
-                    "Invalid keybind \"\" for input action \"{bindName\": keybind is empty");
+                Logger.Error("Invalid keybind \"\" for input action \"{0}\": keybind is empty",
+                             bindName);
                 return false;
             }
 
             var split = str.Split('+').ToList();
             if (split.Count > 4)
             {
-                Trace.WriteLine(
-                    $"Invalid keybind \"{str}\" for input action \"{{bindName\": too many keys");
+                Logger.Error("Invalid keybind \"\" for input action \"{0}\": too many keys",
+                             bindName);
                 return false;
             }
 
             if (split.Distinct().Count() != split.Count)
             {
-                Trace.WriteLine(
-                    $"Invalid keybind \"{str}\" for input action \"{{bindName\": duplicate keys");
+                Logger.Error("Invalid keybind \"\" for input action \"{0}\": duplicate keys",
+                             bindName);
                 return false;
             }
 
@@ -675,9 +684,8 @@ public static class Config
                 {
                     if (split[i] != "ctrl" && split[i] != "shift" && split[i] != "alt")
                     {
-                        Trace.WriteLine(
-                            $"Invalid keybind \"{str}\" for input action \"{{bindName\": invalid " +
-                            $"modifier");
+                        Logger.Error("Invalid keybind \"\" for input action \"{0}\": invalid " +
+                                     "modifier", bindName);
                         return false;
                     }
                 }
@@ -703,9 +711,8 @@ public static class Config
 
             if (!validPrimaryKey)
             {
-                Trace.WriteLine(
-                    $"Invalid keybind \"{str}\" for input action \"{{bindName\": invalid primary " +
-                    $"key");
+                Logger.Error("Invalid keybind \"\" for input action \"{0}\": invalid primary key",
+                             bindName);
                 return false;
             }
         }       

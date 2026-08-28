@@ -74,6 +74,21 @@ public static partial class Chart
         public string DifficultyName = "Beginner";
         public int DifficultyLevel = 0;
         public long ChartOffset = 0;
+
+        public override string ToString()
+        {
+            return $"""
+                    - Song name: {SongName}
+                    - Artist name: {ArtistName}
+                    - Cover artist name: {CoverArtistName}
+                    - Charter name: {CharterName}
+                    - Flavor text: {FlavorText}
+                    - Difficulty slot: {DifficultySlot}
+                    - Difficulty name: {DifficultyName}
+                    - Difficulty level: {DifficultyLevel}
+                    - Offset: {ChartOffset} ms
+                    """;
+        }
     }
     
     public static ChartDebugInfo DebugInfo => new()
@@ -164,10 +179,12 @@ public static partial class Chart
             
             _metadata = value;
             
+            Logger.Info("updated chart metadata:\n{0}", _metadata.ToString());
+            
             if (canSave)
             {
                 ChartFileName = GetChartFileName();
-                Trace.WriteLine($"chart file name: \"{ChartFileName}\"");
+                Logger.Info("chart file name: \"{0}\"", ChartFileName);
             }
             
             UpdateWindowTitle();
@@ -206,7 +223,6 @@ public static partial class Chart
             if (!Playing)
             {
                 App.MainWindowViewModel.UpdatePriorityListEntries(GetNotesAtCurrentTime());
-                // _songPlayer.Time = value + AdjustedOffset;
             }
         }
     }
@@ -234,7 +250,7 @@ public static partial class Chart
             if (SongLoaded)
             {
                 _mediaPlayer.Volume = value;
-                //Trace.WriteLine($"song volume changed to {value}");
+                Logger.Debug("song volume changed to {0}", value);
             }
         }
     }
@@ -247,7 +263,7 @@ public static partial class Chart
         {
             _sfxVolume = value;
             SfxEngine.Volume = value / 100.0f;
-            //Trace.WriteLine($"sfx volume changed to {value}");
+            Logger.Debug("sfx volume changed to {0}", value);
         }
     }
     
@@ -260,7 +276,7 @@ public static partial class Chart
             {
                 _mediaPlayer.SetRate(value / 100.0f);
             }
-            // Trace.WriteLine($"Play speed changed to {value}");
+            Logger.Debug("song volume changed to {0}", value);
         }
     }
 
@@ -279,7 +295,9 @@ public static partial class Chart
             }
         }
     }
-
+    
+    private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+    
     private static LibVLC _libVlc = null!;
     private static MediaPlayer _mediaPlayer = null!;
 
@@ -291,7 +309,6 @@ public static partial class Chart
     // used for keeping track of the song's actual play position
     private static Stopwatch _stopwatch = null!;
 
-    private static long _lastSongTime = 0;
     private static double _lastStopwatchTime = 0;
     
     private static int _beatSnapIndex = 0;
@@ -348,7 +365,7 @@ public static partial class Chart
             if (e is FileNotFoundException or DirectoryNotFoundException)
             {
                 _hitSound = null;
-                Trace.WriteLine(
+                Logger.Warn(
                     "Hit sound (Assets/hitSound.wav) not found. Hit sounds are disabled.");
             }
             else
@@ -360,25 +377,6 @@ public static partial class Chart
         _stopwatch = new Stopwatch();
         _stopwatch.Start();
     }
-
-    public static async void AsyncInit()
-    {
-        try
-        {
-            var hitSoundMedia =
-                new Media(_libVlc,
-                          Path.Combine(Environment.CurrentDirectory, "Assets/hitSound.wav"));
-            _hitSoundMediaPlayer.Media = hitSoundMedia;
-            await hitSoundMedia.Parse();
-        }
-        catch (FileNotFoundException)
-        {
-            _hitSoundMediaPlayer.Media = null;
-            Trace.WriteLine(
-                "Hit sound (Assets/hitSound.wav) not found. Hit sounds are disabled.");
-        }
-    }
-
     public static void PlayOrPauseSong()
     {
         if (SongLoaded)
@@ -405,7 +403,8 @@ public static partial class Chart
         BeatSnap = Config.Settings.BeatSnaps[_beatSnapIndex];
         App.MainWindow.BeatSnapText.Text = BeatSnap.ToString();
         _currentSnapLineSet = SnapLineSets[BeatSnap];
-        Trace.WriteLine($"Beat snap: {BeatSnap} (index {_beatSnapIndex})");
+        
+        Logger.Debug("beat snap changed to {0} (index {1})", BeatSnap, _beatSnapIndex);
         SetTimeToNearestSnap();
     }
     
@@ -560,19 +559,9 @@ public static partial class Chart
             {
                 _mediaPlayer.SeekTo(TimeSpan.FromMilliseconds(CurrentTimeRaw + AdjustedOffset));
                 _mediaPlayer.Play();
-                // CurrentTime = AdjustedOffset;
             }
             else
             {
-                // resynchronize with the audio when possible
-                // if (_mediaPlayer.Time != _lastSongTime)
-                // {
-                //     if (_lastSongTime != -1)
-                //     {
-                //         CurrentTimeRaw = _mediaPlayer.Time - AdjustedOffset;
-                //     }
-                //     _lastSongTime = _mediaPlayer.Time;
-                // }
                 if (CurrentTimeRaw > Length)
                 {
                     Playing = false;
@@ -594,14 +583,6 @@ public static partial class Chart
                 }
             }
         }
-
-        // _temp += _stopwatch.ElapsedMilliseconds - _lastStopwatchTime;
-        //
-        // if (_temp >= 500)
-        // {
-        //     _temp -= 500;
-        //     SfxEngine.Play(_hitSound);
-        // }
         
         _lastStopwatchTime = _stopwatch.ElapsedMilliseconds;
         
@@ -636,7 +617,7 @@ public static partial class Chart
             return (false, result.Item2);
         }
         
-        Trace.WriteLine("Creating chart from audio file...");
+        Logger.Info("Creating chart from audio file...");
         
         App.MainWindow.PlaySpeedSlider.Value = PlaySpeed;
 
@@ -645,11 +626,11 @@ public static partial class Chart
         if (Config.Settings.UseAudioFileMetadata)
         {
             var tFile = TagLib.File.Create(path);
-            Trace.WriteLine($"""
-                             File metadata:
-                                 Title: {tFile.Tag.Title}
-                                 Artist: {tFile.Tag.FirstPerformer}
-                             """);
+            Logger.Info("""
+                        Audio metadata:
+                            Title: {0}
+                            Artist: {1}
+                        """, tFile.Tag.Title, tFile.Tag.FirstPerformer);
         
             if (tFile.Tag.Title != "")
             {
@@ -723,10 +704,10 @@ public static partial class Chart
         _canAutosave = false;
         _jumpTargetsOutOfDate = true;
         
-        Trace.WriteLine($"Loading chart file: {path}");
+        Logger.Info("Loading chart file \"{0}\"", path);
         if (!File.Exists(path))
         {
-            Trace.WriteLine("File not found.");
+            Logger.Error("File not found.");
             return (false, "File not found.");
         }
         
@@ -749,21 +730,21 @@ public static partial class Chart
             switch (line)
             {
                 case "[General]":
-                    Trace.WriteLine("Parsing general data...");
+                    Logger.Debug("Parsing general data...");
                     temp = TryParseGeneralChartData(chartData, i, folderPath, out audioPath,
                                                     out errorMessage);
                     break;
                 case "[Editor]":
-                    Trace.WriteLine("Parsing official editor data...");
+                    Logger.Debug("Parsing official editor data...");
                     temp = TryParseOfficialEditorData(chartData, i, out errorMessage);
                     break;
                 case "[UNBUGGABLE]":
-                    Trace.WriteLine("Parsing UNBUGGABLE data...");
+                    Logger.Debug("Parsing UNBUGGABLE data...");
                     temp = TryParseUnbuggableData(chartData, i, out lastEditorState,
                                                   out errorMessage);
                     break;
                 case "[Metadata]":
-                    Trace.WriteLine("Parsing metadata...");
+                    Logger.Debug("Parsing metadata...");
                     temp = TryParseMetadata(chartData, i, out errorMessage);
                     // see??? do you see how easy it would be to make the official editor save star
                     // charts correctly??? why would you not do this???
@@ -780,11 +761,11 @@ public static partial class Chart
                     break;
                 // there are also [Difficulty] and [Events] sections here but they do nothing
                 case "[TimingPoints]":
-                    Trace.WriteLine("Parsing timing points...");
+                    Logger.Debug("Parsing timing points...");
                     temp = TryParseTimingPoints(chartData, i, out errorMessage);
                     break;
                 case "[HitObjects]":
-                    Trace.WriteLine("Parsing hit objects (notes)...");
+                    Logger.Debug("Parsing hit objects (notes)...");
                     temp = TryParseHitObjects(chartData, i, out errorMessage);
                     break;
             }
@@ -823,7 +804,7 @@ public static partial class Chart
                     CurrentTimeRaw = time;
                 }
 
-                Trace.WriteLine(
+                Logger.Debug(
                     $"Restoring last editor state: {time} ms, snap {beatSnap}, {zoom}x zoom");
                 for (var i = 0; i < Config.Settings.BeatSnaps.Count; ++i)
                 {
@@ -864,6 +845,8 @@ public static partial class Chart
             _canAutosave = true;
             
             UpdateWindowTitle();
+            
+            Logger.Info("Chart loaded successfully.");
             return (true, "");
         }
         
@@ -880,37 +863,45 @@ public static partial class Chart
         await using var writer = await Utils.TryWaitForFileStream(path);
         if (writer == null)
         {
-            Trace.WriteLine("Save failed: file is not accessible");
+            Logger.Error("Save failed: file is not accessible");
             return false;
         }
         
+        Logger.Info("saving chart to \"{0}\"", path);
         writer.AutoFlush = true;
         await writer.WriteLineAsync("// Output from NPC's UNBUGGABLE editor\n" +
                                     "// based on TaroNuke's unity editor");
         
+        Logger.Debug("writing general chart data");
         await writer.WriteLineAsync("");
         await WriteGeneralChartData(writer);
         
+        Logger.Debug("writing official editor data");
         await writer.WriteLineAsync("");
         await WriteOfficialEditorData(writer);
         
+        Logger.Debug("writing unbuggable data");
         await writer.WriteLineAsync("");
         await WriteUnbuggableData(writer);
-        
+
+        Logger.Debug("writing metadata");   
         await writer.WriteLineAsync("");
         await WriteMetadata(writer);
         
         // for some reason there are just some random empty sections here (probably from osu)
         await writer.WriteLineAsync("\n[Difficulty]\n\n[Events]\n");
-        
+
+        Logger.Debug("writing timing points");
         await WriteTimingPoints(writer);
         
+        Logger.Debug("writing hit objects");   
         await writer.WriteLineAsync("");
         await WriteHitObjects(writer, false);
         
         UserData.LastOpenedChartFile = path;
         UnsavedChanges = false;
 
+        Logger.Info("Chart saved successfully.");
         return true;
     }
     
@@ -922,32 +913,41 @@ public static partial class Chart
         await using var writer = await Utils.TryWaitForFileStream(path);
         if (writer == null)
         {
-            Trace.WriteLine("Save failed: file is not accessible");
+            Logger.Error("Save failed: file is not accessible");
             return false;
         }
         
+        Logger.Info("saving chart to \"{0}\"", path);
         writer.AutoFlush = true;
         await writer.WriteLineAsync("// Output from NPC's UNBUGGABLE editor\n" +
-                                    "// based on TaroNuke's unity editor\n");
+                                    "// based on TaroNuke's unity editor");
         
+        Logger.Debug("writing general chart data");
         await writer.WriteLineAsync("");
         await WriteGeneralChartData(writer);
         
+        Logger.Debug("writing official editor data");
         await writer.WriteLineAsync("");
         await WriteOfficialEditorData(writer);
-        
+
+        Logger.Debug("writing metadata");   
         await writer.WriteLineAsync("");
         await WriteMetadata(writer);
         
-        await writer.WriteLineAsync("");
+        // for some reason there are just some random empty sections here (probably from osu)
+        await writer.WriteLineAsync("\n[Difficulty]\n\n[Events]\n");
+
+        Logger.Debug("writing timing points");
         await WriteTimingPoints(writer);
         
+        Logger.Debug("writing hit objects");   
         await writer.WriteLineAsync("");
-        await WriteHitObjects(writer, true);
+        await WriteHitObjects(writer, false);
         
         UserData.LastOpenedChartFile = path;
         UnsavedChanges = false;
 
+        Logger.Info("Chart saved successfully.");
         return true;
     }
 
@@ -1363,9 +1363,6 @@ public static partial class Chart
                 time = nextTime;
                 snapLineSet.Add((long)Math.Round(time));
             }
-            
-            // Trace.WriteLine(
-            //     $"Snap line set for snap value {snapValue} has {snapLineSet.Count} lines");
             SnapLineSets[snapValue] = snapLineSet;
         }
         
@@ -1422,8 +1419,6 @@ public static partial class Chart
         
         _jumpTargets = _jumpTargets.Distinct().ToList();
         _jumpTargets.Sort();
-
-        Trace.WriteLine($"Jump targets:\r\n{string.Join("\r\n", _jumpTargets)}");
     }
 
     private static void ClearChart()
@@ -1454,14 +1449,14 @@ public static partial class Chart
 
     public static async Task TryAutosave()
     {
-        Trace.WriteLine("Attempting to autosave chart...");
+        Logger.Info("Attempting to autosave chart...");
         if (!_canAutosave)
         {
-            Trace.WriteLine("Autosave failed: Chart state is invalid.");
+            Logger.Warn("Autosave failed: Chart state is invalid.");
             return;
         }
         
-        Trace.WriteLine($"saving to \"{UserData.LastOpenedChartFile}.auto\"");
+        Logger.Info("saving to \"{0}.auto\"", UserData.LastOpenedChartFile);
         bool successful;
         if (UserData.LastOpenedChartFile.EndsWith(".beat.txt"))
         {
@@ -1474,7 +1469,7 @@ public static partial class Chart
 
         if (successful)
         {
-            Trace.WriteLine("Autosave complete!");
+            Logger.Info("Autosave complete!");
         
             // reset the last opened file so we don't continuously add ".auto" to the end
             UserData.LastOpenedChartFile = UserData.LastOpenedChartFile.Replace(".auto", "");
@@ -1484,7 +1479,7 @@ public static partial class Chart
         }
         else
         {
-            Trace.WriteLine("Autosave failed.");
+            Logger.Warn("Autosave failed.");
         }
     }
 
@@ -1495,7 +1490,6 @@ public static partial class Chart
             return;
         }
         
-        _lastSongTime = -1; // avoids a few edge cases
         Playing = true;
         if (CurrentTimeRaw + AdjustedOffset >= 0)
         {
@@ -1522,9 +1516,7 @@ public static partial class Chart
     {
         Dispatcher.UIThread.InvokeAsync(() =>
         {
-            Trace.WriteLine("Song end reached");
             PauseSong();
-            //Trace.WriteLine(_mediaPlayer.Time);
         });
     }
     
@@ -1585,7 +1577,7 @@ public static partial class Chart
         {
             if (!File.Exists(path))
             {
-                Trace.WriteLine($"Could not load audio file \"{path}\": File not found.");
+                Logger.Error("Could not load audio file \"{0}\": File not found.", path);
                 return (false, $"Could not load audio file \"{path}\": File not found.");
             }
             
@@ -1598,7 +1590,7 @@ public static partial class Chart
         }
         catch (Exception e)
         {
-            Trace.WriteLine($"Could not load audio file \"{path}\": {e.Message}");
+            Logger.Error("Could not load audio file \"{0}\": {1}", path, e.Message);
             return (false, $"Could not load audio file \"{path}\": {e.Message}");
         }
         
@@ -1607,7 +1599,6 @@ public static partial class Chart
     
     private static void SetTimeToNearestSnap()
     {
-        // Trace.WriteLine($"{_currentSnapLineSetIndex} {_currentSnapLineSet.Count}");
         for (var i = 0; i < _currentSnapLineSet.Count - 1; ++i)
         {
             var currentSnap = _currentSnapLineSet[i];
@@ -1641,7 +1632,7 @@ public static partial class Chart
         {
             AudioFileName = lines[index + 1]["AudioFilename: ".Length..].Trim();
             audioPath = Path.GetFullPath($"{folderPath}/{AudioFileName}");
-            Trace.WriteLine($"Audio file path: {audioPath}");
+            Logger.Debug("Audio file path: {0}", audioPath);
             return 1;
         }
 
@@ -1659,7 +1650,7 @@ public static partial class Chart
         // every label without the text
         if (lines[index + 2].StartsWith("BookmarksPlus:"))
         {
-            Trace.WriteLine("Parsing labels...");
+            Logger.Debug("Parsing labels...");
             var labelData = lines[index + 2]["BookmarksPlus: ".Length..].Trim().Split(',');
             foreach (var label in labelData)
             {
@@ -1670,13 +1661,12 @@ public static partial class Chart
                 }
                 if (long.TryParse(split[0], out var time))
                 {
-                    // Trace.WriteLine($"Adding label at {time} with text \"{split[1]}\"");
                     _labels.Add(new Label(time, split[1]));
                 }
                 else
                 {
                     errorMessage = $"Invalid label \"{label}\"";
-                    Trace.WriteLine(errorMessage);
+                    Logger.Warn(errorMessage);
                     return -1;
                 }
             }
@@ -1793,19 +1783,19 @@ public static partial class Chart
             if (line.StartsWith("TitleUnicode:"))
             {
                 Metadata.SongName = line["TitleUnicode:".Length..].Trim();
-                Trace.WriteLine($"Song name: {Metadata.SongName}");
+                Logger.Debug("Song name: {0}", Metadata.SongName);
                 hasTitle = true;
             }
             else if (line.StartsWith("ArtistUnicode:"))
             {
                 Metadata.ArtistName = line["ArtistUnicode:".Length..].Trim();
-                Trace.WriteLine($"Artist name: {Metadata.ArtistName}");
+                Logger.Debug("Artist name: {0}", Metadata.ArtistName);
                 hasArtist = true;
             }
             else if (line.StartsWith("Creator:"))
             {
                 Metadata.CharterName = line["Creator:".Length..].Trim();
-                Trace.WriteLine($"Charter name: {Metadata.CharterName}");
+                Logger.Debug("Charter name: {0}", Metadata.CharterName);
                 hasCharterName = true;
             }
             else if (line.StartsWith("Version:"))
@@ -1813,7 +1803,7 @@ public static partial class Chart
                 // the version is only used for the in-game difficulty name; difficulty slot is
                 // determined by the filename
                 Metadata.DifficultyName = line["Version:".Length..].Trim();
-                Trace.WriteLine($"Difficulty name: {Metadata.DifficultyName}");
+                Logger.Debug("Difficulty name: \"{0}\"", Metadata.DifficultyName);
                 hasDifficulty = true;
             }
             else if (line.StartsWith("Tags:"))
@@ -1825,21 +1815,21 @@ public static partial class Chart
                     if (match.Success)
                     {
                         Metadata.DifficultyLevel = int.Parse(match.Groups[1].Value);
-                        Trace.WriteLine($"Difficulty level: {Metadata.DifficultyLevel}");
+                        Logger.Debug("Difficulty level: {0}", Metadata.DifficultyLevel);
                         hasLevelTag = true;
                         
                         Metadata.FlavorText = Regex.Unescape(match.Groups[2].Value);
-                        Trace.WriteLine($"Flavor text: {Metadata.FlavorText}");
+                        Logger.Debug("Flavor text: {0}", Metadata.FlavorText);
                         hasFlavorTextTag = true;
                         
                         Metadata.CoverArtistName = Regex.Unescape(match.Groups[4].Value);
-                        Trace.WriteLine($"Cover artist: {Metadata.CoverArtistName}");
+                        Logger.Debug("Cover artist: {0}", Metadata.CoverArtistName);
                         hasCoverArtTag = true;
                     }
                 }
                 catch (Exception e)
                 {
-                    Trace.WriteLine($"Could not parse tags: {e.Message}");
+                    Logger.Error(e, "Could not parse tags");
                     errorMessage = $"Could not parse tags: {e.Message}";
                 }
             }
@@ -1893,7 +1883,7 @@ public static partial class Chart
             }
 
             errorMessage = errorMessageBuilder.ToString();
-            Trace.WriteLine(errorMessageBuilder.ToString());
+            Logger.Error(errorMessage);
             return -1;
         }
         
@@ -1941,7 +1931,7 @@ public static partial class Chart
                 catch (Exception e)
                 {
                     errorMessage = $"Could not parse timing point: {e.Message}";
-                    Trace.WriteLine(errorMessage);
+                    Logger.Error(e, "Could not parse timing point");
                     return -1;
                 }
                 
@@ -1969,11 +1959,11 @@ public static partial class Chart
         if (_bpmRegions.Count == 0)
         {
             errorMessage = "Chart has no timing points.";
-            Trace.WriteLine(errorMessage);
+            Logger.Error(errorMessage);
             return -1;
         }
         
-        Trace.WriteLine($"Chart has {_bpmRegions.Count} BPM regions/timing points.");
+        Logger.Debug("Chart has {0} BPM regions/timing points.", _bpmRegions.Count);
         return i;
     }
 
@@ -2016,12 +2006,12 @@ public static partial class Chart
             else if (noteErrorMessage != "marker")
             {
                 errorMessage = $"Could not parse note: {noteErrorMessage}";
-                Trace.WriteLine(errorMessage);
+                Logger.Error("Could not parse note: {0}", noteErrorMessage);
                 return -1;
             }
         }
         
-        Trace.WriteLine($"Chart has {_notes.Count} notes.");
+        Logger.Debug("Chart has {0} notes.", _notes.Count);
         return i;
     }
     

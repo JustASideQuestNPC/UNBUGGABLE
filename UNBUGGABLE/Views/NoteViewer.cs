@@ -291,7 +291,6 @@ public class NoteViewer : Control
                                   ViewerHeight));
         
         // full beat lines
-        // Trace.WriteLine(Chart.SongLoaded);
         if (Chart.SongLoaded)
         {
             var scaledPixelsPerMs = PixelsPerSecond * CurrentZoom / 1000;
@@ -301,7 +300,6 @@ public class NoteViewer : Control
                 Chart.CurrentTimeRaw + (ViewerHeight - Config.Settings.CurrentTimePosition) /
                 scaledPixelsPerMs;
             
-            // Trace.WriteLine($"Visible range: {visibleRangeStart} - {visibleRangeEnd}");
             foreach (var subBeatTime in Chart.GetSnapTimesInRange(visibleRangeStart,
                                                                          visibleRangeEnd))
             {

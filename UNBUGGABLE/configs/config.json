@@ -82,6 +82,7 @@
   },
   "debug": {
     "enabled": true,
+    "verboseLogging": false,
     "commandStacks": false,
     "inputData": false,
     "mediaPlayer": false,

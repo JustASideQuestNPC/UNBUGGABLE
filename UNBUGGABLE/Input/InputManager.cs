@@ -27,6 +27,8 @@ public static class InputManager
 
     public static List<InputActionBase> Actions { get; set; } = [];
     
+    private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+    
     // the state of every keyboard key and mouse button; used to prevent OnPress from being called
     // every frame when the key is held
     private static readonly Dictionary<Key, bool> _keyStates = new();
@@ -103,9 +105,6 @@ public static class InputManager
         var button = e.Properties.IsRightButtonPressed ? MouseButton.RIGHT :
             e.Properties.IsMiddleButtonPressed ? MouseButton.MIDDLE : MouseButton.LEFT;
         
-        Trace.WriteLine($"Mouse press ({button}) at " +
-                        $"({ChartBuilder.MousePosition.X}, {ChartBuilder.MousePosition.Y})");
-        
         if (!_mouseButtonStates.GetValueOrDefault(button))
         {
             await RunCallbacks(CallbackType.MOUSE_PRESS, button);
@@ -126,9 +125,6 @@ public static class InputManager
         e.Handled = true;
         var button = e.Properties.IsRightButtonPressed ? MouseButton.RIGHT :
             e.Properties.IsMiddleButtonPressed ? MouseButton.MIDDLE : MouseButton.LEFT;
-        
-        Trace.WriteLine($"Mouse release ({button}) at " +
-                        $"({ChartBuilder.MousePosition.X}, {ChartBuilder.MousePosition.Y})");
         
         if (_mouseButtonStates.GetValueOrDefault(button))
         {

@@ -67,6 +67,8 @@ public class PlacementPriorityListEntry : ViewModelBase
 
 public partial class MainWindowViewModel : ViewModelBase
 {
+    private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+    
     [ObservableProperty] private string? _chartLengthText = "";
     [ObservableProperty] private string? _songTimeText = "";
     [ObservableProperty] private string? _chartTimeText = "";
@@ -91,9 +93,6 @@ public partial class MainWindowViewModel : ViewModelBase
     
     [ObservableProperty]
     private ObservableCollection<PlacementPriorityListEntry> _activePriorityListEntries = [];
-
-    private bool _updatingPriorityList = false;
-    private List<(NoteBase, int)> _initialNoteOrder = [];
     
     public int SongVolume
     {
@@ -124,6 +123,12 @@ public partial class MainWindowViewModel : ViewModelBase
         }
     }
 
+    private bool _updatingPriorityList = false;
+    private List<(NoteBase, int)> _initialNoteOrder = [];
+
+    // used to disable the "reloaded config" event indicator when the app starts
+    private bool _firstConfigReload = true;
+
     public MainWindowViewModel()
     {
         var frameTimer = new DispatcherTimer
@@ -135,7 +140,6 @@ public partial class MainWindowViewModel : ViewModelBase
             // most of the ui only needs to change when the song time changes, but LibVLC only
             // update MediaPlayer.Position every tenth of a second or so, so it's easier to just
             // force an update every frame
-            // Trace.WriteLine("frame");
             App.MainWindow.NoteViewer.InvalidateVisual();
             App.MainWindow.GamePreview.InvalidateVisual();
             App.MainWindow.DebugOverlay.InvalidateVisual();
@@ -178,7 +182,7 @@ public partial class MainWindowViewModel : ViewModelBase
             }
         };
         frameTimer.Start();
-        Trace.WriteLine($"started frame timer: runs every {frameTimer.Interval}");
+        Logger.Info("started frame timer: runs every {0}", frameTimer.Interval);
 
         var tickTimer = new DispatcherTimer
         {
@@ -186,7 +190,7 @@ public partial class MainWindowViewModel : ViewModelBase
         };
         tickTimer.Tick += (sender, args) => Chart.PerTickUpdate();
         tickTimer.Start();
-        Trace.WriteLine($"started tick timer: runs every {tickTimer.Interval}");
+        Logger.Info("started tick timer: runs every {0}", tickTimer.Interval);
 
         if (Config.Settings.AutosaveInterval > 0)
         {
@@ -196,11 +200,11 @@ public partial class MainWindowViewModel : ViewModelBase
             };
             autosaveTimer.Tick += async (sender, args) => await Chart.TryAutosave();
             autosaveTimer.Start();
-            Trace.WriteLine($"started autosave timer: runs every {autosaveTimer.Interval}");
+            Logger.Info("started autosave timer: runs every {0}", autosaveTimer.Interval);
         }
         else
         {
-            Trace.WriteLine("autosaves are disabled");
+            Logger.Info("autosaves are disabled");
         }
 
         ActivePriorityListEntries = [];
@@ -375,7 +379,7 @@ public partial class MainWindowViewModel : ViewModelBase
         
         if (App.TopLevel == null)
         {
-            Trace.WriteLine("No top level window!");
+            Logger.Error("No top level window!");
             return;
         }
         
@@ -476,7 +480,7 @@ public partial class MainWindowViewModel : ViewModelBase
         
         if (App.TopLevel == null)
         {
-            Trace.WriteLine("No top level window!");
+            Logger.Error("No top level window!");
             return;
         }
         
@@ -529,7 +533,7 @@ public partial class MainWindowViewModel : ViewModelBase
         
         if (App.TopLevel == null)
         {
-            Trace.WriteLine("No top level window!");
+            Logger.Error("No top level window!");
             return;
         }
         
@@ -557,7 +561,6 @@ public partial class MainWindowViewModel : ViewModelBase
         var result = await new ChartMetadataDialog(Chart.Metadata).ShowAsync();
         if (result.HasValue)
         {
-            Trace.WriteLine("Chart metadata updated.");
             Chart.Metadata = result.Value;
             SongNameText = Chart.Metadata.SongName;
             ArtistNameText = Chart.Metadata.ArtistName;
@@ -577,7 +580,7 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task TryReloadConfig()
     {
-        Config.TryReloadConfig();
+        Config.TryReloadAllConfigs();
         if (Config.LoadError)
         {
             var dialog = new MessageDialog("One or more errors occured while loading config " +
@@ -591,8 +594,17 @@ public partial class MainWindowViewModel : ViewModelBase
             {
                 Chart.RebuildSnapLineSets();
             }
-            ShowEventIndicator("Reloaded config.");
+            
+            // the reload config command gets executed as soon as the app starts because it's the
+            // easiest way to get an error message popup without crashing everything, so we skip the
+            // event indicator on the first go-around
+            if (!_firstConfigReload)
+            {
+                ShowEventIndicator("Reloaded config");
+            }
         }
+        
+        _firstConfigReload = false;
     }
 
     [RelayCommand]

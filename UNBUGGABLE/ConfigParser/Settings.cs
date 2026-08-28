@@ -10,6 +10,9 @@ public class Debug
 {
     [JsonRequired][JsonPropertyName("enabled")]
     public bool Enabled { get; set; } = false;
+    
+    [JsonRequired][JsonPropertyName("verboseLogging")]
+    public bool VerboseLogging { get; set; } = false;
 
     [JsonRequired][JsonPropertyName("commandStacks")]
     public bool CommandStacks { get; set; } = true;
@@ -26,6 +29,8 @@ public class Debug
     public string GetFormattedString()
     {
         return $"""
+                
+                    - verbose logging: {VerboseLogging}
                     - command stacks: {CommandStacks}
                     - input data: {InputData}
                     - media player: {MediaPlayer}
@@ -241,43 +246,42 @@ public class Settings
     [JsonRequired][JsonPropertyName("defaultDifficulty")]
     public string DefaultDifficulty { get; set; } = "beginner";
     
-    public void PrintSettings()
+    public override string ToString()
     {
-        Trace.WriteLine($"""
-                         color theme: {ColorTheme}
-                         save to .beat.txt: {DefaultSaveToBeatFiles}
-                         enhanced preview: {EnhancedPreview}
-                         currentTimePosition: {CurrentTimePosition}
-                         always show all note flags: {AlwaysShowAllFlags}
-                         enable breakpoints: {EnableBreakpoints}
-                         lane 2 markers: {Lane2Markers}
-                         save markers as lane 2 notes: {SaveMarkersInLane2}
-                         always enable custom difficulty name: {AlwaysEnableCustomDifficultyName}
-                         auto select: {AutoSelectBehavior}
-                         allow top lane cop mashes: {AllowTopLaneCopMashes}
-                         show sub freestyles while placing: {ShowSubFreestylesInNoteViewer}
-                         negative mash conversion: {NegativeMashConversion}
-                         live placement: {EnableLivePlacement}
-                         double preview alpha: {DoublePreviewAlpha}
-                         autosave interval: {AutosaveInterval} seconds
-                         beat snaps: [{string.Join(", ", BeatSnaps)}]
-                         preserve noisz flag: {PreserveNoiszFlag}
-                         hold extension search threshold: {HoldExtensionSearchThreshold}
-                         min zoom: {MinZoom}
-                         max zoom: {MaxZoom}
-                         zoom increment: {ZoomIncrement}
-                         lane order: [{string.Join(", ", LaneOrder)}]
-                         jump targets: [{string.Join(", ", JumpTargets)}]
-                         hit sound offset: {HitSoundOffset}
-                         hard chart offset: {HardChartOffset}
-                         hit sound tick rate: {HitSoundTickRate}
-                         max concurrent hit sounds: {MaxConcurrentSfx}
-                         hit sounds: {HitSounds.GetFormattedString()}
-                         quick scroll beats: {QuickScrollBeats}
-                         slider increment: {SliderIncrement}
-                         default charter name: {DefaultCharterName}
-                         debug mode: {DebugToggles.Enabled}
-                         {DebugToggles.GetFormattedString()}
-                         """);
+        return $"""
+                  color theme: {ColorTheme}
+                  save to .beat.txt: {DefaultSaveToBeatFiles}
+                  enhanced preview: {EnhancedPreview}
+                  currentTimePosition: {CurrentTimePosition}
+                  always show all note flags: {AlwaysShowAllFlags}
+                  enable breakpoints: {EnableBreakpoints}
+                  lane 2 markers: {Lane2Markers}
+                  save markers as lane 2 notes: {SaveMarkersInLane2}
+                  always enable custom difficulty name: {AlwaysEnableCustomDifficultyName}
+                  auto select: {AutoSelectBehavior}
+                  allow top lane cop mashes: {AllowTopLaneCopMashes}
+                  show sub freestyles while placing: {ShowSubFreestylesInNoteViewer}
+                  negative mash conversion: {NegativeMashConversion}
+                  live placement: {EnableLivePlacement}
+                  double preview alpha: {DoublePreviewAlpha}
+                  autosave interval: {AutosaveInterval} seconds
+                  beat snaps: [{string.Join(", ", BeatSnaps)}]
+                  preserve noisz flag: {PreserveNoiszFlag}
+                  hold extension search threshold: {HoldExtensionSearchThreshold}
+                  min zoom: {MinZoom}
+                  max zoom: {MaxZoom}
+                  zoom increment: {ZoomIncrement}
+                  lane order: [{string.Join(", ", LaneOrder)}]
+                  jump targets: [{string.Join(", ", JumpTargets)}]
+                  hit sound offset: {HitSoundOffset}
+                  hard chart offset: {HardChartOffset}
+                  hit sound tick rate: {HitSoundTickRate}
+                  max concurrent hit sounds: {MaxConcurrentSfx}
+                  hit sounds: {HitSounds.GetFormattedString()}
+                  quick scroll beats: {QuickScrollBeats}
+                  slider increment: {SliderIncrement}
+                  default charter name: {DefaultCharterName}
+                  debug mode: {DebugToggles.Enabled}{DebugToggles.GetFormattedString()}
+                """;
     }
 }

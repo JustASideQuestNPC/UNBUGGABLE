@@ -46,7 +46,12 @@ public partial class App : Application
     {
         // load configs and apply UI settings
         ThemeManager.Init(Resources);
-        Config.InitialLoadAllConfigFiles();
+        
+        // settings are loaded pretty much as soon as the program starts
+        Config.TryLoadKeybinds();
+        Config.TryLoadColorThemes();
+        Config.ApplyCurrentTheme();
+        
         SfxEngine.Init(Config.Settings.MaxConcurrentSfx);
         UserData.LoadData();
         Chart.Init();

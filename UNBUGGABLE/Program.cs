@@ -3,6 +3,8 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
+using Avalonia.Logging;
 using CommandLine;
 using UNBEATABLEChartEditor;
 using UNBEATABLEChartEditor.Audio;
@@ -12,13 +14,18 @@ namespace UNBUGGABLE;
 
 sealed class Program
 {
-    public class Options
+    private class Options
     {
-        [Option('c', "config", Required = true, HelpText = "Alternate path to a config file.")]
+        [Option('c', "config", Required = false, HelpText = "Alternate path to a config file.")]
         public string ConfigPath { get; set; } = "";
         [Option('k', "keybinds", Required = false, HelpText = "Alternate path to a keybinds file.")]
         public string KeybindsPath { get; set; } = "";
+        [Option('v', "verbose", Required = false,
+                HelpText = "Enable verbose logging. Overrides the config file setting.")]
+        public bool VerboseLogging { get; set; } = false;
     }
+    
+    private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
     
     // Initialization code. Don't use any Avalonia, third-party APIs or any
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
@@ -26,6 +33,8 @@ sealed class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        var verboseLogging = false;
+        
         Parser.Default.ParseArguments<Options>(args).WithParsed(o =>
         {
             if (o.ConfigPath != "")
@@ -37,50 +46,64 @@ sealed class Program
             {
                 Config.KeybindFilePath = Path.Combine(Environment.CurrentDirectory, o.KeybindsPath);
             }
+            
+            verboseLogging = o.VerboseLogging;
         });
         
-        Trace.Listeners.Clear();
+        Config.CheckConfigFileUpdate();
+        
+        // load settings now because i need to know if verbose logging is enabled
+        Config.TryLoadSettings();
 
-        var filePath = Path.Combine(Environment.CurrentDirectory,
-                                    $"logs/log_{DateTime.Now:MM_dd_yyyy_h_mm_tt}.log");
-        if (!File.Exists(filePath))
+        if (Config.Settings.DebugToggles.VerboseLogging)
         {
-            Directory.CreateDirectory("logs");
-            File.Create(filePath);
+            verboseLogging = true;
         }
         
-        var fileListener = new TextWriterTraceListener(filePath);
-        fileListener.Name = "TextLogger";
-        fileListener.TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime;
+        var logConfig = new NLog.Config.LoggingConfiguration();
 
-        var consoleListener = new ConsoleTraceListener(false);
-        consoleListener.TraceOutputOptions = TraceOptions.DateTime;
-
-        Trace.Listeners.Add(fileListener);
-        Trace.Listeners.Add(consoleListener);
-        Trace.AutoFlush = true;
+        const string logMessageLayout = "[${time} | ${level:uppercase=true:padding=5} | " +
+                                        "${logger}] ${message:withexception=true}";
         
-        Trace.WriteLine($"logging to {filePath}");
-
-        try
+        var logFile = new NLog.Targets.FileTarget("logfile")
         {
-            // apparently, running the app by double-clicking a file will make the working directory
-            // the same place as that file, not the location of the exe
-            if (!Environment.CurrentDirectory.EndsWith("UNBUGGABLE"))
-            {
-                Environment.CurrentDirectory =
-                    Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ??
-                    Environment.CurrentDirectory;
-            }
-
-            AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
-
-            BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
-        }
-        catch (Exception e)
+            Layout = logMessageLayout,
+            FileName = Path.Combine(Environment.CurrentDirectory,
+                                    $"logs/log_{DateTime.Now:MM_dd_yyyy_h_mm_tt}.log"),
+            MaxArchiveFiles = 25,
+        };
+        var logConsole = new NLog.Targets.ColoredConsoleTarget("console")
         {
-            Trace.WriteLine($"FATAL ERROR!!!\r\n{e}");
+            Layout = logMessageLayout
+        };
+
+        if (verboseLogging)
+        {
+            logConfig.AddRule(NLog.LogLevel.Debug, NLog.LogLevel.Fatal, logFile);
+            logConfig.AddRule(NLog.LogLevel.Debug, NLog.LogLevel.Fatal, logConsole);
         }
+        else
+        {
+            logConfig.AddRule(NLog.LogLevel.Info, NLog.LogLevel.Fatal, logFile);
+            logConfig.AddRule(NLog.LogLevel.Info, NLog.LogLevel.Fatal, logConsole);
+        }
+        NLog.LogManager.Configuration = logConfig;
+        
+        Logger.Info($"Logging to {logFile.FileName}");
+
+        AppDomain.CurrentDomain.UnhandledException += (s, e) =>
+        {
+            NLog.LogManager.GetLogger("Application")
+                .Error(e.ExceptionObject as Exception, "Unhandled application exception");
+            NLog.LogManager.Flush(); // Ensure logs are written before application dies
+        };
+        
+        TaskScheduler.UnobservedTaskException += (s, e) => {
+            NLog.LogManager.GetLogger("Application").Warn(e.Exception, "Unobserved task exception");
+        };
+
+        AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+        BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }
 
     // Avalonia configuration, don't remove; also used by visual designer.

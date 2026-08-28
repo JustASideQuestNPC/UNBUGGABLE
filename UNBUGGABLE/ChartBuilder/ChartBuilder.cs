@@ -38,6 +38,8 @@ public static class ChartBuilder
     // 0 for normal notes, 1-4 for cop notes
     public static int CopId { get; private set; } = 0;
     
+    private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+    
     private static readonly List<string> NoteTypeNames = [
         "notes", "cop 1", "cop 2", "cop 3", "cop 4"];
     
@@ -112,7 +114,11 @@ public static class ChartBuilder
             {
                 SelectedNotes = notes;
             }
-            Trace.WriteLine($"Selected {SelectedNotes.Count} notes");
+
+            if (SelectedNotes.Count > 0)
+            {
+                Logger.Debug($"Selected {SelectedNotes.Count} notes");
+            }
         }
         
         // tail selection only works if you don't drag select
@@ -273,7 +279,7 @@ public static class ChartBuilder
         var clipboardText = await App.TopLevel.Clipboard.GetTextAsync();
         if (clipboardText is null or "")
         {
-            Trace.WriteLine("Paste failed: clipboard is empty or contains non-text");
+            Logger.Warn("Paste failed: clipboard is empty or contains non-text");
             return;
         }
         
@@ -283,7 +289,7 @@ public static class ChartBuilder
             var note = NoteBase.FromCopyPasteString(noteString, Chart.CurrentTime);
             if (note == null)
             {
-                Trace.WriteLine($"Paste failed: {noteString} is invalid");
+                Logger.Warn("Paste failed: {0} is invalid", noteString);
                 return;
             }
             
@@ -598,6 +604,9 @@ public static class ChartBuilder
                 $"{BreakpointTime + Chart.Metadata.ChartOffset}";
         }
         File.WriteAllLines(Config.PracticeModConfigPath, lines);
+        
+        Logger.Debug("Set breakpoint to {0} ms (internal time {1} ms)", BreakpointTime,
+                     BreakpointTime + Chart.Metadata.ChartOffset);
     }
     
     public static void TryRemoveBreakpoint(bool showEventIndicator = true)
@@ -628,6 +637,8 @@ public static class ChartBuilder
             lines.RemoveAt(index);
         }
         File.WriteAllLines(Config.PracticeModConfigPath, lines);
+        
+        Logger.Debug("Removed existing breakpoint");
     }
 
     public static void CheckExistingBreakpoint()
@@ -645,7 +656,8 @@ public static class ChartBuilder
             BreakpointTime = time - Chart.Metadata.ChartOffset;
             App.MainWindowViewModel.BreakpointTimeText = TimeSpan.FromMilliseconds(BreakpointTime)
                                                                  .ToString(@"mm\:ss\.fff");
-            Trace.WriteLine($"Found existing breakpoint at {BreakpointTime}");
+            Logger.Debug("Found existing breakpoint at {0}", BreakpointTime);
+            
         }
         else
         {
