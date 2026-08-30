@@ -879,42 +879,10 @@ public static class ChartBuilder
                 break;
             // camera and marker lanes can be skipped because they will never appear here
         }
-
-        var shouldReplace = false;
-        if (oldNote != null)
-        {
-            if (newNote.Time == oldNote.Time)
-            {
-                shouldReplace = true;
-            }
-
-            // holding ctrl always places a new note instead of trying to extend existing notes
-            // (this is mainly useful for chaining doubles)
-            if (!shouldReplace && !newNote.Instant && !oldNote.Instant && !InputManager.CtrlPressed)
-            {
-                if ((newNote.Time == oldNote.EndTime ||
-                     oldNote.Time == newNote.EndTime) && newNote.Type == oldNote.Type)
-                {
-                    newNote.Time = Math.Min(newNote.Time, oldNote.Time);
-                    newNote.EndTime = Math.Max(newNote.EndTime, oldNote.EndTime);
-                    shouldReplace = true;
-                }
-            }
-        }
-
-        if (shouldReplace)
-        {
-            if (Config.Settings.PreserveNoiszFlag && newNote is SingleNote or HoldNote &&
-                oldNote is SingleNote or HoldNote)
-            {
-                newNote.Flags.N = oldNote.Flags.N;
-            }
-            
-            ChartBuilderCommandInvoker.Execute(
-                new UpdateNotesCommand([oldNote], [newNote],
-                                       Config.Settings.AutoSelectBehavior == "all"));
-        }
-        else
+        
+        // holding ctrl always places a new note instead of trying to extend existing notes
+        // (this is mainly useful for chaining doubles)
+        if (InputManager.CtrlPressed)
         {
             if (LockedFlags.C)
             {
@@ -933,7 +901,78 @@ public static class ChartBuilder
                 newNote.Flags.N = true;
             }
             ChartBuilderCommandInvoker.Execute(new AddNotesCommand([newNote]));
+            return;
         }
+
+        // check for extending hold notes
+        if (!newNote.Instant)
+        {
+            var prevNote = Chart.GetNoteFromEnd(start, lane,
+                                                Config.Settings.HoldExtensionSearchThreshold);
+            var nextNote = Chart.GetNote(end, lane,
+                                         Config.Settings.HoldExtensionSearchThreshold);
+
+            List<NoteBase> removedNotes = [];
+            if (prevNote != null && prevNote.Type == newNote.Type && nextNote != null &&
+                nextNote.Type == newNote.Type)
+            {
+                newNote.Time = prevNote.Time;
+                newNote.EndTime = nextNote.EndTime;
+                newNote.Flags = prevNote.Flags;
+                removedNotes.Add(prevNote);
+                removedNotes.Add(nextNote);
+            }
+            else if (prevNote != null && prevNote.Type == newNote.Type)
+            {
+                newNote.Time = prevNote.Time;
+                newNote.Flags = prevNote.Flags;
+                removedNotes.Add(prevNote);
+            }
+            else if (nextNote != null && nextNote.Type == newNote.Type)
+            {
+                newNote.EndTime = nextNote.EndTime;
+                newNote.Flags = nextNote.Flags;
+                removedNotes.Add(nextNote);
+            }
+            
+            if (removedNotes.Count > 0)
+            {
+                ChartBuilderCommandInvoker.Execute(
+                    new UpdateNotesCommand(removedNotes, [newNote],
+                                           Config.Settings.AutoSelectBehavior == "all"));
+                return;
+            }
+        }
+
+        if (oldNote != null)
+        {
+            if (Config.Settings.PreserveNoiszFlag && lane is NoteLane.TOP or NoteLane.BOTTOM)
+            {
+                newNote.Flags.N = oldNote.Flags.N;
+            }
+            ChartBuilderCommandInvoker.Execute(
+                new UpdateNotesCommand([oldNote], [newNote],
+                                       Config.Settings.AutoSelectBehavior == "all"));
+            return;
+        }
+        
+        if (LockedFlags.C)
+        {
+            newNote.Flags.C = true;
+        }
+        if (LockedFlags.F)
+        {
+            newNote.Flags.F = true;
+        }
+        if (LockedFlags.W)
+        {
+            newNote.Flags.W = true;
+        }
+        if (LockedFlags.N)
+        {
+            newNote.Flags.N = true;
+        }
+        ChartBuilderCommandInvoker.Execute(new AddNotesCommand([newNote]));
     }
     
     private static void DoNoteMoveOperation(long delta)
