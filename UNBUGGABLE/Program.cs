@@ -62,8 +62,10 @@ sealed class Program
         
         var logConfig = new NLog.Config.LoggingConfiguration();
 
+        // substring the logger to remove the root namespace ("UNBUGGABLE") from every entry
         const string logMessageLayout = "[${time} | ${level:uppercase=true:padding=5} | " +
-                                        "${logger}] ${message:withexception=true}";
+                                        "${substring:inner=${logger}:start=11}] " +
+                                        "${message:withexception=true}";
         
         var logFile = new NLog.Targets.FileTarget("logfile")
         {

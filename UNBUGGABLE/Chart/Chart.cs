@@ -1456,7 +1456,6 @@ public static partial class Chart
             return;
         }
         
-        Logger.Info("saving to \"{0}.auto\"", UserData.LastOpenedChartFile);
         bool successful;
         if (UserData.LastOpenedChartFile.EndsWith(".beat.txt"))
         {
