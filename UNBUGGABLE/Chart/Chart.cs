@@ -186,14 +186,6 @@ public static partial class Chart
             
             _metadata = value;
             
-            Logger.Info("updated chart metadata:\r\n{0}", _metadata.ToString());
-            
-            if (canSave)
-            {
-                ChartFileName = GetChartFileName();
-                Logger.Info("chart file name: \"{0}\"", ChartFileName);
-            }
-            
             if (transferBreakpoint)
             {
                 ChartBuilder.SetBreakpoint(prevBreakpoint, false);
@@ -389,6 +381,17 @@ public static partial class Chart
         _stopwatch = new Stopwatch();
         _stopwatch.Start();
     }
+
+    public static void LogMetadata()
+    {
+        Logger.Info("updated chart metadata:\r\n{0}", Metadata.ToString());
+        if (App.MainWindowViewModel.CanSave)
+        {
+            ChartFileName = GetChartFileName();
+            Logger.Info("chart file name: \"{0}\"", ChartFileName);
+        }
+    }
+    
     public static void PlayOrPauseSong()
     {
         if (SongLoaded)
@@ -728,9 +731,6 @@ public static partial class Chart
         var chartData = (await File.ReadAllTextAsync(path)).Split("\n");
         string? audioPath = null;
         (double, int, double, int)? lastEditorState = null;
-        
-        // store metadata in a temporary buffer so the log message comes out correctly
-        var metadataBuffer = new MetadataContainer();
 
         var hasGeneralData = false;
         var hasOfficialEditorData = false;
@@ -818,14 +818,14 @@ public static partial class Chart
                     
                     Logger.Debug("Parsing metadata...");
                     hasMetadata = true;
-                    if (!TryParseMetadata(chartData, ref i, out metadataBuffer, ref metadataErrors))
+                    if (!TryParseMetadata(chartData, ref i, ref metadataErrors))
                     {
                         Logger.Debug("metadata parsing failed");
                         success = false;
                     }
                     // see??? do you see how easy it would be to make the official editor save star
                     // charts correctly??? why would you not do this???
-                    metadataBuffer.DifficultySlot =
+                    Metadata.DifficultySlot =
                         DifficultySlotRegex().Match(path).Groups[1].Value switch
                     {
                         "Beginner" => DifficultySlot.BEGINNER,
@@ -847,13 +847,11 @@ public static partial class Chart
                     
                     Logger.Debug("Parsing timing points...");
                     hasTimingPoints = true;
-                    if (!TryParseTimingPoints(chartData, ref i, out var offset,
-                                              ref timingPointErrors))
+                    if (!TryParseTimingPoints(chartData, ref i, ref timingPointErrors))
                     {
                         Logger.Debug("timing points parsing failed");
                         success = false;
                     }
-                    metadataBuffer.ChartOffset = offset;
                     break;
                 case "[HitObjects]":
                     if (hasHitObjects)
@@ -994,9 +992,7 @@ public static partial class Chart
         var result = await TryLoadAudioFile(audioPath);
         if (result.Item1)
         {
-            // metadata is parsed into a buffer and then assigned to make sure the log
-            // message comes out correctly
-            Metadata = metadataBuffer;
+            LogMetadata();
             
             RebuildSnapLineSets();
             SetBeatSnapIndex(0);
@@ -1868,9 +1864,9 @@ public static partial class Chart
     {
         // technically theres a "Bookmarks" line above this one, but it just stores the timestamp of
         // every label without the text
-        i += 2;
-        if (lines[i].StartsWith("BookmarksPlus:"))
+        if (lines[i + 2].StartsWith("BookmarksPlus:"))
         {
+            i += 2;
             Logger.Debug("Parsing labels...");
             var labelData = lines[i]["BookmarksPlus: ".Length..].Trim().Split(',');
             foreach (var label in labelData)
@@ -1995,10 +1991,9 @@ public static partial class Chart
         return true;
     }
     
-    private static bool TryParseMetadata(string[] lines, ref int i, out MetadataContainer metadata,
-        ref List<string> errors)
+    private static bool TryParseMetadata(string[] lines, ref int i, ref List<string> errors)
     {
-        metadata = new MetadataContainer();
+        _metadata = new MetadataContainer();
         
         var hasTitle = false;
         var hasArtist = false;
@@ -2014,28 +2009,28 @@ public static partial class Chart
             var line = lines[i].Trim();
             if (line.StartsWith("TitleUnicode:"))
             {
-                metadata.SongName = line["TitleUnicode:".Length..].Trim();
-                Logger.Debug("Song name: {0}", metadata.SongName);
+                _metadata.SongName = line["TitleUnicode:".Length..].Trim();
+                Logger.Debug("Song name: {0}", _metadata.SongName);
                 hasTitle = true;
             }
             else if (line.StartsWith("ArtistUnicode:"))
             {
-                metadata.ArtistName = line["ArtistUnicode:".Length..].Trim();
-                Logger.Debug("Artist name: {0}", metadata.ArtistName);
+                _metadata.ArtistName = line["ArtistUnicode:".Length..].Trim();
+                Logger.Debug("Artist name: {0}", _metadata.ArtistName);
                 hasArtist = true;
             }
             else if (line.StartsWith("Creator:"))
             {
-                metadata.CharterName = line["Creator:".Length..].Trim();
-                Logger.Debug("Charter name: {0}", metadata.CharterName);
+                _metadata.CharterName = line["Creator:".Length..].Trim();
+                Logger.Debug("Charter name: {0}", _metadata.CharterName);
                 hasCharterName = true;
             }
             else if (line.StartsWith("Version:"))
             {
                 // the version is only used for the in-game difficulty name; difficulty slot is
                 // determined by the filename
-                metadata.DifficultyName = line["Version:".Length..].Trim();
-                Logger.Debug("Difficulty name: \"{0}\"", metadata.DifficultyName);
+                _metadata.DifficultyName = line["Version:".Length..].Trim();
+                Logger.Debug("Difficulty name: \"{0}\"", _metadata.DifficultyName);
                 hasDifficulty = true;
             }
             else if (line.StartsWith("Tags:"))
@@ -2045,22 +2040,22 @@ public static partial class Chart
                     var match = TagRegex().Match(line);
                     if (match.Success)
                     {
-                        metadata.DifficultyLevel = int.Parse(match.Groups[1].Value);
-                        Logger.Debug("Difficulty level: {0}", metadata.DifficultyLevel);
+                        _metadata.DifficultyLevel = int.Parse(match.Groups[1].Value);
+                        Logger.Debug("Difficulty level: {0}", _metadata.DifficultyLevel);
                         hasLevelTag = true;
                         
-                        metadata.FlavorText = Regex.Unescape(match.Groups[2].Value);
-                        Logger.Debug("Flavor text: {0}", metadata.FlavorText);
+                        _metadata.FlavorText = Regex.Unescape(match.Groups[2].Value);
+                        Logger.Debug("Flavor text: {0}", _metadata.FlavorText);
                         hasFlavorTextTag = true;
                         
-                        metadata.CoverArtistName = Regex.Unescape(match.Groups[4].Value);
-                        Logger.Debug("Cover artist: {0}", metadata.CoverArtistName);
+                        _metadata.CoverArtistName = Regex.Unescape(match.Groups[4].Value);
+                        Logger.Debug("Cover artist: {0}", _metadata.CoverArtistName);
                         hasCoverArtTag = true;
                     }
                 }
                 catch (Exception e)
                 {
-                    errors.Add("Could not parse tags");
+                    errors.Add($"Could not parse tags: {e.Message}");
                 }
             }
             // i have no idea what the difference between Title/Artist and
@@ -2115,10 +2110,10 @@ public static partial class Chart
             return false;
         }
         
-        App.MainWindowViewModel.SongNameText = metadata.SongName;
-        App.MainWindowViewModel.ArtistNameText = metadata.ArtistName;
+        App.MainWindowViewModel.SongNameText = _metadata.SongName;
+        App.MainWindowViewModel.ArtistNameText = _metadata.ArtistName;
 
-        var difficultySlotName = metadata.DifficultySlot switch
+        var difficultySlotName = _metadata.DifficultySlot switch
         {
             DifficultySlot.BEGINNER => "Beginner",
             DifficultySlot.NORMAL => "Normal",
@@ -2128,18 +2123,15 @@ public static partial class Chart
             _ => "Star"
         };
         App.MainWindowViewModel.DifficultyText = $"{difficultySlotName} " +
-                                                 $"{metadata.DifficultyLevel}";
-        App.MainWindowViewModel.CanSave = (metadata.SongName != "" &&
-                                           metadata.ArtistName != "" &&
-                                           metadata.CharterName != "");
+                                                 $"{_metadata.DifficultyLevel}";
+        App.MainWindowViewModel.CanSave = (_metadata.SongName != "" &&
+                                           _metadata.ArtistName != "" &&
+                                           _metadata.CharterName != "");
         return true;
     }
     
-    private static bool TryParseTimingPoints(string[] lines, ref int i, out long offset,
-        ref List<string> errors)
+    private static bool TryParseTimingPoints(string[] lines, ref int i, ref List<string> errors)
     {
-        offset = 0;
-
         _bpmRegions = [];
         ++i;
         for (; i < lines.Length; ++i)
@@ -2171,11 +2163,10 @@ public static partial class Chart
                 // the start time of the first region determines chart offset
                 if (_bpmRegions.Count == 0)
                 {
-                    offset = regionStart;
+                    _metadata.ChartOffset = regionStart;
                 }
 
-                _bpmRegions.Add(new BpmRegion(regionStart - offset,
-                                              60000 / msPerBeat));
+                _bpmRegions.Add(new BpmRegion(regionStart, 60000 / msPerBeat));
 
                 if (_bpmRegions.Count > 1)
                 {

@@ -108,6 +108,7 @@ public partial class ChartMetadataDialog : BaseDialog<Chart.MetadataContainer>
             ChartOffset = long.Parse(OffsetBox.Text ?? "0")
             
         };
+        
         Close(metadata);
     }
     

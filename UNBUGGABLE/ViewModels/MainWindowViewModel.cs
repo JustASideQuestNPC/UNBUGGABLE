@@ -574,6 +574,7 @@ public partial class MainWindowViewModel : ViewModelBase
                 _ => "Star"
             };
             DifficultyText = $"{difficultySlotName} {Chart.Metadata.DifficultyLevel}";
+            Chart.LogMetadata();
         }
     }
 
