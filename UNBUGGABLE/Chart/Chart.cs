@@ -162,7 +162,7 @@ public static partial class Chart
                     {
                         region.StartTime += delta;
                     }
-                
+                    
                     RebuildSnapLineSets();
                 }
 
@@ -179,7 +179,7 @@ public static partial class Chart
             
             _metadata = value;
             
-            Logger.Info("updated chart metadata:\n{0}", _metadata.ToString());
+            Logger.Info("updated chart metadata:\r\n{0}", _metadata.ToString());
             
             if (canSave)
             {
@@ -332,14 +332,14 @@ public static partial class Chart
     private static List<long> _jumpTargets = [];
     private static bool _jumpTargetsOutOfDate = true;
     
-    [GeneratedRegex(@"[0-9]+,[0-9]+.[0-9]+,[0-9]+,[0-9]+,[0-9]+,[0-9]+,[0-9]+,[0-9]+")]
+    [GeneratedRegex("^-?[0-9]+,[0-9]+.[0-9]+,[0-9]+,[0-9]+,[0-9]+,[0-9]+,[0-9]+,[0-9]+$")]
     private static partial Regex TimingPointRegex();
 
     [GeneratedRegex(@".*\[(.+)\].*")]
     private static partial Regex DifficultySlotRegex();
 
     // cursed regex because chart tags allow double quotes in a string so i can't just use json
-    [GeneratedRegex("""{"Level":([0-9]+),"FlavorText":"(.*)","SongLength":(?:[+-]?([0-9]*[.])?[0-9]+),"CoverArt":"(.*)"}""")]
+    [GeneratedRegex("""{"Level":(-?[0-9]+),"FlavorText":"(.*)","SongLength":(?:-?([0-9]*[.])?[0-9]+),"CoverArt":"(.*)"}""")]
     private static partial Regex TagRegex();
 
     /// <summary>
@@ -717,38 +717,103 @@ public static partial class Chart
         string? audioPath = null;
         (double, int, double, int)? lastEditorState = null;
         
-        Metadata = new MetadataContainer();
+        // store metadata in a temporary buffer so the log message comes out correctly
+        var metadataBuffer = new MetadataContainer();
+
+        var hasGeneralData = false;
+        var hasOfficialEditorData = false;
+        var hasUnbuggableData = false;
+        var hasMetadata = false;
+        var hasTimingPoints = false;
+        var hasHitObjects = false;
+
+        List<string> sectionErrors = [];
+        List<string> generalErrors = [];
+        List<string> officialEditorErrors = [];
+        List<string> unbuggableErrors = [];
+        List<string> metadataErrors = [];
+        List<string> timingPointErrors = [];
+        List<string> hitObjectErrors = [];
+        
         _labels = [];
         _notes = [];
         ChartBuilder.ClearSelection();
         _bpmRegions = [];
-        for (var i = 0; i < chartData.Length; i++)
+        var success = true;
+        for (var i = 0; i < chartData.Length; ++i)
         {
             var line = chartData[i].Trim();
-            var temp = 0;
-            var errorMessage = "";
             switch (line)
             {
                 case "[General]":
+                    if (hasGeneralData)
+                    {
+                        sectionErrors.Add("duplicate section [General]");
+                        success = false;
+                        break;
+                    }
+                    
                     Logger.Debug("Parsing general data...");
-                    temp = TryParseGeneralChartData(chartData, i, folderPath, out audioPath,
-                                                    out errorMessage);
+                    hasGeneralData = true;
+                    if (!TryParseGeneralChartData(chartData, folderPath, ref i, out audioPath,
+                                                  ref generalErrors))
+                    {
+                        Logger.Debug("general data parsing failed");
+                        success = false;
+                    }
                     break;
                 case "[Editor]":
+                    if (hasOfficialEditorData)
+                    {
+                        sectionErrors.Add("duplicate section [Editor]");
+                        success = false;
+                        break;
+                    }
+                    
                     Logger.Debug("Parsing official editor data...");
-                    temp = TryParseOfficialEditorData(chartData, i, out errorMessage);
+                    hasOfficialEditorData = true;
+                    if (!TryParseOfficialEditorData(chartData, ref i,
+                                                    ref officialEditorErrors))
+                    {
+                        Logger.Debug("official editor data parsing failed");
+                        success = false;
+                    }
                     break;
                 case "[UNBUGGABLE]":
+                    if (hasUnbuggableData)
+                    {
+                        sectionErrors.Add("duplicate section [UNBUGGABLE]");
+                        success = false;
+                        break;
+                    }
+                    
                     Logger.Debug("Parsing UNBUGGABLE data...");
-                    temp = TryParseUnbuggableData(chartData, i, out lastEditorState,
-                                                  out errorMessage);
+                    hasUnbuggableData = true;
+                    if (!TryParseUnbuggableData(chartData, ref i, out lastEditorState,
+                                                ref unbuggableErrors))
+                    {
+                        Logger.Debug("UNBUGGABLE data parsing failed");
+                        success = false;
+                    }
                     break;
                 case "[Metadata]":
+                    if (hasMetadata)
+                    {
+                        sectionErrors.Add("duplicate section [Metadata]");
+                        success = false;
+                        break;
+                    }
+                    
                     Logger.Debug("Parsing metadata...");
-                    temp = TryParseMetadata(chartData, i, out errorMessage);
+                    hasMetadata = true;
+                    if (!TryParseMetadata(chartData, ref i, out metadataBuffer, ref metadataErrors))
+                    {
+                        Logger.Debug("metadata parsing failed");
+                        success = false;
+                    }
                     // see??? do you see how easy it would be to make the official editor save star
                     // charts correctly??? why would you not do this???
-                    Metadata.DifficultySlot =
+                    metadataBuffer.DifficultySlot =
                         DifficultySlotRegex().Match(path).Groups[1].Value switch
                     {
                         "Beginner" => DifficultySlot.BEGINNER,
@@ -761,28 +826,166 @@ public static partial class Chart
                     break;
                 // there are also [Difficulty] and [Events] sections here but they do nothing
                 case "[TimingPoints]":
+                    if (hasTimingPoints)
+                    {
+                        sectionErrors.Add("duplicate section [TimingPoints]");
+                        success = false;
+                        break;
+                    }
+                    
                     Logger.Debug("Parsing timing points...");
-                    temp = TryParseTimingPoints(chartData, i, out errorMessage);
+                    hasTimingPoints = true;
+                    if (!TryParseTimingPoints(chartData, ref i, out var offset,
+                                              ref timingPointErrors))
+                    {
+                        Logger.Debug("timing points parsing failed");
+                        success = false;
+                    }
+                    metadataBuffer.ChartOffset = offset;
                     break;
                 case "[HitObjects]":
+                    if (hasHitObjects)
+                    {
+                        sectionErrors.Add("duplicate section [HitObjects]");
+                        success = false;
+                        break;
+                    }
+                    
                     Logger.Debug("Parsing hit objects (notes)...");
-                    temp = TryParseHitObjects(chartData, i, out errorMessage);
+                    hasHitObjects = true;
+                    if (!TryParseHitObjects(chartData, ref i, ref hitObjectErrors))
+                    {
+                        Logger.Debug("hit objects parsing failed");
+                        success = false;
+                    }
                     break;
             }
-            
-            if (temp == -1)
+        }
+
+        if (!hasGeneralData)
+        {
+            sectionErrors.Add("[General] section not found");
+            success = false;
+        }
+
+        if (!hasOfficialEditorData)
+        {
+            sectionErrors.Add("[Editor] section not found");
+            success = false;
+        }
+        
+        // no check for the unbuggable section because it doesn't exist in standard .txt charts
+
+        if (!hasMetadata)
+        {
+            sectionErrors.Add("[Metadata] section not found");
+            success = false;
+        }
+
+        if (!hasTimingPoints)
+        {
+            sectionErrors.Add("[TimingPoints] (bpm/tempo settings) section not found");
+            success = false;
+        }
+
+        if (!hasHitObjects)
+        {
+            sectionErrors.Add("[HitObjects] (notes) section not found");
+            success = false;
+        }
+
+        if (!success)
+        {
+            var errorMessageBuilder = new StringBuilder();
+            if (sectionErrors.Count > 0)
             {
-                _mediaPlayer.Media = null; // disables the editor
-                return (false, errorMessage);
+                var builder = new StringBuilder();
+                foreach (var error in sectionErrors)
+                {
+                    builder.AppendLine(error);
+                }
+                errorMessageBuilder.AppendLine(builder.ToString());
+                errorMessageBuilder.AppendLine();
+            }
+            
+            if (generalErrors.Count > 0)
+            {
+                var builder = new StringBuilder();
+                builder.AppendLine($"[General]: {generalErrors.Count} errors");
+                foreach (var error in generalErrors)
+                {
+                    builder.AppendLine(error);
+                }
+                errorMessageBuilder.AppendLine(builder.ToString());
+                errorMessageBuilder.AppendLine();
+            }
+            
+            if (officialEditorErrors.Count > 0)
+            {
+                var builder = new StringBuilder();
+                builder.AppendLine($"[Editor]: {officialEditorErrors.Count} errors");
+                foreach (var error in officialEditorErrors)
+                {
+                    builder.AppendLine(error);
+                }
+                errorMessageBuilder.AppendLine(builder.ToString());
+                errorMessageBuilder.AppendLine();
+            }
+            
+            if (metadataErrors.Count > 0)
+            {
+                var builder = new StringBuilder();
+                builder.AppendLine($"[Metadata]: {metadataErrors.Count} errors");
+                foreach (var error in metadataErrors)
+                {
+                    builder.AppendLine(error);
+                }
+                errorMessageBuilder.AppendLine(builder.ToString());
+                errorMessageBuilder.AppendLine();
+            }
+            
+            if (timingPointErrors.Count > 0)
+            {
+                var builder = new StringBuilder();
+                builder.AppendLine($"[TimingPoints]: {timingPointErrors.Count} errors");
+                foreach (var error in timingPointErrors)
+                {
+                    builder.AppendLine(error);
+                }
+                errorMessageBuilder.AppendLine(builder.ToString());
+                errorMessageBuilder.AppendLine();
+            }
+            
+            if (hitObjectErrors.Count > 0)
+            {
+                var builder = new StringBuilder();
+                builder.AppendLine($"[HitObject]: {hitObjectErrors.Count} errors");
+                foreach (var error in hitObjectErrors)
+                {
+                    builder.AppendLine(error);
+                }
+                errorMessageBuilder.AppendLine(builder.ToString());
+                errorMessageBuilder.AppendLine();
             }
 
-            i += temp;
+            var errorFileName = $"logs/_load_failure_[{Path.GetFileName(path)}].txt";
+            var errorFilePath = Path.Combine(Environment.CurrentDirectory, errorFileName);
+            await File.WriteAllTextAsync(errorFilePath, errorMessageBuilder.ToString());
+
+            ClearChart();
+            UpdateWindowTitle();
+            return (false, $"Error(s) occurred while loading chart file. See {errorFileName} for " +
+                           $"a detailed error list.");
         }
 
         // check for an alternate audio format
         var result = await TryLoadAudioFile(audioPath);
         if (result.Item1)
         {
+            // metadata is parsed into a buffer and then assigned to make sure the log
+            // message comes out correctly
+            Metadata = metadataBuffer;
+            
             RebuildSnapLineSets();
             SetBeatSnapIndex(0);
             ChartFileName = GetChartFileName();
@@ -1423,11 +1626,12 @@ public static partial class Chart
 
     private static void ClearChart()
     {
+        ChartBuilder.ClearSelection();
+        ChartBuilder.TryRemoveBreakpoint(false);
+        
         Metadata = new MetadataContainer();
         _notes = [];
         _labels = [];
-        ChartBuilder.ClearSelection();
-        ChartBuilder.TryRemoveBreakpoint(false);
             
         _bpmRegions = [];
         _beatSnapIndex = 0;
@@ -1622,35 +1826,33 @@ public static partial class Chart
         _currentSnapLineSetIndex = _currentSnapLineSet.Count - 1;
     }
 
-    private static int TryParseGeneralChartData(string[] lines, int index, string folderPath,
-        out string? audioPath, out string errorMessage)
+    private static bool TryParseGeneralChartData(string[] lines, string folderPath, ref int i,
+        out string? audioPath, ref List<string> errors)
     {
-        errorMessage = "";
-        
-        if (lines[index + 1].StartsWith("AudioFilename:"))
+        ++i;
+        if (lines[i].StartsWith("AudioFilename:"))
         {
-            AudioFileName = lines[index + 1]["AudioFilename: ".Length..].Trim();
+            AudioFileName = lines[i]["AudioFilename: ".Length..].Trim();
             audioPath = Path.GetFullPath($"{folderPath}/{AudioFileName}");
             Logger.Debug("Audio file path: {0}", audioPath);
-            return 1;
+            return true;
         }
 
         audioPath = null;
-        errorMessage = "No audio file path";
-        return -1;
+        errors.Add("No audio file path");
+        return false;
     }
 
-    private static int TryParseOfficialEditorData(string[] lines, int index,
-        out string errorMessage)
+    private static bool TryParseOfficialEditorData(string[] lines, ref int i, 
+        ref List<string> errors)
     {
-        errorMessage = "";
-        
         // technically theres a "Bookmarks" line above this one, but it just stores the timestamp of
         // every label without the text
-        if (lines[index + 2].StartsWith("BookmarksPlus:"))
+        i += 2;
+        if (lines[i].StartsWith("BookmarksPlus:"))
         {
             Logger.Debug("Parsing labels...");
-            var labelData = lines[index + 2]["BookmarksPlus: ".Length..].Trim().Split(',');
+            var labelData = lines[i]["BookmarksPlus: ".Length..].Trim().Split(',');
             foreach (var label in labelData)
             {
                 var split = label.Split('`');
@@ -1664,29 +1866,26 @@ public static partial class Chart
                 }
                 else
                 {
-                    errorMessage = $"Invalid label \"{label}\"";
-                    Logger.Warn(errorMessage);
-                    return -1;
+                    errors.Add($"Invalid label \"{label}\"");
                 }
             }
             
-            return 3;
+            return errors.Count == 0;
         }
 
-        // editor data will be empty if there are no labels
-        return 1;
+        // editor data will just be empty if there are no labels
+        return true;
     }
     
-    private static int TryParseUnbuggableData(string[] lines, int index,
-        out (double, int, double, int)? lastEditorState, out string errorMessage)
+    private static bool TryParseUnbuggableData(string[] lines, ref int i,
+        out (double, int, double, int)? lastEditorState, ref List<string> errors)
     {
         lastEditorState = null;
-        errorMessage = "";
 
-        var i = 1;
-        if (lines[index + i].StartsWith("LastEditorState:"))
+        ++i;
+        if (lines[i].StartsWith("LastEditorState:"))
         {
-            var split = lines[index + 1]["LastEditorState:".Length..].Trim().Split(',');
+            var split = lines[i]["LastEditorState:".Length..].Trim().Split(',');
             
             // check for length 3 and 4 because older versions of the editor don't save the current
             // cop id as part of the editor state
@@ -1703,25 +1902,33 @@ public static partial class Chart
                     lastEditorState = (time, beatSnap, zoom, copId);
                 }
             }
+            else
+            {
+                Logger.Warn($"Nonfatal load error: Invalid LastEditorState \"{lines[i]}\"");
+            }
 
             ++i;
         }
 
-        if (lines[index + i].StartsWith("Markers:"))
+        if (lines[i].StartsWith("Markers:"))
         {
             ++i;
-            for (; index + i < lines.Length; ++i)
+            for (; i < lines.Length; ++i)
             {
-                if (lines[index + i] == "" || lines[index + i] == "\r" ||
-                    lines[index + i] == "\n" || lines[index + i] == "\r\n")
+                if (lines[i] == "" || lines[i] == "\r" ||
+                    lines[i] == "\n" || lines[i] == "\r\n")
                 {
                     break;
                 }
 
-                var markerData = lines[index + i].Trim().Split(',');
+                var markerData = lines[i].Trim().Split(',');
                 foreach (var marker in markerData)
                 {
                     var split = marker.Split('`');
+                    if (split.Length != 2)
+                    {
+                        Logger.Warn($"Nonfatal load error: Invalid marker string \"{marker}\"");
+                    }
                     if (long.TryParse(split[0], out var time))
                     {
                         // for compatibility with pre 0.13 charts with 1-color markers
@@ -1743,11 +1950,15 @@ public static partial class Chart
                                     break;
                             }
                         }
-                        else
+                        else if (split.Length == 3)
                         {
                             color1 = split[1][0] == '1';
                             color2 = split[1][1] == '1';
                             color3 = split[1][2] == '1';
+                        }
+                        else
+                        {
+                            Logger.Warn($"Nonfatal load error: Invalid marker string \"{marker}\"");
                         }
                         
                         AddOrUpdateMarker(time, color1, color2, color3);
@@ -1760,12 +1971,14 @@ public static partial class Chart
             }
         }
 
-        return i;
+        // unbuggable data isn't required for the chart to work, so it never causes a parse error
+        return true;
     }
     
-    private static int TryParseMetadata(string[] lines, int index, out string errorMessage)
+    private static bool TryParseMetadata(string[] lines, ref int i, out MetadataContainer metadata,
+        ref List<string> errors)
     {
-        errorMessage = "";
+        metadata = new MetadataContainer();
         
         var hasTitle = false;
         var hasArtist = false;
@@ -1774,35 +1987,35 @@ public static partial class Chart
         var hasLevelTag = false;
         var hasFlavorTextTag = false;
         var hasCoverArtTag = false;
-        Metadata = new MetadataContainer();
-        var i = 1;
-        for (; index + i < lines.Length; i++)
+        
+        ++i;
+        for (; i < lines.Length; ++i)
         {
-            var line = lines[index + i].Trim();
+            var line = lines[i].Trim();
             if (line.StartsWith("TitleUnicode:"))
             {
-                Metadata.SongName = line["TitleUnicode:".Length..].Trim();
-                Logger.Debug("Song name: {0}", Metadata.SongName);
+                metadata.SongName = line["TitleUnicode:".Length..].Trim();
+                Logger.Debug("Song name: {0}", metadata.SongName);
                 hasTitle = true;
             }
             else if (line.StartsWith("ArtistUnicode:"))
             {
-                Metadata.ArtistName = line["ArtistUnicode:".Length..].Trim();
-                Logger.Debug("Artist name: {0}", Metadata.ArtistName);
+                metadata.ArtistName = line["ArtistUnicode:".Length..].Trim();
+                Logger.Debug("Artist name: {0}", metadata.ArtistName);
                 hasArtist = true;
             }
             else if (line.StartsWith("Creator:"))
             {
-                Metadata.CharterName = line["Creator:".Length..].Trim();
-                Logger.Debug("Charter name: {0}", Metadata.CharterName);
+                metadata.CharterName = line["Creator:".Length..].Trim();
+                Logger.Debug("Charter name: {0}", metadata.CharterName);
                 hasCharterName = true;
             }
             else if (line.StartsWith("Version:"))
             {
                 // the version is only used for the in-game difficulty name; difficulty slot is
                 // determined by the filename
-                Metadata.DifficultyName = line["Version:".Length..].Trim();
-                Logger.Debug("Difficulty name: \"{0}\"", Metadata.DifficultyName);
+                metadata.DifficultyName = line["Version:".Length..].Trim();
+                Logger.Debug("Difficulty name: \"{0}\"", metadata.DifficultyName);
                 hasDifficulty = true;
             }
             else if (line.StartsWith("Tags:"))
@@ -1810,26 +2023,24 @@ public static partial class Chart
                 try
                 {
                     var match = TagRegex().Match(line);
-                    Console.WriteLine(match.Success);
                     if (match.Success)
                     {
-                        Metadata.DifficultyLevel = int.Parse(match.Groups[1].Value);
-                        Logger.Debug("Difficulty level: {0}", Metadata.DifficultyLevel);
+                        metadata.DifficultyLevel = int.Parse(match.Groups[1].Value);
+                        Logger.Debug("Difficulty level: {0}", metadata.DifficultyLevel);
                         hasLevelTag = true;
                         
-                        Metadata.FlavorText = Regex.Unescape(match.Groups[2].Value);
-                        Logger.Debug("Flavor text: {0}", Metadata.FlavorText);
+                        metadata.FlavorText = Regex.Unescape(match.Groups[2].Value);
+                        Logger.Debug("Flavor text: {0}", metadata.FlavorText);
                         hasFlavorTextTag = true;
                         
-                        Metadata.CoverArtistName = Regex.Unescape(match.Groups[4].Value);
-                        Logger.Debug("Cover artist: {0}", Metadata.CoverArtistName);
+                        metadata.CoverArtistName = Regex.Unescape(match.Groups[4].Value);
+                        Logger.Debug("Cover artist: {0}", metadata.CoverArtistName);
                         hasCoverArtTag = true;
                     }
                 }
                 catch (Exception e)
                 {
-                    Logger.Error(e, "Could not parse tags");
-                    errorMessage = $"Could not parse tags: {e.Message}";
+                    errors.Add("Could not parse tags");
                 }
             }
             // i have no idea what the difference between Title/Artist and
@@ -1881,15 +2092,14 @@ public static partial class Chart
                 errorMessageBuilder.Append("Cover artist (in the Tags object), ");
             }
 
-            errorMessage = errorMessageBuilder.ToString();
-            Logger.Error(errorMessage);
-            return -1;
+            errors.Add(errorMessageBuilder.ToString());
+            return false;
         }
         
-        App.MainWindowViewModel.SongNameText = Metadata.SongName;
-        App.MainWindowViewModel.ArtistNameText = Metadata.ArtistName;
+        App.MainWindowViewModel.SongNameText = metadata.SongName;
+        App.MainWindowViewModel.ArtistNameText = metadata.ArtistName;
 
-        var difficultySlotName = Metadata.DifficultySlot switch
+        var difficultySlotName = metadata.DifficultySlot switch
         {
             DifficultySlot.BEGINNER => "Beginner",
             DifficultySlot.NORMAL => "Normal",
@@ -1899,22 +2109,28 @@ public static partial class Chart
             _ => "Star"
         };
         App.MainWindowViewModel.DifficultyText = $"{difficultySlotName} " +
-                                                 $"{Metadata.DifficultyLevel}";
-        App.MainWindowViewModel.CanSave = (_metadata.SongName != "" &&
-                                           _metadata.ArtistName != "" &&
-                                           _metadata.CharterName != "");
-        return i;
+                                                 $"{metadata.DifficultyLevel}";
+        App.MainWindowViewModel.CanSave = (metadata.SongName != "" &&
+                                           metadata.ArtistName != "" &&
+                                           metadata.CharterName != "");
+        return true;
     }
     
-    private static int TryParseTimingPoints(string[] lines, int index, out string errorMessage)
+    private static bool TryParseTimingPoints(string[] lines, ref int i, out long offset,
+        ref List<string> errors)
     {
-        errorMessage = "";
-        
-        var i = 1;
+        offset = 0;
+
         _bpmRegions = [];
-        for (; index + i < lines.Length; i++)
+        ++i;
+        for (; i < lines.Length; ++i)
         {
-            var line = lines[index + i].Trim();
+            var line = lines[i].Trim();
+            if (line == "")
+            {
+                break;
+            }
+            
             if (TimingPointRegex().IsMatch(line))
             {
                 // timing points have 8 numbers, but most of them are osu!-specific and UNBEATABLE
@@ -1929,18 +2145,17 @@ public static partial class Chart
                 }
                 catch (Exception e)
                 {
-                    errorMessage = $"Could not parse timing point: {e.Message}";
-                    Logger.Error(e, "Could not parse timing point");
-                    return -1;
+                    errors.Add($"Could not parse timing point \"{line}\": {e.Message}");
+                    continue;
                 }
                 
                 // the start time of the first region determines chart offset
                 if (_bpmRegions.Count == 0)
                 {
-                    Metadata.ChartOffset = regionStart;
+                    offset = regionStart;
                 }
 
-                _bpmRegions.Add(new BpmRegion(regionStart - Metadata.ChartOffset,
+                _bpmRegions.Add(new BpmRegion(regionStart - offset,
                                               60000 / msPerBeat));
 
                 if (_bpmRegions.Count > 1)
@@ -1951,35 +2166,32 @@ public static partial class Chart
             }
             else
             {
-                break;
+                errors.Add($"Could not parse timing point \"{line}\": invalid format");
             }
         }
 
         if (_bpmRegions.Count == 0)
         {
-            errorMessage = "Chart has no timing points.";
-            Logger.Error(errorMessage);
-            return -1;
+            errors.Add("Chart has no timing points.");
+            return false;
         }
         
         Logger.Debug("Chart has {0} BPM regions/timing points.", _bpmRegions.Count);
-        return i;
+        return true;
     }
 
-    private static int TryParseHitObjects(string[] lines, int index, out string errorMessage)
+    private static bool TryParseHitObjects(string[] lines, ref int i, ref List<string> errors)
     {
-        errorMessage = "";
-        
-        var i = 1;
-        for (; index + i < lines.Length; ++i)
+        ++i;
+        for (; i < lines.Length; ++i)
         {
-            if (lines[index + i] == "" || lines[index + i] == "\r" || lines[index + i] == "\n" ||
-                lines[index + i] == "\r\n")
+            if (lines[i] == "" || lines[i] == "\r" || lines[i] == "\n" ||
+                lines[i] == "\r\n")
             {
                 break;
             }
             
-            var note = NoteBase.FromHitObjectString(lines[index + i].Trim(),
+            var note = NoteBase.FromHitObjectString(lines[i].Trim(),
                                                     out var noteErrorMessage);
             if (note != null)
             {
@@ -2004,14 +2216,18 @@ public static partial class Chart
             }
             else if (noteErrorMessage != "marker")
             {
-                errorMessage = $"Could not parse note: {noteErrorMessage}";
-                Logger.Error("Could not parse note: {0}", noteErrorMessage);
-                return -1;
+                // keep going to catch every bad note
+                errors.Add($"Could not parse note: {noteErrorMessage}");
             }
+        }
+
+        if (errors.Count > 0)
+        {
+            return false;
         }
         
         Logger.Debug("Chart has {0} notes.", _notes.Count);
-        return i;
+        return true;
     }
     
     private static async Task WriteGeneralChartData(StreamWriter writer)
@@ -2097,7 +2313,7 @@ public static partial class Chart
         var first = true;
         foreach (var bpmRegion in _bpmRegions)
         {
-            var time = bpmRegion.StartTime + Metadata.ChartOffset;
+            var time = bpmRegion.StartTime;
             
             // why does this use 9 decimal places???
             var line = $"{time},{bpmRegion.MsPerBeat:0.000000000}";

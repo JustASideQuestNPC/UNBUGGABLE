@@ -62,9 +62,7 @@ sealed class Program
         
         var logConfig = new NLog.Config.LoggingConfiguration();
 
-        // substring the logger to remove the root namespace ("UNBUGGABLE") from every entry
-        const string logMessageLayout = "[${time} | ${level:uppercase=true:padding=5} | " +
-                                        "${substring:inner=${logger}:start=11}] " +
+        const string logMessageLayout = "[${time} | ${level:uppercase=true} | ${logger}] " +
                                         "${message:withexception=true}";
         
         var logFile = new NLog.Targets.FileTarget("logfile")
@@ -101,7 +99,8 @@ sealed class Program
         };
         
         TaskScheduler.UnobservedTaskException += (s, e) => {
-            NLog.LogManager.GetLogger("Application").Warn(e.Exception, "Unobserved task exception");
+            NLog.LogManager.GetLogger("Application")
+                .Error(e.Exception, "Unobserved task exception");
         };
 
         AppDomain.CurrentDomain.ProcessExit += OnProcessExit;

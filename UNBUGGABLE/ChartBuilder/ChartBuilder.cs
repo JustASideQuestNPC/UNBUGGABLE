@@ -611,8 +611,7 @@ public static class ChartBuilder
     
     public static void TryRemoveBreakpoint(bool showEventIndicator = true)
     {
-        if (BreakpointTime == -1000 || !Config.Settings.EnableBreakpoints ||
-            !Config.PracticeModInstalled)
+        if (BreakpointTime == -1000)
         {
             return;
         }

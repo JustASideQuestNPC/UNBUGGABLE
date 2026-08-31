@@ -67,15 +67,19 @@ public partial class App : Application
             };
             desktop.MainWindow = MainWindow;
             
-            // "reload" the config again to give an error message after 
-            MainWindow.Loaded += (sender, e) => MainWindowViewModel.TryReloadConfigCommand
-                                                                   .Execute(null);
+            // "reload" the config again to give an error message after
+            MainWindow.Loaded += (sender, e) =>
+            {
+                MainWindowViewModel.TryReloadConfigCommand.Execute(null);
+                // this doesn't *need* to be done after the main window loads, but doing it here
+                // ensures that the logs for loading the file will come after the logs for loading
+                // the config settings
+                ChartBuilder.TryAutoLoadChartFile();
+            };
             MainWindow.Closing += (sender, e) => MainWindowViewModel.OnWindowClosed(sender, e);
         }
 
         base.OnFrameworkInitializationCompleted();
-
-        ChartBuilder.TryAutoLoadChartFile();
     }
 
     private void DisableAvaloniaDataAnnotationValidation()
