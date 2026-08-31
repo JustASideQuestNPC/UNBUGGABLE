@@ -23,6 +23,7 @@
         <Setter Property="BorderThickness" Value="{DynamicResource Dialogs.OutlineThickness}" />
         <Setter Property="CornerRadius" Value="{DynamicResource Dialogs.CornerRadius}" />
         <Setter Property="Padding" Value="10" />
+        <Setter Property="MaxWidth" Value="1200" />
     </Style>
 
     <Style Selector="Border.Container Button.SquareIconButton">

@@ -554,8 +554,8 @@ public static class ChartBuilder
             ChartBuilderCommandInvoker.Execute(new RemoveLabelCommand(existingLabel));
         }
     }
-    
-    public static void SetBreakpoint()
+
+    public static void SetBreakpoint(long time = -1, bool showEventIndicator = true)
     {
         if (!Config.Settings.EnableBreakpoints)
         {
@@ -575,15 +575,24 @@ public static class ChartBuilder
             return;
         }
 
+        if (time == -1000)
+        {
+            TryRemoveBreakpoint(false);
+            return;
+        }
+
         if (Chart.CurrentTime == BreakpointTime)
         {
             TryRemoveBreakpoint();
             return;
         }
         
-        BreakpointTime = Chart.CurrentTime;
-        App.MainWindowViewModel.ShowEventIndicator(
-            $@"Breakpoint set at {TimeSpan.FromMilliseconds(BreakpointTime):mm\:ss\.fff}");
+        BreakpointTime = (time != -1 ? time : Chart.CurrentTime);
+        if (showEventIndicator)
+        {
+            App.MainWindowViewModel.ShowEventIndicator(
+                $@"Breakpoint set at {TimeSpan.FromMilliseconds(BreakpointTime):mm\:ss\.fff}");
+        }
         App.MainWindowViewModel.BreakpointTimeText = TimeSpan.FromMilliseconds(BreakpointTime)
                                                              .ToString(@"mm\:ss\.fff");
         

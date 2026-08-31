@@ -176,6 +176,13 @@ public static partial class Chart
                 
                 _jumpTargetsOutOfDate = true;
             }
+
+            var transferBreakpoint = (_metadata.ChartOffset != value.ChartOffset);
+            var prevBreakpoint = ChartBuilder.BreakpointTime;
+            if (transferBreakpoint)
+            {
+                ChartBuilder.TryRemoveBreakpoint(false);
+            }
             
             _metadata = value;
             
@@ -185,6 +192,11 @@ public static partial class Chart
             {
                 ChartFileName = GetChartFileName();
                 Logger.Info("chart file name: \"{0}\"", ChartFileName);
+            }
+            
+            if (transferBreakpoint)
+            {
+                ChartBuilder.SetBreakpoint(prevBreakpoint, false);
             }
             
             UpdateWindowTitle();
@@ -911,7 +923,7 @@ public static partial class Chart
             if (generalErrors.Count > 0)
             {
                 var builder = new StringBuilder();
-                builder.AppendLine($"[General]: {generalErrors.Count} errors");
+                builder.AppendLine($"[General]: {generalErrors.Count} error(s)");
                 foreach (var error in generalErrors)
                 {
                     builder.AppendLine(error);
@@ -923,7 +935,7 @@ public static partial class Chart
             if (officialEditorErrors.Count > 0)
             {
                 var builder = new StringBuilder();
-                builder.AppendLine($"[Editor]: {officialEditorErrors.Count} errors");
+                builder.AppendLine($"[Editor]: {officialEditorErrors.Count} error(s)");
                 foreach (var error in officialEditorErrors)
                 {
                     builder.AppendLine(error);
@@ -935,7 +947,7 @@ public static partial class Chart
             if (metadataErrors.Count > 0)
             {
                 var builder = new StringBuilder();
-                builder.AppendLine($"[Metadata]: {metadataErrors.Count} errors");
+                builder.AppendLine($"[Metadata]: {metadataErrors.Count} error(s)");
                 foreach (var error in metadataErrors)
                 {
                     builder.AppendLine(error);
@@ -947,7 +959,7 @@ public static partial class Chart
             if (timingPointErrors.Count > 0)
             {
                 var builder = new StringBuilder();
-                builder.AppendLine($"[TimingPoints]: {timingPointErrors.Count} errors");
+                builder.AppendLine($"[TimingPoints]: {timingPointErrors.Count} error(s)");
                 foreach (var error in timingPointErrors)
                 {
                     builder.AppendLine(error);
@@ -959,7 +971,7 @@ public static partial class Chart
             if (hitObjectErrors.Count > 0)
             {
                 var builder = new StringBuilder();
-                builder.AppendLine($"[HitObject]: {hitObjectErrors.Count} errors");
+                builder.AppendLine($"[HitObjects]: {hitObjectErrors.Count} error(s)");
                 foreach (var error in hitObjectErrors)
                 {
                     builder.AppendLine(error);
@@ -1061,7 +1073,7 @@ public static partial class Chart
     /// <summary>
     /// Saves the chart to a .beat.txt with extra UNBUGGABLE data.
     /// </summary>
-    public static async Task<bool> SaveToBeatPath(string path)
+    public static async Task<bool> SaveToBeatPath(string path, bool isManualSave = true)
     {
         await using var writer = await Utils.TryWaitForFileStream(path);
         if (writer == null)
@@ -1105,13 +1117,17 @@ public static partial class Chart
         UnsavedChanges = false;
 
         Logger.Info("Chart saved successfully.");
+        if (isManualSave)
+        {
+            _canAutosave = true;
+        }
         return true;
     }
     
     /// <summary>
     /// Saves the chart to a standard .txt file.
     /// </summary>
-    public static async Task<bool> SaveToStandardPath(string path)
+    public static async Task<bool> SaveToStandardPath(string path, bool isManualSave = true)
     {
         await using var writer = await Utils.TryWaitForFileStream(path);
         if (writer == null)
@@ -1151,6 +1167,10 @@ public static partial class Chart
         UnsavedChanges = false;
 
         Logger.Info("Chart saved successfully.");
+        if (isManualSave)
+        {
+            _canAutosave = true;
+        }
         return true;
     }
 
@@ -1663,11 +1683,11 @@ public static partial class Chart
         bool successful;
         if (UserData.LastOpenedChartFile.EndsWith(".beat.txt"))
         {
-            successful = await SaveToBeatPath(UserData.LastOpenedChartFile + ".auto");
+            successful = await SaveToBeatPath(UserData.LastOpenedChartFile + ".auto", false);
         }
         else
         {
-            successful = await SaveToStandardPath(UserData.LastOpenedChartFile + ".auto");
+            successful = await SaveToStandardPath(UserData.LastOpenedChartFile + ".auto", false);
         }
 
         if (successful)
@@ -2054,45 +2074,44 @@ public static partial class Chart
         if (!hasTitle || !hasArtist || !hasCharterName || !hasDifficulty || !hasLevelTag ||
             !hasFlavorTextTag || !hasCoverArtTag)
         {
-            var errorMessageBuilder = new StringBuilder(
-                "Chart is missing one or more required metadata fields (or their values were " +
-                "invalid): ");
+            List<string> errorMessages = [];
             if (!hasTitle)
             {
-                errorMessageBuilder.Append("Title, ");
+                errorMessages.Add("Title");
             }
 
             if (!hasArtist)
             {
-                errorMessageBuilder.Append("Artist, ");
+                errorMessages.Add("Artist");
             }
 
             if (!hasCharterName)
             {
-                errorMessageBuilder.Append("Charter Name, ");
+                errorMessages.Add("Charter Name");
             }
 
             if (!hasDifficulty)
             {
-                errorMessageBuilder.Append("Difficulty name (uses the Version field), ");
+                errorMessages.Add("Difficulty name (uses the Version field)");
             }
 
             if (!hasLevelTag)
             {
-                errorMessageBuilder.Append("Difficulty level (in the Tags object), ");
+                errorMessages.Add("Difficulty level (in the Tags object)");
             }
             
             if (!hasFlavorTextTag)
             {
-                errorMessageBuilder.Append("Flavor text (in the Tags object), ");
+                errorMessages.Add("Flavor text (in the Tags object)");
             }
 
             if (!hasCoverArtTag)
             {
-                errorMessageBuilder.Append("Cover artist (in the Tags object), ");
+                errorMessages.Add("Cover artist (in the Tags object)");
             }
 
-            errors.Add(errorMessageBuilder.ToString());
+            errors.Add("Chart is missing one or more required metadata fields (or their values " +
+                       $"were invalid): {string.Join(", ", errorMessages)}");
             return false;
         }
         
@@ -2145,7 +2164,7 @@ public static partial class Chart
                 }
                 catch (Exception e)
                 {
-                    errors.Add($"Could not parse timing point \"{line}\": {e.Message}");
+                    errors.Add($"[line {i}] Could not parse timing point \"{line}\": {e.Message}");
                     continue;
                 }
                 
@@ -2166,7 +2185,7 @@ public static partial class Chart
             }
             else
             {
-                errors.Add($"Could not parse timing point \"{line}\": invalid format");
+                errors.Add($"[line {i}] Could not parse timing point \"{line}\": invalid format");
             }
         }
 
@@ -2217,7 +2236,7 @@ public static partial class Chart
             else if (noteErrorMessage != "marker")
             {
                 // keep going to catch every bad note
-                errors.Add($"Could not parse note: {noteErrorMessage}");
+                errors.Add($"[line {i}] Could not parse note: {noteErrorMessage}");
             }
         }
 
