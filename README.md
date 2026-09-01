@@ -144,11 +144,13 @@ Enables breakpoints to start the game midway through the chart.
 
 ## useLane2AsMarkers
 If true, loading a chart file will convert all notes that are in lane 2 into UNBUGGABLE markers
-(unless a marker there already exists).
+(unless a marker there already exists). These markers are set to only the first color, which is
+green by default.
 
 ## saveMarkersAsLane2Notes
 If true, all markers are saved in a chart file as a lane 2 note. Markers are always saved in the
-UNBUGGABLE section of a .beat.txt file, regardless of this setting.
+`[UNBUGGABLE]` section of a .beat.txt file, regardless of this setting. **Note:** markers saved like
+this will have their color(s) reset when the chart file is reloaded.
 
 ## alwaysEnableCustomDifficultyName
 If true, you can set a difficulty name for every difficulty slot, not just Star.
@@ -276,7 +278,24 @@ Contains toggles to enable or disable hit sounds for every note type. The offici
 hit sounds for everything except markers and camera changes.
 
 ## debug
-Contains toggles to enable or disable debug overlays that display some technical info.
+Contains various toggles to show more detailed info.
+### enabled
+Enables or disables all debug toggles.
+### verboseLogging
+If true, a lot more information is printed out to the console and log file. Verbose logging can also
+be enabled by running UNBUGGABLE from the command line with the `-v` or `--verbose` argument,
+regardless of this setting. **Note:** This setting ignores `debug.enabled`.
+### commandStacks
+If true, the debug overlay displays what state the undo/redo system is in.
+### inputData
+If true, the debug overlay displays which modifier keys are pressed, and the keyboard key that was
+most recently pressed.
+### mediaPlayer
+If true, the debug overlay displays info about what state the audio system is currently in.
+### noteTimestamps
+If true, the note viewer displays the exact time (in milliseconds) of each note, including the end
+of holds, doubles, and mashes. This is actually enabled by default because it doesn't really cover
+up anything important and it can be very useful for finding notes that have to be nudged.
 
 # Color Themes
 Every color theme is its own `.json` file in the themes folder. The naming is (hopefully)

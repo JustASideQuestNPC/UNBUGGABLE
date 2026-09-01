@@ -65,7 +65,7 @@ public class DebugOverlay : Control
         {
             var chartDebug = Chart.DebugInfo;
             column1Strings.Add($"""
-                                --- chart ---
+                                --- chart/media player ---
                                 playing: {chartDebug.Playing}
                                 song loaded: {chartDebug.SongLoaded}
                                 media time: {chartDebug.MediaPlayerTime}
@@ -78,7 +78,7 @@ public class DebugOverlay : Control
 
         if (column1Strings.Count > 0)
         {
-            var column1Text = new FormattedText(string.Join('\n', column1Strings),
+            var column1Text = new FormattedText(string.Join("\n\n", column1Strings),
                                                 CultureInfo.CurrentCulture,
                                                 FlowDirection.LeftToRight, Typeface, TextSize,
                                                 TextBrush);
