@@ -7,6 +7,7 @@
         <entry key="UNBEATABLEChartEditor/Views/CustomSkiaPage.axaml" value="UNBEATABLEChartEditor/UNBEATABLEChartEditor.csproj" />
         <entry key="UNBEATABLEChartEditor/Views/MainWindow.axaml" value="UNBEATABLEChartEditor/UNBEATABLEChartEditor.csproj" />
         <entry key="UNBUGGABLE/App.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Dialogs/CallbackButtonDialog.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
         <entry key="UNBUGGABLE/Dialogs/ChartMetadataDialog.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
         <entry key="UNBUGGABLE/Dialogs/DialogStyles.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
         <entry key="UNBUGGABLE/Dialogs/MessageDialog.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />

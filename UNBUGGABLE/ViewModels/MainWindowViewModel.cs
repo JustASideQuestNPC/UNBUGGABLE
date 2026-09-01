@@ -342,6 +342,19 @@ public partial class MainWindowViewModel : ViewModelBase
     }
     
     [RelayCommand]
+    private void OpenLogsFolder()
+    {
+        if (App.TopLevel == null)
+        {
+            Console.WriteLine("No top level window!");
+            return;
+        }
+
+        var startFolder = Directory.CreateDirectory(Environment.CurrentDirectory + "/logs/");
+        Process.Start("explorer.exe", startFolder.FullName);
+    }
+    
+    [RelayCommand]
     private async Task LoadFile()
     {
         if (Chart.SongLoaded && Chart.UnsavedChanges)

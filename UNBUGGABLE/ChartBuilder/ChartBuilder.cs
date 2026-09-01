@@ -194,7 +194,21 @@ public static class ChartBuilder
         }
         else if (!noErrorDialog)
         {
-            await new MessageDialog($"Chart loading failed: {result.Item2}").ShowAsync();
+            // unless the file wasn't found, the second return value will always be the path to the
+            // error log file
+            if (result.Item2 == "file not found")
+            {
+                await new MessageDialog($"Chart file \"{path}\" not found").ShowAsync();
+            }
+            else
+            {
+                var logFolder = Directory.CreateDirectory(Environment.CurrentDirectory + "/logs/");
+                await new CallbackButtonDialog(
+                    $"Chart loading failed: {result.Item2}", "Open log folder", () =>
+                    {
+                        Process.Start("explorer.exe", logFolder.FullName);
+                    }).ShowAsync();
+            }
         }
         
         return result.Item1;

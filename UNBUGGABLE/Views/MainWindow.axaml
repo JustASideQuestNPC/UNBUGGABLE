@@ -43,6 +43,8 @@
                                       Command="{Binding OpenConfigFolderCommand}" />
                             <MenuItem Header="Open themes folder"
                                       Command="{Binding OpenThemesFolderCommand}" />
+                            <MenuItem Header="Open logs folder"
+                                      Command="{Binding OpenLogsFolderCommand}" />
                         </ContextMenu>
                     </Button.ContextMenu>
                 </Button>

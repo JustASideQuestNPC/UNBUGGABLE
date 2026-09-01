@@ -723,8 +723,11 @@ public static partial class Chart
         if (!File.Exists(path))
         {
             Logger.Error("File not found.");
-            return (false, "File not found.");
+            return (false, "file not found");
         }
+        
+        var errorFileName = $"logs/_load_failure_[{Path.GetFileName(path)}].log";
+        var errorFilePath = Path.Combine(Environment.CurrentDirectory, errorFileName);
         
         var dirName = Path.GetFullPath(path);
         var folderPath = dirName[..dirName.LastIndexOf('\\')];
@@ -977,9 +980,7 @@ public static partial class Chart
                 errorMessageBuilder.AppendLine(builder.ToString());
                 errorMessageBuilder.AppendLine();
             }
-
-            var errorFileName = $"logs/_load_failure_[{Path.GetFileName(path)}].txt";
-            var errorFilePath = Path.Combine(Environment.CurrentDirectory, errorFileName);
+            
             await File.WriteAllTextAsync(errorFilePath, errorMessageBuilder.ToString());
 
             ClearChart();
@@ -1061,9 +1062,11 @@ public static partial class Chart
             return (true, "");
         }
         
+        await File.WriteAllTextAsync(errorFilePath, $"Audio loading error {result.Item2}");
+        
         ClearChart();
         UpdateWindowTitle();
-        return (false, result.Item2);
+        return (false, errorFileName);
     }
 
     /// <summary>

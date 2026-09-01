@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="UNBEATABLEChartEditor.Dialogs.MessageDialog">
+             x:Class="UNBEATABLEChartEditor.Dialogs.CallbackButtonDialog">
     <UserControl.Styles>
         <StyleInclude Source="/Dialogs/DialogStyles.axaml" />
     </UserControl.Styles>
@@ -12,9 +12,14 @@
     <Border Classes="Container">
         <StackPanel Orientation="Vertical" Spacing="10">
             <TextBlock Name="Message" />
-            <Button Classes="SquareIconButton" Click="ConfirmButtonClick" Height="50">
-                <avalonia:MaterialIcon Kind="Check" />
-            </Button>
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <Button Classes="SquareIconButton" Click="ConfirmButtonClick" Height="50">
+                    <avalonia:MaterialIcon Kind="Check" />
+                </Button>
+                <Button Click="CallbackButtonClick" Height="50">
+                    <TextBlock Name="CallbackButtonName" FontSize="15" />
+                </Button>
+            </StackPanel>
         </StackPanel>
     </Border>
 </UserControl>

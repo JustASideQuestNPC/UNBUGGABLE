@@ -89,3 +89,11 @@ public class LockNoteFlagAction(List<string> keybinds, char flag) : InputActionB
         ChartBuilder.ToggleFlagLock(flag);
     }
 }
+
+public class CrashProgramAction(List<string> keybinds) : InputActionBase(keybinds)
+{
+    public override Task OnPress()
+    {
+        throw new InvalidOperationException("You brought this on yourself.");
+    }
+}

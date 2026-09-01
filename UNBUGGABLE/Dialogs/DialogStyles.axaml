@@ -26,18 +26,21 @@
         <Setter Property="MaxWidth" Value="1200" />
     </Style>
 
-    <Style Selector="Border.Container Button.SquareIconButton">
+    <Style Selector="Border.Container Button">
         <Setter Property="Background" Value="{DynamicResource Dialogs.Buttons.BackgroundColor}" />
         <Setter Property="BorderBrush" Value="{DynamicResource Dialogs.Buttons.OutlineColor}" />
         <Setter Property="BorderThickness" Value="{DynamicResource Dialogs.Buttons.OutlineThickness}" />
         <Setter Property="CornerRadius" Value="{DynamicResource Dialogs.Buttons.CornerRadius}" />
         <Setter Property="Margin" Value="4" />
         <Setter Property="VerticalAlignment" Value="Stretch" />
-        <Setter Property="Width" Value="{Binding $self.Bounds.Height}" />
     </Style>
-    <Style Selector="Border.Container Button.SquareIconButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Style Selector="Border.Container Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource Dialogs.Buttons.Hovered.BackgroundColor}" />
         <Setter Property="BorderBrush" Value="{DynamicResource Dialogs.Buttons.Hovered.OutlineColor}" />
+    </Style>
+    
+    <Style Selector="Border.Container Button.SquareIconButton">
+        <Setter Property="Width" Value="{Binding $self.Bounds.Height}" />
     </Style>
     <Style Selector="Border.Container Button.SquareIconButton materialIcons|MaterialIcon">
         <Setter Property="Foreground" Value="{DynamicResource Dialogs.Buttons.IconColor}" />
@@ -176,7 +179,7 @@
     </Style>
     
     <Style Selector="dialogs|ThreefoldDialog Button">
-        <Setter Property="FontSize" Value="15" />
+        <Setter Property="FontSize" Value="{DynamicResource Dialogs.InputBoxes.TextSize}" />
         <Setter Property="Foreground" Value="{DynamicResource Dialogs.TextColor}" />
         <Setter Property="Background" Value="{DynamicResource Dialogs.Buttons.BackgroundColor}" />
         <Setter Property="FontFamily" Value="{DynamicResource RobotoMono}" />

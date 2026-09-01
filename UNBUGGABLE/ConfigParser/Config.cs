@@ -576,7 +576,8 @@ public static class Config
             new SetBreakpointAction(Keybinds.SetBreakpoint),
             new RemoveBreakpointAction(Keybinds.RemoveBreakpoint),
             new JumpToBreakpointCommand(Keybinds.JumpToBreakpoint),
-            new EmergencyReloadAction(Keybinds.EmergencyReload)
+            new EmergencyReloadAction(Keybinds.EmergencyReload),
+            new CrashProgramAction(["ctrl+alt+oem4"]) // ctrl + alt + [
         ];
 
         Logger.Info("Keybinds loaded successfully!");

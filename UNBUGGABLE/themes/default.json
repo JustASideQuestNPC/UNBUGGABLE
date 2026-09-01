@@ -54,14 +54,14 @@
         "outlineThickness": 6,
         "cornerRadius": 6,
         "textColor": "#161616",
-        "textSize": 22,
+        "textSize": 18,
         "inputBoxes": {
             "backgroundColor": "#C9C9A5",
             "outlineColor": "#FF4B7E",
             "outlineThickness": 2,
             "cornerRadius": 0,
             "textColor": "#161616",
-            "textSize": 18
+            "textSize": 16
         },
         "buttons": {
             "backgroundColor": "#00000000",

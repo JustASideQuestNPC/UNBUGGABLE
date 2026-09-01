@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Logging;
 using CommandLine;
@@ -98,11 +99,26 @@ sealed class Program
         AppDomain.CurrentDomain.UnhandledException += (s, e) =>
         {
             appLogger.Error(e.ExceptionObject as Exception, "Unhandled application exception");
-            NLog.LogManager.Flush(); // Ensure logs are written before application dies
+            
+            // ensure logs are written before application dies
+            NLog.LogManager.Flush();
+            NLog.LogManager.Shutdown();
+            
+            // add an underscore so the file is at the top of the log folder
+            var newFilePath = Path.Combine(Environment.CurrentDirectory,
+                                           $"logs/_FATAL_{DateTime.Now:MM_dd_yyyy_h_mm_tt}.log");
+            File.Move(logFile.FileName.ToString(), newFilePath);
         };
         
         TaskScheduler.UnobservedTaskException += (s, e) => {
             appLogger.Error(e.Exception, "Unobserved task exception");
+            
+            NLog.LogManager.Flush();
+            NLog.LogManager.Shutdown();
+            
+            var newFilePath = Path.Combine(Environment.CurrentDirectory,
+                                           $"logs/_FATAL_{DateTime.Now:MM_dd_yyyy_h_mm_tt}.log");
+            File.Move(logFile.FileName.ToString(), newFilePath);
         };
 
         AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
