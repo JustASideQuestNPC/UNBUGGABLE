@@ -88,19 +88,21 @@ sealed class Program
             logConfig.AddRule(NLog.LogLevel.Info, NLog.LogLevel.Fatal, logConsole);
         }
         NLog.LogManager.Configuration = logConfig;
+
+        var appLogger = NLog.LogManager.GetLogger("Application");
+        appLogger.Info("Output from UNBUGGABLE version {0}",
+                       Assembly.GetExecutingAssembly().GetName().Version);
         
         Logger.Info($"Logging to {logFile.FileName}");
 
         AppDomain.CurrentDomain.UnhandledException += (s, e) =>
         {
-            NLog.LogManager.GetLogger("Application")
-                .Error(e.ExceptionObject as Exception, "Unhandled application exception");
+            appLogger.Error(e.ExceptionObject as Exception, "Unhandled application exception");
             NLog.LogManager.Flush(); // Ensure logs are written before application dies
         };
         
         TaskScheduler.UnobservedTaskException += (s, e) => {
-            NLog.LogManager.GetLogger("Application")
-                .Error(e.Exception, "Unobserved task exception");
+            appLogger.Error(e.Exception, "Unobserved task exception");
         };
 
         AppDomain.CurrentDomain.ProcessExit += OnProcessExit;

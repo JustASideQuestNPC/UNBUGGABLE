@@ -1966,7 +1966,7 @@ public static partial class Chart
                                     break;
                             }
                         }
-                        else if (split.Length == 3)
+                        else if (split[1].Length == 3)
                         {
                             color1 = split[1][0] == '1';
                             color2 = split[1][1] == '1';
@@ -1985,6 +1985,7 @@ public static partial class Chart
                     }
                 }
             }
+            Logger.Debug("Loaded {0} markers", MarkerNotes.Count);
         }
 
         // unbuggable data isn't required for the chart to work, so it never causes a parse error
