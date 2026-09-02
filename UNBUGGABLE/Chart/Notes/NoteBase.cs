@@ -113,7 +113,7 @@ public abstract partial class NoteBase
         
         var d = hitObjectString.Split(',');
         var laneNumber = int.Parse(d[0]);
-        var noteTime = long.Parse(d[2]);
+        var noteTime = long.Parse(d[2]) - Chart.Metadata.ChartOffset;
         var instantNumber = int.Parse(d[3]);
         
         var noteFlagNumber = int.Parse(d[4]);
@@ -527,7 +527,7 @@ public abstract partial class NoteBase
                 _ => throw new ArgumentOutOfRangeException()
             },
             "192",
-            Time.ToString()
+            (Time + Chart.Metadata.ChartOffset).ToString()
         ];
         if (Instant)
         {

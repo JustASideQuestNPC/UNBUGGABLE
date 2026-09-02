@@ -39,6 +39,28 @@ public class Debug
     }
 }
 
+public class MarkerPreviewToggles
+{
+    [JsonRequired][JsonPropertyName("color1")]
+    public bool Color1 { get; set; } = true;
+    
+    [JsonRequired][JsonPropertyName("color2")]
+    public bool Color2 { get; set; } = false;
+    
+    [JsonRequired][JsonPropertyName("color3")]
+    public bool Color3 { get; set; } = false;
+    
+    public string GetFormattedString()
+    {
+        return $"""
+
+                    - color 1: {Color1}
+                    - color 2: {Color2}
+                    - color 3: {Color3}
+                """;
+    }
+}
+
 public class HitSounds
 {
     [JsonRequired][JsonPropertyName("single")]
@@ -132,8 +154,8 @@ public class Settings
     [JsonRequired][JsonPropertyName("enhancedPreview")]
     public bool EnhancedPreview { get; set; } = true;
 
-    // [JsonRequired][JsonPropertyName("showNoteDirections")]
-    // public bool ShowNoteDirections { get; set; } = true;
+    [JsonRequired][JsonPropertyName("markerPreviews")]
+    public MarkerPreviewToggles MarkerPreviews { get; set; } = new();
 
     [JsonRequired] [JsonPropertyName("alwaysShowAllNoteFlags")]
     public bool AlwaysShowAllFlags { get; set; } = false;
@@ -252,6 +274,7 @@ public class Settings
                   color theme: {ColorTheme}
                   save to .beat.txt: {DefaultSaveToBeatFiles}
                   enhanced preview: {EnhancedPreview}
+                  marker previews: {MarkerPreviews.GetFormattedString()}
                   currentTimePosition: {CurrentTimePosition}
                   always show all note flags: {AlwaysShowAllFlags}
                   enable breakpoints: {EnableBreakpoints}

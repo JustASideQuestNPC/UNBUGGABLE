@@ -88,8 +88,30 @@ public class MarkerNote : NoteBase
             }
         }
     }
-    
-    public override void RenderPreview(DrawingContext dc) { }
+
+    public override void RenderPreview(DrawingContext dc)
+    {
+        if (Time < Chart.CurrentTimeRaw || Time > Chart.CurrentTimeRaw + 1000)
+        {
+            return;
+        }
+
+        var color =
+            Color1 && Config.Settings.MarkerPreviews.Color1 ? Brushes[0] :
+            Color2 && Config.Settings.MarkerPreviews.Color2 ? Brushes[1] :
+            Color3 && Config.Settings.MarkerPreviews.Color3 ? Brushes[2] :
+            null;
+
+        if (color == null)
+        {
+            return;
+        }
+        
+        var pen = new Pen(color, 2);
+        var x = GamePreview.TimeToScreenCoords(Time);
+        dc.DrawLine(pen, new Point(x, -GamePreview.PreviewHeight / 2), 
+                    new Point(x, GamePreview.PreviewHeight / 2));
+    }
     
     public override long? ShouldPlayHitSound(double rangeStart, double rangeEnd)
     {

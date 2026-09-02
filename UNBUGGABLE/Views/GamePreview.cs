@@ -233,7 +233,29 @@ public class GamePreview : Control
         var viewableZoomedOut = false;
         var currentNoteZoomedOut = false;
         
-        foreach (var note in Chart.Notes)
+        // draw all marker notes first so they always appear below actual notes
+        if (Config.Settings.EnhancedPreview)
+        {
+            var cameraAndMarkers = Chart.Notes.Where(
+                n => n.Type is NoteType.CAMERA_SWAP or NoteType.CAMERA_INSTANT or
+                    NoteType.CAMERA_SWAP_AND_ZOOM or NoteType.MARKER);
+            foreach (var note in cameraAndMarkers)
+            {
+                if (note.Type is NoteType.CAMERA_SWAP or NoteType.CAMERA_INSTANT or
+                    NoteType.CAMERA_SWAP_AND_ZOOM)
+                {
+                    CurrentNotesFromRight = !CurrentNotesFromRight;
+                }
+                
+                // camera notes have an empty RenderPreview() method
+                note.RenderPreview(dc);
+            }
+            
+            // reset for rendering actual notes
+            CurrentNotesFromRight = true; 
+        }
+        
+        foreach (var note in Chart.NonMarkerNotes)
         {
             if (note.Type is NoteType.CAMERA_ZOOM or NoteType.CAMERA_SWAP_AND_ZOOM)
             {
@@ -254,7 +276,6 @@ public class GamePreview : Control
                 }
             }
             
-            // camera and notes have an empty RenderPreview() method
             note.RenderPreview(dc);
         }
 

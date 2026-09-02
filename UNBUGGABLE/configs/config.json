@@ -5,6 +5,11 @@
   "defaultCharterName": "",
   "defaultDifficulty": "beginner",
   "enhancedPreview": true,
+  "markerPreviews": {
+    "color1": true,
+    "color2": false,
+    "color3": false
+  },
   "alwaysShowAllNoteFlags": false,
   "enableBreakpoints": true,
   "useLane2AsMarkers": true,

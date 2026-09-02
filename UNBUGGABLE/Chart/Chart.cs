@@ -1605,7 +1605,7 @@ public static partial class Chart
 
         if (Config.Settings.JumpTargets.Contains("bpmChanges"))
         {
-            _jumpTargets.AddRange(_bpmRegions.Select(r => r.StartTime));
+            _jumpTargets.AddRange(_bpmRegions.Select(r => r.StartTime - Metadata.ChartOffset));
         }
 
         if (Config.Settings.JumpTargets.Contains("firstNote") && NonMarkerNotes.Count > 0)
@@ -1641,6 +1641,13 @@ public static partial class Chart
         
         _jumpTargets = _jumpTargets.Distinct().ToList();
         _jumpTargets.Sort();
+
+        var builder = new StringBuilder("jump targets:\r\n");
+        foreach (var target in _jumpTargets)
+        {
+            builder.AppendLine(target.ToString());
+        }
+        Logger.Debug(builder.ToString());
     }
 
     private static void ClearChart()
