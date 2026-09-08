@@ -78,7 +78,7 @@ public class FreestyleNote : NoteBase
         // actually render the note -- this prevents the head from disappearing if notes in the
         // chain are more than 1 second apart
         var parentNote = Chart.GetPreviousNote(this);
-        var isSubNote = parentNote?.Type == NoteType.FREESTYLE;
+        var isSubNote = parentNote?.Type == NoteType.FREESTYLE && Type == NoteType.FREESTYLE;
         if (isSubNote && parentNote.Time < Chart.CurrentTime && Time >= Chart.CurrentTime)
         {
             dc.DrawEllipse(FillBrush, new Pen(OutlineBrush, 6),
