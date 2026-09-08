@@ -254,7 +254,6 @@ public static partial class Chart
             if (SongLoaded)
             {
                 _mediaPlayer.Volume = value;
-                Logger.Debug("song volume changed to {0}", value);
             }
         }
     }
@@ -267,7 +266,6 @@ public static partial class Chart
         {
             _sfxVolume = value;
             SfxEngine.Volume = value / 100.0f;
-            Logger.Debug("sfx volume changed to {0}", value);
         }
     }
     
@@ -280,7 +278,6 @@ public static partial class Chart
             {
                 _mediaPlayer.SetRate(value / 100.0f);
             }
-            Logger.Debug("song volume changed to {0}", value);
         }
     }
 
@@ -570,9 +567,9 @@ public static partial class Chart
         {
             var prevTime = CurrentTimeRaw;
             CurrentTimeRaw += (_stopwatch.ElapsedMilliseconds - _lastStopwatchTime) * PlaySpeed / 100;
-            if (CurrentTimeRaw + AdjustedOffset >= 0 && !_mediaPlayer.IsPlaying)
+            if (CurrentTimeRaw + Metadata.ChartOffset >= 0 && !_mediaPlayer.IsPlaying)
             {
-                _mediaPlayer.SeekTo(TimeSpan.FromMilliseconds(CurrentTimeRaw + AdjustedOffset));
+                _mediaPlayer.SeekTo(TimeSpan.FromMilliseconds(CurrentTimeRaw + Metadata.ChartOffset));
                 _mediaPlayer.Play();
             }
             else
@@ -1642,12 +1639,12 @@ public static partial class Chart
         _jumpTargets = _jumpTargets.Distinct().ToList();
         _jumpTargets.Sort();
 
-        var builder = new StringBuilder("jump targets:\r\n");
-        foreach (var target in _jumpTargets)
-        {
-            builder.AppendLine(target.ToString());
-        }
-        Logger.Debug(builder.ToString());
+        // var builder = new StringBuilder("jump targets:\r\n");
+        // foreach (var target in _jumpTargets)
+        // {
+        //     builder.AppendLine(target.ToString());
+        // }
+        // Logger.Debug(builder.ToString());
     }
 
     private static void ClearChart()
@@ -1720,7 +1717,7 @@ public static partial class Chart
         }
         
         Playing = true;
-        if (CurrentTimeRaw + AdjustedOffset >= 0)
+        if (CurrentTimeRaw + Metadata.ChartOffset >= 0)
         {
             if (_mediaPlayer.Media.State == VLCState.Ended)
             {
@@ -1730,7 +1727,7 @@ public static partial class Chart
             {
                 _mediaPlayer.Play();
             }
-            _mediaPlayer.SeekTo(TimeSpan.FromMilliseconds(CurrentTimeRaw + AdjustedOffset));
+            _mediaPlayer.SeekTo(TimeSpan.FromMilliseconds(CurrentTimeRaw + Metadata.ChartOffset));
         }
     }
     
