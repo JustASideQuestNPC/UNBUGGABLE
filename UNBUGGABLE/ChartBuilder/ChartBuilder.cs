@@ -808,14 +808,6 @@ public static class ChartBuilder
     private static void CheckForNoteOperation(NoteLane lane, long start, long end)
     {
         var oldNote = Chart.GetNote(start, lane, 1);
-        // hold notes can also extend from the start of the note
-        if (oldNote == null && end != start)
-        {
-            oldNote =
-                Chart.GetNote(end, lane, Config.Settings.HoldExtensionSearchThreshold) ??
-                Chart.GetNoteFromEnd(start, lane, Config.Settings.HoldExtensionSearchThreshold);
-        }
-        
         if (oldNote != null)
         {
             if (start == end)
@@ -930,13 +922,12 @@ public static class ChartBuilder
         if (!newNote.Instant)
         {
             var prevNote = Chart.GetNoteFromEnd(start, lane,
-                                                Config.Settings.HoldExtensionSearchThreshold);
+                                                Config.Settings.HoldExtensionSearchThreshold, true);
             var nextNote = Chart.GetNote(end, lane,
                                          Config.Settings.HoldExtensionSearchThreshold);
 
             List<NoteBase> removedNotes = [];
-            if (prevNote != null && prevNote.Type == newNote.Type && nextNote != null &&
-                nextNote.Type == newNote.Type)
+            if (prevNote != null && nextNote != null && nextNote.Type == newNote.Type)
             {
                 newNote.Time = prevNote.Time;
                 newNote.EndTime = nextNote.EndTime;
@@ -944,7 +935,7 @@ public static class ChartBuilder
                 removedNotes.Add(prevNote);
                 removedNotes.Add(nextNote);
             }
-            else if (prevNote != null && prevNote.Type == newNote.Type)
+            else if (prevNote != null)
             {
                 newNote.Time = prevNote.Time;
                 newNote.Flags = prevNote.Flags;

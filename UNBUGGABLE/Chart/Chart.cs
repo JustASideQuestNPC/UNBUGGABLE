@@ -1273,10 +1273,15 @@ public static partial class Chart
     /// <summary>
     /// Returns the (non-instant) note in a specific lane that <i>ends</i> at a specific time, or
     /// null if that note does not exist.
+    /// <param name="includeInstant">If true, an instant note placed at that time will also be
+    ///                              returned</param>
     /// </summary>
-    public static NoteBase? GetNoteFromEnd(long time, NoteLane lane, long maxDistance = 0) =>
-        _notes.FirstOrDefault(n => !n.Instant && Math.Abs(n.EndTime - time) <= maxDistance &&
-                                   n.Lane == lane);
+    public static NoteBase? GetNoteFromEnd(long time, NoteLane lane, long maxDistance = 0,
+        bool includeInstant = false) =>
+        _notes.FirstOrDefault(n => n.Lane == lane &&
+                                   ((!n.Instant && Math.Abs(n.EndTime - time) <= maxDistance) ||
+                                   (includeInstant && n.Instant && Math.Abs(n.Time - time)
+                                       <= maxDistance)));
 
     public static NoteBase? GetPreviousNote(NoteBase note)
     {
