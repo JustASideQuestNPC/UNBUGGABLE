@@ -186,6 +186,9 @@ If true, freestyles (not mashes) with the F flag will be converted to negative m
 is saved. Negative mashes look like normal mashes in-game, but behave like freestyles and die
 immediately upon being hit.
 
+## doublesOverwriteEndpoint
+If true, placing a double will delete a notes that start where the double lands.
+
 ## enableLivePlacement
 If true, you can place notes, camera changes, and markers while the song is playing. **Live**
 **placement is extremely experimental and will not become an actual feature until a later version.**

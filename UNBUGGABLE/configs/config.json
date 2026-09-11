@@ -20,6 +20,7 @@
   "allowTopLaneCopMashes": false,
   "showFreestyleSubNotesWhilePlacing": true,
   "enableNegativeMashConversion": true,
+  "doublesOverwriteEndpoint": true,
   "enableLivePlacement": false,
   "beatSnaps": [
     1,

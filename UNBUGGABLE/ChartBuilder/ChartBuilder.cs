@@ -925,9 +925,20 @@ public static class ChartBuilder
                                                 Config.Settings.HoldExtensionSearchThreshold, true);
             var nextNote = Chart.GetNote(end, lane,
                                          Config.Settings.HoldExtensionSearchThreshold);
+            
+            // the previous note is always removed unless it's a double and a hold is being placed
+            // (or vice versa) -- without this, holds will transform into doubles if you place them
+            // in the wrong order
+            var shouldRemovePreviousNote = false;
+            if (prevNote != null)
+            {
+                shouldRemovePreviousNote =
+                    !(prevNote.Type == NoteType.HOLD && newNote.Type == NoteType.DOUBLE) &&
+                    !(prevNote.Type == NoteType.DOUBLE && newNote.Type == NoteType.HOLD);
+            }
 
             List<NoteBase> removedNotes = [];
-            if (prevNote != null && nextNote != null && nextNote.Type == newNote.Type)
+            if (shouldRemovePreviousNote && nextNote != null && nextNote.Type == newNote.Type)
             {
                 newNote.Time = prevNote.Time;
                 newNote.EndTime = nextNote.EndTime;
@@ -935,7 +946,7 @@ public static class ChartBuilder
                 removedNotes.Add(prevNote);
                 removedNotes.Add(nextNote);
             }
-            else if (prevNote != null)
+            else if (shouldRemovePreviousNote)
             {
                 newNote.Time = prevNote.Time;
                 newNote.Flags = prevNote.Flags;
@@ -946,6 +957,17 @@ public static class ChartBuilder
                 newNote.EndTime = nextNote.EndTime;
                 newNote.Flags = nextNote.Flags;
                 removedNotes.Add(nextNote);
+            }
+
+            if (newNote.Type == NoteType.DOUBLE && Config.Settings.DoublesOverwriteEndpoint)
+            {
+                var endpointNote = Chart.GetNote(
+                    newNote.EndTime,
+                    newNote.Lane == NoteLane.TOP ? NoteLane.BOTTOM : NoteLane.TOP, 1);
+                if (endpointNote != null)
+                {
+                    removedNotes.Add(endpointNote);
+                }
             }
             
             if (removedNotes.Count > 0)
@@ -985,6 +1007,21 @@ public static class ChartBuilder
         {
             newNote.Flags.N = true;
         }
+        
+        if (newNote.Type == NoteType.DOUBLE && Config.Settings.DoublesOverwriteEndpoint)
+        {
+            var endpointNote = Chart.GetNote(
+                newNote.EndTime,
+                newNote.Lane == NoteLane.TOP ? NoteLane.BOTTOM : NoteLane.TOP, 1);
+            if (endpointNote != null)
+            {
+                ChartBuilderCommandInvoker.Execute(
+                    new UpdateNotesCommand([endpointNote], [newNote],
+                                           Config.Settings.AutoSelectBehavior == "all"));
+                return;
+            }
+        }
+        
         ChartBuilderCommandInvoker.Execute(new AddNotesCommand([newNote]));
     }
     
