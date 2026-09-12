@@ -201,6 +201,12 @@
     "removeBreakpoint": [
         "ctrl+b"
     ],
+    "setPreviewStart": [
+        "p"
+    ],
+    "removePreviewStart": [
+        "ctrl+p"
+    ],
     "emergencyReload": [
         "ctrl+alt+r"
     ]

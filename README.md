@@ -59,8 +59,11 @@ label.
 
 There are also some UNBUGGABLE-specific keybinds:
 - `,`/`.`: Cycle cop notes (in addition to the default `/` and `\`).
-- `q`: Place a marker. Hold `Shift`, or `Ctrl`, to change the color of the marker.
-- `b`: Place or move the breakpoint. Use `Ctrl+b` to delete it.
+- `q`: Place a marker. Hold `Shift`, or `ctrl`, to change the color of the marker.
+- `b`: Place or move the breakpoint. Use `ctrl+b` to delete it.
+- `p`: Set where playback starts when you scroll over the song in the selection menu in game. Use
+  `ctrl+p` to reset it. **Note:** The preview start time will snap to the nearest second due to game
+  limitations.
 - `ctrl+1/2/3/4` without any notes selected will set the editor to place notes for that cop.
 - `ctrl+0` or <code>ctrl+`</code>: If notes are selected, converts cop notes to normal notes.
   Otherwise, sets the editor to place normal notes.

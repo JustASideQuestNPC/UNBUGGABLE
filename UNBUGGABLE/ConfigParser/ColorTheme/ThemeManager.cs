@@ -213,6 +213,10 @@ public static class ThemeManager
         _resources["NoteViewer.Breakpoint.Color"] =
             _themeColors["NoteViewer.Breakpoint.Color"];
         
+        _themeColors["NoteViewer.PreviewStart.Color"] = new SolidColorBrush();
+        _resources["NoteViewer.PreviewStart.Color"] =
+            _themeColors["NoteViewer.PreviewStart.Color"];
+        
         _themeColors["NoteViewer.BpmChange.Color"] = new SolidColorBrush();
         _resources["NoteViewer.BpmChange.Color"] =
             _themeColors["NoteViewer.BpmChange.Color"];
@@ -707,6 +711,8 @@ public static class ThemeManager
             theme.NoteViewer.CurrentTimeLine.Color;
         _themeColors["NoteViewer.Breakpoint.Color"].Color =
             theme.NoteViewer.Breakpoint.Color;
+        _themeColors["NoteViewer.PreviewStart.Color"].Color =
+            theme.NoteViewer.PreviewStart.Color;
         _themeColors["NoteViewer.BpmChange.Color"].Color =
             theme.NoteViewer.BpmChange.Color;
         _themeColors["NoteViewer.Label.Color"].Color =
@@ -981,6 +987,10 @@ public static class ThemeManager
             theme.NoteViewer.Breakpoint.Thickness;
         _resources["NoteViewer.Breakpoint.ArrowScale"] =
             theme.NoteViewer.Breakpoint.ArrowScale;
+        _resources["NoteViewer.PreviewStart.Thickness"] =
+            theme.NoteViewer.PreviewStart.Thickness;
+        _resources["NoteViewer.PreviewStart.ArrowScale"] =
+            theme.NoteViewer.PreviewStart.ArrowScale;
         _resources["NoteViewer.BpmChange.LineThickness"] =
             theme.NoteViewer.BpmChange.LineThickness;
         _resources["NoteViewer.BpmChange.TextSize"] =

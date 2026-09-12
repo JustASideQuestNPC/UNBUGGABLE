@@ -58,6 +58,7 @@ public class NoteViewer : Control
     private static double _laneNumberOutlineThickness;
     private static double _laneNumberTextSize;
     private static double _breakpointArrowScale;
+    private static double _previewStartArrowScale;
     private static double _cornerRadius;
 
     private static LabeledLineStyle _fullBeatSnapLineStyle;
@@ -66,12 +67,13 @@ public class NoteViewer : Control
     private static LineStyle _subBeatSnapLineStyle;
     private static LineStyle _currentTimeLineStyle;
     private static LineStyle _breakpointLineStyle;
+    private static LineStyle _previewStartLineStyle;
 
     private static Typeface _numberTypeface =
         new((FontFamily)App.Current.Resources["RobotoMonoBold"]);
     private static Typeface _beatLineTypeface = new((FontFamily)App.Current.Resources["RobotoMono"]);
     
-    private static Geometry _breakpointShape = new PolylineGeometry([
+    private static Geometry _lineArrowShape = new PolylineGeometry([
         new Point(-12, -10),
         new Point(  0,  0),
         new Point(-12,  10)
@@ -106,6 +108,8 @@ public class NoteViewer : Control
         _laneNumberTextSize =
             (double)App.Current.Resources["NoteViewer.LaneNumbers.TextSize"];
         _breakpointArrowScale = (double)App.Current.Resources["NoteViewer.Breakpoint.ArrowScale"];
+        _previewStartArrowScale =
+            (double)App.Current.Resources["NoteViewer.PreviewStart.ArrowScale"];
         
         // corner radius is always the same on all corners
         _cornerRadius = ((CornerRadius)App.Current.Resources["NoteViewer.CornerRadius"]).TopLeft;
@@ -148,6 +152,11 @@ public class NoteViewer : Control
         {
             Color = (SolidColorBrush)App.Current.Resources["NoteViewer.Breakpoint.Color"],
             Thickness = (double)App.Current.Resources["NoteViewer.Breakpoint.Thickness"]
+        };
+        _previewStartLineStyle = new LineStyle
+        {
+            Color = (SolidColorBrush)App.Current.Resources["NoteViewer.PreviewStart.Color"],
+            Thickness = (double)App.Current.Resources["NoteViewer.PreviewStart.Thickness"]
         };
     }
     
@@ -376,7 +385,15 @@ public class NoteViewer : Control
 
         if (ChartBuilder.BreakpointTime != -1000)
         {
-            RenderBreakpoint(dc);
+            RenderArrowLine(dc, ChartBuilder.BreakpointTime, _breakpointLineStyle,
+                            _breakpointArrowScale);
+        }
+
+        // preview start time is in seconds
+        if (Chart.Metadata.PreviewStartTime * 1000 - Chart.Metadata.ChartOffset != 0)
+        {
+            RenderArrowLine(dc, Chart.Metadata.PreviewStartTime * 1000 - Chart.Metadata.ChartOffset,
+                            _previewStartLineStyle, _previewStartArrowScale);
         }
         
         foreach (var note in Chart.NonMarkerNotes)
@@ -532,24 +549,24 @@ public class NoteViewer : Control
                     new Point(ViewerWidth, y));
     }
 
-    private void RenderBreakpoint(DrawingContext dc)
+    private void RenderArrowLine(DrawingContext dc, long time, LineStyle style, double arrowScale)
     {
-        var y = TimeToScreenCoords(ChartBuilder.BreakpointTime);
+        var y = TimeToScreenCoords(time);
         if (y < -50 || y > ViewerHeight + 50)
         {
             return;
         }
         
-        _breakpointShape.Transform = new TransformGroup
+        _lineArrowShape.Transform = new TransformGroup
         {
             Children =
             {
-                new ScaleTransform(_breakpointArrowScale, _breakpointArrowScale),
+                new ScaleTransform(arrowScale, arrowScale),
                 new TranslateTransform(147, y)
             }
         };
-        dc.DrawGeometry(_breakpointLineStyle.Color, null, _breakpointShape);
-        dc.DrawLine(new Pen(_breakpointLineStyle.Color, _breakpointLineStyle.Thickness),
+        dc.DrawGeometry(style.Color, null, _lineArrowShape);
+        dc.DrawLine(new Pen(style.Color, style.Thickness),
                     new Point(150, y), new Point(ViewerWidth, y));
     }
 

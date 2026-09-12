@@ -92,6 +92,7 @@ public static partial class Chart
         public string DifficultyName = "Beginner";
         public int DifficultyLevel = 0;
         public long ChartOffset = 0;
+        public long PreviewStartTime = 0;
 
         public override string ToString()
         {
@@ -105,6 +106,7 @@ public static partial class Chart
                     - Difficulty name: {DifficultyName}
                     - Difficulty level: {DifficultyLevel}
                     - Offset: {ChartOffset} ms
+                    - Preview start time: {PreviewStartTime} s
                     """;
         }
     }
@@ -152,7 +154,8 @@ public static partial class Chart
                              _metadata.DifficultySlot != value.DifficultySlot ||
                              _metadata.DifficultyName != value.DifficultyName ||
                              _metadata.DifficultyLevel != value.DifficultyLevel ||
-                             _metadata.ChartOffset != value.ChartOffset;
+                             _metadata.ChartOffset != value.ChartOffset ||
+                             _metadata.PreviewStartTime != value.PreviewStartTime;
             
             // metadata was unchanged, so updates can be skipped
             if (!UnsavedChanges)
@@ -224,7 +227,7 @@ public static partial class Chart
 
     public static long AdjustedOffset => Metadata.ChartOffset + Config.Settings.HardChartOffset;
 
-    public static bool UnsavedChanges { get; private set; } = false;
+    public static bool UnsavedChanges { get; set; } = false;
 
     private static double _currentTimeRaw = 0;
     public static double CurrentTimeRaw
@@ -746,8 +749,9 @@ public static partial class Chart
         CurrentTimeRaw = 0;
         ChartFileName = "";
         ChartFolderName = Path.GetFileName(Path.GetDirectoryName(path));
-            
+        
         App.MainWindowViewModel.SongBpmText = _bpmRegions[0].Bpm.ToString("0.000");
+        App.MainWindowViewModel.PreviewStartTimeText = "n/a";
         App.MainWindowViewModel.PlaySpeed = 100;
         App.MainWindowViewModel.CanSave = false;
 
@@ -802,6 +806,9 @@ public static partial class Chart
         List<string> metadataErrors = [];
         List<string> timingPointErrors = [];
         List<string> hitObjectErrors = [];
+
+        // preview start goes into the metadata but is in the general section of the chart file
+        long previewStart = 0;
         
         _labels = [];
         _notes = [];
@@ -824,7 +831,7 @@ public static partial class Chart
                     Logger.Debug("Parsing general data...");
                     hasGeneralData = true;
                     if (!TryParseGeneralChartData(chartData, folderPath, ref i, out audioPath,
-                                                  ref generalErrors))
+                                                  out previewStart, ref generalErrors))
                     {
                         Logger.Debug("general data parsing failed");
                         success = false;
@@ -879,6 +886,9 @@ public static partial class Chart
                         Logger.Debug("metadata parsing failed");
                         success = false;
                     }
+
+                    Metadata.PreviewStartTime = previewStart;
+                    
                     // see??? do you see how easy it would be to make the official editor save star
                     // charts correctly??? why would you not do this???
                     Metadata.DifficultySlot =
@@ -1092,8 +1102,12 @@ public static partial class Chart
                 SetBeatSnapIndex(0);
                 NoteViewer.SetZoom(1);
             }
+            
+            App.MainWindowViewModel.SongNameText = _metadata.SongName;
+            App.MainWindowViewModel.PreviewStartTimeText =
+                TimeSpan.FromSeconds(Metadata.PreviewStartTime).ToString(@"mm\:ss\.fff");
 
-            var difficultySlotName = Metadata.DifficultySlot switch
+            var difficultySlotName = _metadata.DifficultySlot switch
             {
                 DifficultySlot.BEGINNER => "Beginner",
                 DifficultySlot.NORMAL => "Normal",
@@ -1103,7 +1117,10 @@ public static partial class Chart
                 _ => "Star"
             };
             App.MainWindowViewModel.DifficultyText = $"{difficultySlotName} " +
-                                                     $"{Metadata.DifficultyLevel}";
+                                                     $"{_metadata.DifficultyLevel}";
+            App.MainWindowViewModel.CanSave = (_metadata.SongName != "" &&
+                                               _metadata.ArtistName != "" &&
+                                               _metadata.CharterName != "");
             
             ChartBuilder.CheckExistingBreakpoint();
             SetTimeToNearestSnap();
@@ -1925,20 +1942,43 @@ public static partial class Chart
     }
 
     private static bool TryParseGeneralChartData(string[] lines, string folderPath, ref int i,
-        out string? audioPath, ref List<string> errors)
+        out string? audioPath, out long previewStart, ref List<string> errors)
     {
+        previewStart = 0;
+        audioPath = null;
+        
+        var foundAudioPath = false;
         ++i;
-        if (lines[i].StartsWith("AudioFilename:"))
+        for (; i < lines.Length; ++i)
         {
-            AudioFileName = lines[i]["AudioFilename: ".Length..].Trim();
-            audioPath = Path.GetFullPath($"{folderPath}/{AudioFileName}");
-            Logger.Debug("Audio file path: {0}", audioPath);
-            return true;
+            if (lines[i].StartsWith("AudioFilename:"))
+            {
+                AudioFileName = lines[i]["AudioFilename: ".Length..].Trim();
+                audioPath = Path.GetFullPath($"{folderPath}/{AudioFileName}");
+                Logger.Debug("Audio file path: {0}", audioPath);
+                foundAudioPath = true;
+            }
+            else if (lines[i].StartsWith("PreviewTime:"))
+            {
+                // preview start isn't worth throwing an error for
+                if (long.TryParse(lines[i]["PreviewTime: ".Length..].Trim(), out var ps))
+                {
+                    previewStart = ps;
+                    Logger.Debug("Preview start: {0}", previewStart);
+                }
+            }
+            else
+            {
+                break;
+            }
         }
 
-        audioPath = null;
-        errors.Add("No audio file path");
-        return false;
+        if (!foundAudioPath)
+        {
+            errors.Add("No audio file path");
+        }
+        
+        return foundAudioPath;
     }
 
     private static bool TryParseOfficialEditorData(string[] lines, ref int i, 
@@ -2192,24 +2232,6 @@ public static partial class Chart
                        $"were invalid): {string.Join(", ", errorMessages)}");
             return false;
         }
-        
-        App.MainWindowViewModel.SongNameText = _metadata.SongName;
-        App.MainWindowViewModel.ArtistNameText = _metadata.ArtistName;
-
-        var difficultySlotName = _metadata.DifficultySlot switch
-        {
-            DifficultySlot.BEGINNER => "Beginner",
-            DifficultySlot.NORMAL => "Normal",
-            DifficultySlot.HARD => "Hard",
-            DifficultySlot.EXPERT => "Expert",
-            DifficultySlot.UNBEATABLE => "UNBEATABLE",
-            _ => "Star"
-        };
-        App.MainWindowViewModel.DifficultyText = $"{difficultySlotName} " +
-                                                 $"{_metadata.DifficultyLevel}";
-        App.MainWindowViewModel.CanSave = (_metadata.SongName != "" &&
-                                           _metadata.ArtistName != "" &&
-                                           _metadata.CharterName != "");
         return true;
     }
     
@@ -2249,7 +2271,7 @@ public static partial class Chart
                     _metadata.ChartOffset = regionStart;
                 }
 
-                _bpmRegions.Add(new BpmRegion(regionStart, 60000 / msPerBeat));
+                _bpmRegions.Add(new BpmRegion(regionStart - _metadata.ChartOffset, 60000 / msPerBeat));
 
                 if (_bpmRegions.Count > 1)
                 {
@@ -2327,6 +2349,7 @@ public static partial class Chart
     {
         await writer.WriteLineAsync("[General]");
         await writer.WriteLineAsync($"AudioFilename: {AudioFileName}");
+        await writer.WriteLineAsync($"PreviewStart: {_metadata.PreviewStartTime}");
     }
     
     private static async Task WriteOfficialEditorData(StreamWriter writer)
@@ -2412,7 +2435,7 @@ public static partial class Chart
         var first = true;
         foreach (var bpmRegion in _bpmRegions)
         {
-            var time = bpmRegion.StartTime;
+            var time = bpmRegion.StartTime + _metadata.ChartOffset;
             var line = $"{time},{bpmRegion.MsPerBeat.ToString(numberFormat)}";
             // more osu stuff, presumably
             line += ",4,2,0,100,1" + (first ? ",0" : ",8");

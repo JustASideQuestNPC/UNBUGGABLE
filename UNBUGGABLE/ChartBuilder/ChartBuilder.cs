@@ -663,6 +663,39 @@ public static class ChartBuilder
         Logger.Debug("Removed existing breakpoint");
     }
 
+    public static void SetPreviewStart()
+    {
+        // preview start can only be in seconds
+        var newTime = (long)Math.Round((Chart.CurrentTimeRaw + Chart.Metadata.ChartOffset) / 1000);
+        if (newTime == Chart.Metadata.PreviewStartTime)
+        {
+            return;
+        }
+
+        Chart.UnsavedChanges = true;
+        Chart.Metadata.PreviewStartTime = newTime;
+        App.MainWindowViewModel.PreviewStartTimeText =
+            TimeSpan.FromSeconds(Chart.Metadata.PreviewStartTime).ToString(@"mm\:ss\.fff");
+        App.MainWindowViewModel.ShowEventIndicator(
+            "Preview start time set to " +
+            $@"{TimeSpan.FromSeconds(Chart.Metadata.PreviewStartTime):mm\:ss\.fff}");
+        Logger.Debug("Set preview start time to {0} seconds", Chart.Metadata.PreviewStartTime);
+    }
+
+    public static void RemovePreviewStart()
+    {
+        if (Chart.Metadata.PreviewStartTime == 0)
+        {
+            return;
+        }
+        
+        Chart.UnsavedChanges = true;
+        Chart.Metadata.PreviewStartTime = 0;
+        App.MainWindowViewModel.PreviewStartTimeText = "n/a";
+        App.MainWindowViewModel.ShowEventIndicator("Reset preview start time.");
+        Logger.Debug("Reset preview start time");
+    }
+
     public static void CheckExistingBreakpoint()
     {
         if (!Config.Settings.EnableBreakpoints || !Config.PracticeModInstalled)

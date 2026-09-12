@@ -185,7 +185,7 @@ public class NoteViewerThemeJson : ElementThemeJson
         public double ArrowScale { get; set; } = 0;
     }
     
-    public class BreakpointThemeJson : LineThemeJson
+    public class ArrowLineThemeJson : LineThemeJson
     {
         [JsonPropertyName("arrowScale")]
         public double ArrowScale { get; set; } = 0;
@@ -213,7 +213,9 @@ public class NoteViewerThemeJson : ElementThemeJson
     [JsonPropertyName("markers")]
     public MarkersThemeJson Markers { get; set; } = new();   
     [JsonPropertyName("breakpoint")]
-    public BreakpointThemeJson Breakpoint { get; set; } = new();
+    public ArrowLineThemeJson Breakpoint { get; set; } = new();
+    [JsonPropertyName("previewStart")]
+    public ArrowLineThemeJson PreviewStart { get; set; } = new();
     
     [JsonPropertyName("noteDirectionArrowColor")]
     public string NoteDirectionArrowColor { get; set; } = "";
@@ -545,6 +547,12 @@ public class ColorThemeJson
         Breakpoint = new()
         {
             Color = "#FF0000",
+            Thickness = 3,
+            ArrowScale = 1.0
+        },
+        PreviewStart = new()
+        {
+            Color = "#1AEDD1",
             Thickness = 3,
             ArrowScale = 1.0
         },

@@ -75,7 +75,7 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty] private string? _breakpointTimeText = "n/a";
     [ObservableProperty] private string? _songBpmText = "";
     [ObservableProperty] private string? _songNameText = "";
-    [ObservableProperty] private string? _artistNameText = "";
+    // [ObservableProperty] private string? _artistNameText = "";
     [ObservableProperty] private string? _difficultyText = "";
     [ObservableProperty] private string? _currentNoteTypeText = "notes";
     [ObservableProperty] private string? _currentZoomText = "1.0";
@@ -85,6 +85,7 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty] private string? _cop3State = "";
     [ObservableProperty] private string? _cop4State = "";
     [ObservableProperty] private string? _lockedFlagsText = "";
+    [ObservableProperty] private string? _previewStartTimeText = "";
     [ObservableProperty] private bool _songLoaded = false;
     [ObservableProperty] private bool _editorUiEnabled = false;
     [ObservableProperty] private bool _placementPriorityListEnabled = false;
@@ -432,7 +433,8 @@ public partial class MainWindowViewModel : ViewModelBase
             if (loaded)
             {
                 SongNameText = Chart.Metadata.SongName;
-                ArtistNameText = Chart.Metadata.ArtistName;
+                PreviewStartTimeText = TimeSpan.FromSeconds(Chart.Metadata.PreviewStartTime)
+                                               .ToString(@"mm\:ss\.fff");
                 var difficultySlotName = Chart.Metadata.DifficultySlot switch
                 {
                     DifficultySlot.BEGINNER => "Beginner",
@@ -576,7 +578,8 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             Chart.Metadata = result.Value;
             SongNameText = Chart.Metadata.SongName;
-            ArtistNameText = Chart.Metadata.ArtistName;
+            PreviewStartTimeText = TimeSpan.FromSeconds(Chart.Metadata.PreviewStartTime)
+                                           .ToString(@"mm\:ss\.fff");
             var difficultySlotName = Chart.Metadata.DifficultySlot switch
             {
                 DifficultySlot.BEGINNER => "Beginner",
