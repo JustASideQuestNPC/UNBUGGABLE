@@ -6,6 +6,10 @@ using UNBUGGABLE.Views;
 
 namespace UNBUGGABLE;
 
+/// <summary>
+/// A note in the top or bottom lane that has a duration. If it has the <c>W</c> flag, this is a
+/// double note, otherwise it is a hold note.
+/// </summary>
 public class HoldNote : NoteBase
 {
     private class StyleGroup

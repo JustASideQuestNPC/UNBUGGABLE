@@ -10,6 +10,12 @@ using UNBUGGABLE.Views;
 
 namespace UNBUGGABLE;
 
+/// <summary>
+/// A note for one of the four available cops. They can be in the top or bottom lane, except for cop
+/// mashes which can only be in the bottom lane.
+/// <br/><br/>
+/// Giving a cop note the <c>F</c> flag makes it kill its cop when hit. Other flags have no effect.
+/// </summary>
 public class CopNote : NoteBase
 {
     private class StyleGroup
@@ -59,7 +65,7 @@ public class CopNote : NoteBase
     public override NoteType Type { get; }
 
     /// <summary>
-    /// (Cop notes only) Whether the note should kill the current cop.
+    /// Whether the note should kill the current cop.
     /// </summary>
     public bool IsFinisher => Flags.F;
     

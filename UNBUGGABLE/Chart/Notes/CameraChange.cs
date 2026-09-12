@@ -6,6 +6,12 @@ using UNBUGGABLE.Views;
 
 namespace UNBUGGABLE;
 
+/// <summary>
+/// A "note" that manipulates the camera. Without any flags, they shift the camera to the other side
+/// or swap the direction that notes come from when the camera is zoomed out. With the <c>C</c>
+/// flag, they move the camera much faster. With the <c>W</c> flag, they instead trigger the camera
+/// to zoom in or out. Any other flag combinations have no effect.
+/// </summary>
 public class CameraChange : NoteBase
 {
     private static readonly List<Point> Vertices =

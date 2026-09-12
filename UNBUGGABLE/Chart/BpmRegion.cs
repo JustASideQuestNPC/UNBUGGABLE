@@ -1,5 +1,13 @@
 ﻿namespace UNBUGGABLE;
 
+/// <summary>
+/// Represents a section of the chart with a specific BPM.
+/// </summary>
+/// <param name="startTime">
+///     The time when the region starts, in milliseconds. The end time is always the start time of
+///     the next region, or the end of the chart if there is no next region.
+/// </param>
+/// <param name="bpm">The BPM/tempo in the region, in beats per minute.</param>
 public class BpmRegion(long startTime, double bpm)
 {
     /// <summary>

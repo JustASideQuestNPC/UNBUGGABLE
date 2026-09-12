@@ -7,6 +7,14 @@ using UNBUGGABLE.Views;
 
 namespace UNBUGGABLE;
 
+/// <summary>
+/// An instant note that appears in the center lane. Freestyles that are next to each other in the
+/// chart file become a chain where the first note is a normal freestyle and the note(s) after it
+/// are smaller subnotes.
+/// <br/><br/>
+/// If the <c>negativeMashConversion</c> config option is set to true, giving a freestyle the
+/// <c>F</c> flag will convert it into a negative mash. Other flags have no effect on this note.
+/// </summary>
 public class FreestyleNote : NoteBase
 {
     public override NoteType Type => Config.Settings.NegativeMashConversion && Flags.F ?

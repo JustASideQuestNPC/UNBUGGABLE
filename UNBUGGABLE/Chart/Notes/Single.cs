@@ -7,6 +7,10 @@ using UNBUGGABLE.Views;
 
 namespace UNBUGGABLE;
 
+/// <summary>
+/// A note in the top or bottom lane that has no duration. If it has the <c>W</c> flag, this is a
+/// spike, otherwise it is a single note.
+/// </summary>
 public class SingleNote : NoteBase
 {
     private class StyleGroup

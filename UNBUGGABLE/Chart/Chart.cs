@@ -29,6 +29,21 @@ using Path = System.IO.Path;
 
 namespace UNBUGGABLE;
 
+/// <summary>
+/// Which slot the chart appears in in-game. The difficulty slot is part of the chart file name, but
+/// UNBEATABLE sometimes uses different names internally:
+/// <ul>
+///     <li><c>BEGINNER</c>: "beginner"</li>
+///     <li><c>NORMAL</c>: "easy"</li>
+///     <li><c>HARD</c>: "normal"</li>
+///     <li><c>EXPERT</c>: "hard"</li>
+///     <li><c>UNBEATABLE</c>: "unbeatable"</li>
+///     <li><c>STAR</c>: "star"</li>
+/// </ul>
+/// <br></br>
+/// <b>Note:</b> The file name is always the same for star charts; the display name of the
+/// difficulty is separate and set in the chart metadata.
+/// </summary>
 public enum DifficultySlot
 {
     BEGINNER,
@@ -50,6 +65,9 @@ public class ChartDebugInfo
     public required double PlaySpeed;
 }
 
+/// <summary>
+/// Controls saving, loading, notes, and audio playback for a chart.
+/// </summary>
 public static partial class Chart
 {
     /// <summary>
@@ -379,6 +397,9 @@ public static partial class Chart
         _stopwatch.Start();
     }
 
+    /// <summary>
+    /// Prints the chart metadata to the logger.
+    /// </summary>
     public static void LogMetadata()
     {
         Logger.Info("updated chart metadata:\r\n{0}", Metadata.ToString());
@@ -389,6 +410,9 @@ public static partial class Chart
         }
     }
     
+    /// <summary>
+    /// Plays the song if it is paused, or pauses the song if it is playing.
+    /// </summary>
     public static void PlayOrPauseSong()
     {
         if (SongLoaded)
@@ -404,6 +428,10 @@ public static partial class Chart
         }
     }
 
+    /// <summary>
+    /// Sets beat snap to an index (not a value) in the beat snap list.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">If the index is out of range.</exception>
     public static void SetBeatSnapIndex(int index)
     {
         if (index < 0 || index >= Config.Settings.BeatSnaps.Count)
@@ -420,6 +448,9 @@ public static partial class Chart
         SetTimeToNearestSnap();
     }
     
+    /// <summary>
+    /// Goes to the next beat snap. Increasing past the last snap will wrap around to the first one.
+    /// </summary>
     public static void IncreaseBeatSnap()
     {
         ++_beatSnapIndex;
@@ -430,6 +461,10 @@ public static partial class Chart
         SetBeatSnapIndex(_beatSnapIndex);
     }
     
+    /// <summary>
+    /// Goes to the previous beat snap. Decreasing past the first snap will wrap around to the last
+    /// one.
+    /// </summary>
     public static void DecreaseBeatSnap()
     {
         --_beatSnapIndex;
@@ -440,6 +475,10 @@ public static partial class Chart
         SetBeatSnapIndex(_beatSnapIndex);
     }
 
+    /// <summary>
+    /// Moves to the previous snap line. If the chart is at the first snap already, calling this
+    /// does nothing.
+    /// </summary>
     public static void MoveToPreviousSnap()
     {
         if (_currentSnapLineSetIndex < _currentSnapLineSet.Count - 1)
@@ -449,6 +488,10 @@ public static partial class Chart
         }
     }
 
+    /// <summary>
+    /// Moves to the next snap line. If the chart is at the last snap already, calling this does
+    /// nothing.
+    /// </summary>
     public static void MoveToNextSnap()
     {
         if (_currentSnapLineSetIndex > 0)
@@ -466,6 +509,9 @@ public static partial class Chart
         _currentSnapLineSetIndex < _currentSnapLineSet.Count - 1 ?
         _currentSnapLineSet[_currentSnapLineSetIndex + 1] : _currentSnapLineSet[^1];
     
+    /// <summary>
+    /// Quick scrolls by a number of beats. Positive values go forward, negative values go back.
+    /// </summary>
     public static void QuickScroll(int numBeats)
     {
         var lastSnapLineSet = _currentSnapLineSet;
@@ -489,6 +535,10 @@ public static partial class Chart
         SetTimeToNearestSnap();
     }
 
+    /// <summary>
+    /// Moves to the next jump target if it exists. Jump targets contain more than just labels, but
+    /// this method was created and named before the jump target system was added.
+    /// </summary>
     public static void MoveToNextLabel()
     {
         if (_jumpTargetsOutOfDate)
@@ -519,6 +569,10 @@ public static partial class Chart
         App.MainWindowViewModel.UpdatePriorityListEntries();
     }
     
+    /// <summary>
+    /// Moves to the previous jump target if it exists. Jump targets contain more than just labels,
+    /// but this method was created and named before the jump target system was added.
+    /// </summary>
     public static void MoveToPreviousLabel()
     {
         if (_jumpTargetsOutOfDate)
@@ -566,10 +620,12 @@ public static partial class Chart
         if (SongLoaded && Playing)
         {
             var prevTime = CurrentTimeRaw;
-            CurrentTimeRaw += (_stopwatch.ElapsedMilliseconds - _lastStopwatchTime) * PlaySpeed / 100;
+            CurrentTimeRaw +=
+                (_stopwatch.ElapsedMilliseconds - _lastStopwatchTime) * PlaySpeed / 100;
             if (CurrentTimeRaw + Metadata.ChartOffset >= 0 && !_mediaPlayer.IsPlaying)
             {
-                _mediaPlayer.SeekTo(TimeSpan.FromMilliseconds(CurrentTimeRaw + Metadata.ChartOffset));
+                _mediaPlayer.SeekTo(
+                    TimeSpan.FromMilliseconds(CurrentTimeRaw + Metadata.ChartOffset));
                 _mediaPlayer.Play();
             }
             else
@@ -1265,16 +1321,17 @@ public static partial class Chart
     }
     
     /// <summary>
-    /// Returns the note in a specific lane at a specific time, or null if that note does not exist.
+    /// Returns the note in a specific lane at a specific time, or null if it doesn't exist.
     /// </summary>
     public static NoteBase? GetNote(long time, NoteLane lane, long maxDistance = 0)
         => _notes.FirstOrDefault(n => Math.Abs(n.Time - time) <= maxDistance && n.Lane == lane);
     
     /// <summary>
     /// Returns the (non-instant) note in a specific lane that <i>ends</i> at a specific time, or
-    /// null if that note does not exist.
-    /// <param name="includeInstant">If true, an instant note placed at that time will also be
-    ///                              returned</param>
+    /// null if it doesn't exist.
+    /// <param name="includeInstant">
+    ///     If true, an instant note placed at that time will also be returned.
+    /// </param>
     /// </summary>
     public static NoteBase? GetNoteFromEnd(long time, NoteLane lane, long maxDistance = 0,
         bool includeInstant = false) =>
@@ -1283,12 +1340,18 @@ public static partial class Chart
                                    (includeInstant && n.Instant && Math.Abs(n.Time - time)
                                        <= maxDistance)));
 
+    /// <summary>
+    /// Returns the note before another note, or null if it doesn't exist.
+    /// </summary>
     public static NoteBase? GetPreviousNote(NoteBase note)
     {
         var index = NonMarkerNotes.IndexOf(note);
         return index > 0 ? NonMarkerNotes[index - 1] : null;
     }
     
+    /// <summary>
+    /// Returns the note after another note, or null if it doesn't exist.
+    /// </summary>
     public static NoteBase? GetNextNote(NoteBase note)
     {
         var index = NonMarkerNotes.IndexOf(note);
@@ -1300,8 +1363,10 @@ public static partial class Chart
     /// <summary>
     /// Returns all the notes between a start and end time.
     /// </summary>
-    /// <param name="lanes">Restricts the region to notes only in certain lanes. Omit this to
-    ///                     get notes in every lane (except markers).</param>
+    /// <param name="lanes">
+    ///     Restricts the region to notes only in certain lanes. Omit this to get notes in every
+    ///     lane, except for markers.
+    /// </param>
     /// <returns></returns>
     public static List<NoteBase> GetNoteRegion(double start, double end,
         List<NoteLane>? lanes = null)
@@ -1374,7 +1439,7 @@ public static partial class Chart
     }
 
     /// <summary>
-    /// Sets which note is at a specific index the note list.
+    /// Sets the order of a set of notes in the note list.
     /// </summary>
     public static void SetNoteOrder(List<NoteBase> notes)
     {
@@ -1394,6 +1459,11 @@ public static partial class Chart
         _jumpTargetsOutOfDate = true;
     }
 
+    /// <summary>
+    /// Changes the color(s) of a marker. If no marker exists at that time, a new marker will be
+    /// created. If a marker does exist but all colors are removed from it, that marker is removed
+    /// entirely.
+    /// </summary>
     public static void AddOrUpdateMarker(long time, bool color1, bool color2, bool color3)
     {
         var existing = MarkerNotes.FirstOrDefault(n => n.Time == time);
@@ -1651,7 +1721,7 @@ public static partial class Chart
         // }
         // Logger.Debug(builder.ToString());
     }
-
+    
     private static void ClearChart()
     {
         ChartBuilder.ClearSelection();
@@ -1670,7 +1740,7 @@ public static partial class Chart
         CurrentTimeRaw = 0;
         ChartFileName = "";
         ChartFolderName = "";
-            
+        
         App.MainWindowViewModel.SongBpmText = "";
         App.MainWindowViewModel.PlaySpeed = 100;
         App.MainWindowViewModel.CanSave = false;

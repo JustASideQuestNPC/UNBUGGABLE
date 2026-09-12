@@ -8,6 +8,10 @@ using UNBUGGABLE.Views;
 
 namespace UNBUGGABLE;
 
+/// <summary>
+/// A "note" that acts as a marker in both the note viewer and game preview (if enabled in the
+/// config).
+/// </summary>
 public class MarkerNote : NoteBase
 {
     private static readonly List<SolidColorBrush> Brushes = [];
@@ -15,7 +19,7 @@ public class MarkerNote : NoteBase
     
     public override NoteType Type => NoteType.MARKER;
     public override NoteLane Lane => NoteLane.MARKER;
-
+    
     public bool Color1
     {
         get => _colorStates[0];
