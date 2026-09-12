@@ -290,7 +290,11 @@ public static class Config
                     
                     foreach (var target in settings.JumpTargets)
                     {
-                        if (!allowedTargets.Contains(target))
+                        if (target is "chartStart" or "chartEnd")
+                        {
+                            Logger.Info("chartStart and chartEnd jump targets are deprecated.");
+                        }
+                        else if (!allowedTargets.Contains(target))
                         {
                             invalidJumpTarget = true;
                             Logger.Warn($"Invalid jump target \"{target}\"");
