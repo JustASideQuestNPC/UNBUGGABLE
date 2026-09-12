@@ -2402,14 +2402,18 @@ public static partial class Chart
     private static async Task WriteTimingPoints(StreamWriter writer)
     {
         await writer.WriteLineAsync("[TimingPoints]");
+        var numberFormat = new NumberFormatInfo
+        {
+            NumberDecimalSeparator = ".",
+            // why does this use 9 decimal places???
+            NumberDecimalDigits = 9
+        };
         var lines = new StringBuilder();
         var first = true;
         foreach (var bpmRegion in _bpmRegions)
         {
             var time = bpmRegion.StartTime;
-            
-            // why does this use 9 decimal places???
-            var line = $"{time},{bpmRegion.MsPerBeat:0.000000000}";
+            var line = $"{time},{bpmRegion.MsPerBeat.ToString(numberFormat)}";
             // more osu stuff, presumably
             line += ",4,2,0,100,1" + (first ? ",0" : ",8");
             first = false;
