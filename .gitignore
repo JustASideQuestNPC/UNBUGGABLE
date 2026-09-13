@@ -4,3 +4,5 @@
 /UNBUGGABLE_*_Setup.exe
 /UNBUGGABLE/logs/
 color_theme_key_converter.py
+/UNBUGGABLE/configs/custom-config.json
+/UNBUGGABLE/configs/custom-keybinds.json
