@@ -179,10 +179,10 @@ public static partial class Chart
                 
                 if (_bpmRegions.Count != 0)
                 {
-                    foreach (var region in _bpmRegions)
-                    {
-                        region.StartTime += delta;
-                    }
+                    // foreach (var region in _bpmRegions)
+                    // {
+                    //     region.StartTime -= delta;
+                    // }
                     
                     RebuildSnapLineSets();
                 }
