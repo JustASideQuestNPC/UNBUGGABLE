@@ -390,7 +390,7 @@ public class NoteViewer : Control
         }
 
         // preview start time is in seconds
-        if (Chart.Metadata.PreviewStartTime * 1000 - Chart.Metadata.ChartOffset != 0)
+        if (Chart.Metadata.PreviewStartTime * 1000 - Chart.Metadata.ChartOffset > 0)
         {
             RenderArrowLine(dc, Chart.Metadata.PreviewStartTime * 1000 - Chart.Metadata.ChartOffset,
                             _previewStartLineStyle, _previewStartArrowScale);
