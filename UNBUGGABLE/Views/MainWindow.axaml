@@ -242,12 +242,6 @@
                             </StackPanel>
                             
                             <StackPanel Orientation="Vertical" Spacing="0">
-                                <TextBlock Classes="QuickInfoNames">artist</TextBlock>
-                                <TextBlock Classes="QuickInfoValues"
-                                           Text="{Binding ArtistNameText}" />
-                            </StackPanel>
-                            
-                            <StackPanel Orientation="Vertical" Spacing="0">
                                 <TextBlock Classes="QuickInfoNames">difficulty</TextBlock>
                                 <TextBlock Classes="QuickInfoValues"
                                            Text="{Binding DifficultyText}" />
@@ -257,6 +251,12 @@
                                 <TextBlock Classes="QuickInfoNames">bpm</TextBlock>
                                 <TextBlock Classes="QuickInfoValues"
                                            Text="{Binding SongBpmText}" />
+                            </StackPanel>
+                            
+                            <StackPanel Orientation="Vertical" Spacing="0">
+                                <TextBlock Classes="QuickInfoNames">preview start</TextBlock>
+                                <TextBlock Classes="QuickInfoValues"
+                                           Text="{Binding PreviewStartTimeText}" />
                             </StackPanel>
                             
                             <StackPanel Orientation="Vertical" Spacing="0">

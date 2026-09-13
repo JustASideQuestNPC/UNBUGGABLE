@@ -187,6 +187,9 @@ public class Settings
     [JsonRequired][JsonPropertyName("enableNegativeMashConversion")]
     public bool NegativeMashConversion { get; set; } = true;
     
+    [JsonRequired][JsonPropertyName("doublesOverwriteEndpoint")]
+    public bool DoublesOverwriteEndpoint { get; set; } = true;
+    
     [JsonRequired][JsonPropertyName("quickScrollBeats")]
     public int QuickScrollBeats { get; set; } = 5;
     

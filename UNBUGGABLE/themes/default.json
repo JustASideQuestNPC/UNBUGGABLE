@@ -125,6 +125,11 @@
             "thickness": 3,
             "arrowScale": 1.0
         },
+        "previewStart": {
+            "color": "#1AEDD1",
+            "thickness": 3,
+            "arrowScale": 1.0
+        },
         "bpmChange": {
             "color": "#0981EA",
             "lineThickness": 5,

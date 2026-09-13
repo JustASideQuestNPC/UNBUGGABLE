@@ -553,18 +553,18 @@ public class NoteViewerTheme : ElementTheme
         }
     }
     
-    public class BreakpointTheme : LineTheme
+    public class ArrowLineTheme : LineTheme
     {
         public readonly double ArrowScale;
         
-        public BreakpointTheme(NoteViewerThemeJson.BreakpointThemeJson json,
-            ref List<string> errorMessages) : base(json, "noteViewer.breakpoint", ref errorMessages)
+        public ArrowLineTheme(NoteViewerThemeJson.ArrowLineThemeJson json, string name,
+            ref List<string> errorMessages) : base(json, $"noteViewer.{name}", ref errorMessages)
         {
             ArrowScale = json.ArrowScale;
             if (ArrowScale < 0)
             {
                 errorMessages.Add(
-                    "noteViewer.breakpoint.arrowScale cannot be negative");
+                    $"noteViewer.{name}.arrowScale cannot be negative");
             }
         }
         
@@ -661,7 +661,8 @@ public class NoteViewerTheme : ElementTheme
     public readonly LineTheme SubBeatSnapLine;
     public readonly LineTheme CurrentTimeLine;
     public readonly MarkersTheme Markers;
-    public readonly BreakpointTheme Breakpoint;
+    public readonly ArrowLineTheme Breakpoint;
+    public readonly ArrowLineTheme PreviewStart;
     public readonly NoteLaneThemes NoteLanes;
     // public readonly Color NoteDirectionArrowColor;
     // public readonly double NoteDirectionArrowScale;
@@ -686,7 +687,8 @@ public class NoteViewerTheme : ElementTheme
         CurrentTimeLine = new LineTheme(json.CurrentTimeLine, "noteViewer.currentTimeLine",
                                         ref errorMessages);
         Markers = new MarkersTheme(json.Markers, ref errorMessages);
-        Breakpoint = new BreakpointTheme(json.Breakpoint, ref errorMessages);
+        Breakpoint = new ArrowLineTheme(json.Breakpoint, "breakpoint", ref errorMessages);
+        PreviewStart = new ArrowLineTheme(json.PreviewStart, "previewStart", ref errorMessages);
         NoteLanes = new NoteLaneThemes(json.NoteLanes, ref errorMessages);
         
         // NoteDirectionArrowScale = json.NoteDirectionArrowScale;

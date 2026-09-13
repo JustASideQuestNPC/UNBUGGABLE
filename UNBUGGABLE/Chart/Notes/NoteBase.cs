@@ -59,7 +59,7 @@ public class NoteFlags(bool c, bool f, bool w, bool n = false)
 /// </summary>
 public abstract partial class NoteBase
 {
-    [GeneratedRegex(@"\d{2,3},192,-?\d+,\d+,\d+,[\d+:]{4,5}")]
+    [GeneratedRegex(@"\d{2,3},192,-?\d+,\d+,\d+,-?[\d+:]{4,5}")]
     private static partial Regex HitObjectRegex();
     
     public long Time { get; set; }
@@ -76,17 +76,23 @@ public abstract partial class NoteBase
     /// What time the note ends at after being hit. Only used by holds, doubles, and mash notes.
     /// </summary>
     public long EndTime { get; set; } = 0;
-    public long Duration => Instant ? 0 : EndTime - Time;
     
     public abstract NoteType Type { get; }
     
+    /// <summary>
+    /// Which lane the note is in. For freestyles, mashes, and negative mashes, this is always
+    /// <c>NoteLane.CENTER</c>. For camera changes, this is always <c>NoteLane.CAMERA</c>. For
+    /// marker notes, this is always <c>NoteLane.MARKER</c>.
+    /// </summary>
     public virtual NoteLane Lane { get; set; }
     
-    // invisible notes disappear 1 beat before reaching the player
+    /// <summary>
+    /// Invisible notes disappear one beat before they must be hit.
+    /// </summary>
     public bool Invisible => Type is NoteType.SINGLE or NoteType.HOLD && Flags.C;
     
     /// <summary>
-    /// Sound flags applied to the note, ordered as [c, f, w].
+    /// Sound flags applied to the note.
     /// </summary>
     public NoteFlags Flags { get; set; }
 
@@ -276,6 +282,14 @@ public abstract partial class NoteBase
         return note;
     }
 
+    /// <summary>
+    /// Attempts to construct a note from a pasted string.
+    /// </summary>
+    /// <param name="copyPasteString">
+    ///     The string to create the note from. This must be one note string in the pasted string,
+    ///     <i>not</i> everything that was pasted.</param>
+    /// <param name="startTime">The time in milliseconds of the start of the pasted region.</param>
+    /// <returns>The note if it could be constructed, otherwise null.</returns>
     public static NoteBase? FromCopyPasteString(string copyPasteString, long startTime)
     {
         var rawChunks = copyPasteString.Split(',').ToList();
@@ -484,8 +498,15 @@ public abstract partial class NoteBase
     /// <param name="dc"></param>
     public abstract void RenderPreview(DrawingContext dc);
 
+    /// <summary>
+    /// Returns whether to play a hit sound for the note. Automatically accounts for whether the
+    /// config option for that note is enabled.
+    /// </summary>
     public abstract long? ShouldPlayHitSound(double rangeStart, double rangeEnd);
 
+    /// <summary>
+    /// Returns whether the mouse pointer is over the note.
+    /// </summary>
     public bool MouseOver()
     {
         var x = NoteViewer.GetNoteX(Lane);
@@ -493,6 +514,11 @@ public abstract partial class NoteBase
         return new Rect(x - 40, y - 12, 80, 24).ContainsPoint(ChartBuilder.MousePosition);
     }
 
+    /// <summary>
+    /// Returns whether the mouse pointer is over the "tail" of the note. This is only useful for
+    /// holds, doubles, mashes, cop holds, and cop mashes.
+    /// </summary>
+    /// <returns></returns>
     public virtual bool MouseOverTail()
     {
         var x = NoteViewer.GetNoteX(Lane);
@@ -501,6 +527,7 @@ public abstract partial class NoteBase
         return new Rect(x - 16, startY, 32, endY - startY)
             .ContainsPoint(ChartBuilder.MousePosition);
     }
+    
     public NoteBase Clone(long? newTime = null)
     {
         var clone = (NoteBase)MemberwiseClone();
@@ -514,6 +541,14 @@ public abstract partial class NoteBase
         return clone;
     }
     
+    /// <summary>
+    /// Converts the note to a hit object string used in chart files.
+    /// </summary>
+    /// <param name="isFirstNote">Whether the note is the first hit object.</param>
+    /// <param name="isStandardFile">
+    ///     Whether the note is being saved to a standard .txt chart file, instead of an UNBUGGABLE
+    ///     .beat.txt chart file.
+    /// </param>
     public virtual string ToHitObjectString(bool isFirstNote, bool isStandardFile)
     {
         List<string> chunks =
@@ -553,10 +588,14 @@ public abstract partial class NoteBase
         return string.Join(",", chunks);
     }
 
+    /// <summary>
+    /// Converts the note to a string used for copy-pasting.
+    /// </summary>
     public virtual string ToCopyPasteString(long startTime)
     {
         // copy-paste format for non-cop notes:
-        // type,lane,time from start,end time from start (or -1 for instant notes),flags as [cfwn]
+        // type, lane, time from start, end time from start (or -1 for instant notes),
+        // flags as [cfwn]
         var typeId = (int)Type;
         var laneId = (int)Lane;
         var time = Time - startTime;

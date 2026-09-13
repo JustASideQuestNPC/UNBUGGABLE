@@ -290,7 +290,11 @@ public static class Config
                     
                     foreach (var target in settings.JumpTargets)
                     {
-                        if (!allowedTargets.Contains(target))
+                        if (target is "chartStart" or "chartEnd")
+                        {
+                            Logger.Info("chartStart and chartEnd jump targets are deprecated.");
+                        }
+                        else if (!allowedTargets.Contains(target))
                         {
                             invalidJumpTarget = true;
                             Logger.Warn($"Invalid jump target \"{target}\"");
@@ -492,6 +496,8 @@ public static class Config
                 VerifyKeybindStrings(keybinds.SetBreakpoint, "setBreakpoint") &&
                 VerifyKeybindStrings(keybinds.RemoveBreakpoint, "removeBreakpoint") &&
                 VerifyKeybindStrings(keybinds.JumpToBreakpoint, "jumpToBreakpoint") &&
+                VerifyKeybindStrings(keybinds.SetPreviewStart, "setPreviewStart") &&
+                VerifyKeybindStrings(keybinds.RemovePreviewStart, "removePreviewStart") &&
                 VerifyKeybindStrings(keybinds.EmergencyReload, "emergencyReload") &&
                 VerifyKeybindStrings(keybinds.NudgeForward, "nudgeForward") &&
                 VerifyKeybindStrings(keybinds.NudgeBack, "nudgeBack") &&
@@ -576,6 +582,8 @@ public static class Config
             new SetBreakpointAction(Keybinds.SetBreakpoint),
             new RemoveBreakpointAction(Keybinds.RemoveBreakpoint),
             new JumpToBreakpointCommand(Keybinds.JumpToBreakpoint),
+            new SetPreviewStartAction(Keybinds.SetPreviewStart),
+            new RemovePreviewStartAction(Keybinds.RemovePreviewStart),
             new EmergencyReloadAction(Keybinds.EmergencyReload),
             new CrashProgramAction(["ctrl+alt+oem4"]) // ctrl + alt + [
         ];

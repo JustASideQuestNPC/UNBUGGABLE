@@ -123,6 +123,10 @@ public class Keybinds
     public List<string> RemoveBreakpoint { get; set; } = ["ctrl+b"];
     [JsonRequired][JsonPropertyName("jumpToBreakpoint")]
     public List<string> JumpToBreakpoint { get; set; } = ["alt+b"];
+    [JsonRequired][JsonPropertyName("setPreviewStart")] 
+    public List<string> SetPreviewStart { get; set; } = ["p"];
+    [JsonRequired][JsonPropertyName("removePreviewStart")]
+    public List<string> RemovePreviewStart { get; set; } = ["ctrl+p"];
     [JsonRequired][JsonPropertyName("emergencyReload")]
     public List<string> EmergencyReload { get; set; } = ["ctrl+alt+r"];
     [JsonRequired][JsonPropertyName("nudgeForward")]

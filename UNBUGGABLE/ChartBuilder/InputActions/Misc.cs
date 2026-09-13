@@ -66,6 +66,22 @@ public class RemoveBreakpointAction(List<string> keybinds) : InputActionBase(key
     }
 }
 
+public class SetPreviewStartAction(List<string> keybinds) : InputActionBase(keybinds)
+{
+    public override async Task OnPress()
+    {
+        ChartBuilder.SetPreviewStart();
+    }
+}
+
+public class RemovePreviewStartAction(List<string> keybinds) : InputActionBase(keybinds)
+{
+    public override async Task OnPress()
+    {
+        ChartBuilder.RemovePreviewStart();
+    }
+}
+
 public class EmergencyReloadAction(List<string> keybinds) : InputActionBase(keybinds)
 {
     public override async Task OnPress()

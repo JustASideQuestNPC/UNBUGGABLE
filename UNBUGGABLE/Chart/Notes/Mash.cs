@@ -5,6 +5,14 @@ using UNBUGGABLE.Views;
 
 namespace UNBUGGABLE;
 
+/// <summary>
+/// A note in the center lane that must be hit on beat to "catch" it, and then hit again by mashing
+/// any keys as fast as possible until the note ends.
+/// <br/><br/>
+/// Mash notes always have the <c>F</c> flag. Removing this flag or adding new ones has no effect.
+/// <br/><br/>
+/// Despite their name, negative mashes use the <c>FreestyleNote</c> class, not this one.
+/// </summary>
 public class MashNote : NoteBase
 {
     // these are public because they're used by negative mashes (which use the FreestyleNote class)
