@@ -102,7 +102,10 @@ public static class ChartBuilder
         
         if (RightMouseDrag)
         {
-            ChartBuilderCommandInvoker.Execute(new DeleteNotesCommand(notes));
+            if (notes.Count > 0)
+            {
+                ChartBuilderCommandInvoker.Execute(new DeleteNotesCommand(notes));
+            }
         }
         else
         {
