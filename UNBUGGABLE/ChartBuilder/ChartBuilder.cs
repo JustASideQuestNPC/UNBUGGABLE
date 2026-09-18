@@ -953,10 +953,52 @@ public static class ChartBuilder
             ChartBuilderCommandInvoker.Execute(new AddNotesCommand([newNote]));
             return;
         }
+        
+        // check for replacing before checking for extending to get around some issues where the
+        // editor thinks we're trying to extend the replaced note
+        if (oldNote != null)
+        {
+            List<NoteBase> removedNotes = [oldNote];
+            if (Config.Settings.PreserveNoiszFlag && lane is NoteLane.TOP or NoteLane.BOTTOM)
+            {
+                newNote.Flags.N = oldNote.Flags.N;
+            }
+            
+            if (newNote.Type == NoteType.DOUBLE && Config.Settings.DoublesOverwriteEndpoint)
+            {
+                var endpointNote = Chart.GetNote(
+                    newNote.EndTime,
+                    newNote.Lane == NoteLane.TOP ? NoteLane.BOTTOM : NoteLane.TOP, 1);
+                if (endpointNote != null)
+                {
+                    removedNotes.Add(endpointNote);
+                }
+            }
+            
+            ChartBuilderCommandInvoker.Execute(
+                new UpdateNotesCommand(removedNotes, [newNote],
+                                       Config.Settings.AutoSelectBehavior == "all"));
+            return;
+        }
 
         // check for extending hold notes
         if (!newNote.Instant)
         {
+            List<NoteBase> removedNotes = [];
+            
+            if (oldNote != null)
+            {
+                if (Config.Settings.PreserveNoiszFlag && lane is NoteLane.TOP or NoteLane.BOTTOM)
+                {
+                    newNote.Flags.N = oldNote.Flags.N;
+                }
+
+                ChartBuilderCommandInvoker.Execute(
+                    new UpdateNotesCommand([oldNote], [newNote],
+                                           Config.Settings.AutoSelectBehavior == "all"));
+                return;
+            }
+            
             var prevNote = Chart.GetNoteFromEnd(start, lane,
                                                 Config.Settings.HoldExtensionSearchThreshold, true);
             var nextNote = Chart.GetNote(end, lane,
@@ -973,7 +1015,6 @@ public static class ChartBuilder
                     !(prevNote.Type == NoteType.DOUBLE && newNote.Type == NoteType.HOLD);
             }
 
-            List<NoteBase> removedNotes = [];
             if (shouldRemovePreviousNote && nextNote != null && nextNote.Type == newNote.Type)
             {
                 newNote.Time = prevNote.Time;
@@ -1013,18 +1054,6 @@ public static class ChartBuilder
                                            Config.Settings.AutoSelectBehavior == "all"));
                 return;
             }
-        }
-
-        if (oldNote != null)
-        {
-            if (Config.Settings.PreserveNoiszFlag && lane is NoteLane.TOP or NoteLane.BOTTOM)
-            {
-                newNote.Flags.N = oldNote.Flags.N;
-            }
-            ChartBuilderCommandInvoker.Execute(
-                new UpdateNotesCommand([oldNote], [newNote],
-                                       Config.Settings.AutoSelectBehavior == "all"));
-            return;
         }
         
         if (LockedFlags.C)
