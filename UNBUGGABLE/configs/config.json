@@ -40,7 +40,9 @@
     13
   ],
   "pasteOverwrites": "region",
-  "holdExtensionSearchThreshold": 2,
+  "holdExtensionSearchThreshold": 1,
+  "pasteAdjustThreshold": 1,
+  "pasteAdjustSearchesAllSnapSets": true,
   "preserveNoiszFlag": true,
   "minZoom": 0.5,
   "maxZoom": 7.5,
@@ -61,10 +63,10 @@
   ],
   "doublePreviewAlpha": 0.5,
   "currentTimePosition": 175,
-  "hitSoundOffset": -30,
+  "hitSoundOffset": -80,
   "hardChartOffset": -60,
   "hitSoundTickRate": 180,
-  "maxConcurrentHitSounds": 16,
+  "maxConcurrentHitSounds": 1,
   "autosaveInterval": 600,
   "hitSounds": {
     "single": true,
@@ -92,7 +94,8 @@
     "commandStacks": false,
     "inputData": false,
     "mediaPlayer": false,
-    "noteTimestamps": true
+    "noteTimestamps": true,
+    "jumpTargets": false
   },
   "quickScrollBeats": 5,
   "sliderIncrement": 5

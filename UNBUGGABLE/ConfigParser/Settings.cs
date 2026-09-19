@@ -25,6 +25,9 @@ public class Debug
 
     [JsonRequired][JsonPropertyName("noteTimestamps")]
     public bool NoteTimeStamps { get; set; } = true;
+
+    [JsonRequired][JsonPropertyName("jumpTargets")]
+    public bool JumpTargets { get; set; } = false;
     
     public string GetFormattedString()
     {
@@ -35,6 +38,7 @@ public class Debug
                     - input data: {InputData}
                     - media player: {MediaPlayer}
                     - note timestamps: {NoteTimeStamps}
+                    - jump targets: {JumpTargets}
                 """;
     }
 }
@@ -204,7 +208,13 @@ public class Settings
     public string PasteBehavior { get; set; } = "notes";
     
     [JsonRequired][JsonPropertyName("holdExtensionSearchThreshold")]
-    public int HoldExtensionSearchThreshold { get; set; } = 2;
+    public int HoldExtensionSearchThreshold { get; set; } = 1;
+    
+    [JsonRequired][JsonPropertyName("pasteAdjustThreshold")]
+    public int PasteAdjustThreshold { get; set; } = 1;
+    
+    [JsonRequired][JsonPropertyName("pasteAdjustSearchesAllSnapSets")]
+    public bool PasteAdjustSearchesAllSnapLineSets { get; set; } = true;
 
     [JsonRequired][JsonPropertyName("preserveNoiszFlag")]
     public bool PreserveNoiszFlag { get; set; } = true;
@@ -294,6 +304,8 @@ public class Settings
                   beat snaps: [{string.Join(", ", BeatSnaps)}]
                   preserve noisz flag: {PreserveNoiszFlag}
                   hold extension search threshold: {HoldExtensionSearchThreshold}
+                  paste adjust threshold: {PasteAdjustThreshold}
+                  paste adjust searches all sets: {PasteAdjustSearchesAllSnapLineSets}
                   min zoom: {MinZoom}
                   max zoom: {MaxZoom}
                   zoom increment: {ZoomIncrement}

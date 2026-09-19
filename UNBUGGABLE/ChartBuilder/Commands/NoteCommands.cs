@@ -57,7 +57,7 @@ public class PasteNotesCommand : ICommand
             {
                 _addedNotes = notes;
                 var start = notes.Min(n => n.Time);
-                var end = notes.Max(n => n.EndTime);
+                var end = Math.Max(notes.Max(n => n.Time), notes.Max(n => n.EndTime));
                 _removedNotes = Chart.GetNoteRegion(start, end);
                 break;
             }

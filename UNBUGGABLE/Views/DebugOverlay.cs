@@ -61,9 +61,9 @@ public class DebugOverlay : Control
                                 """);
         }
 
+        var chartDebug = Chart.DebugInfo;
         if (Config.Settings.DebugToggles.MediaPlayer)
         {
-            var chartDebug = Chart.DebugInfo;
             column1Strings.Add($"""
                                 --- chart/media player ---
                                 playing: {chartDebug.Playing}
@@ -73,6 +73,16 @@ public class DebugOverlay : Control
                                 last vlc output: {chartDebug.LastVlcOutput}
                                 chart time: {chartDebug.ChartTime}
                                 play speed: {chartDebug.PlaySpeed}
+                                """);
+        }
+
+        if (Config.Settings.DebugToggles.JumpTargets)
+        {
+            column1Strings.Add($"""
+                                --- jump targets ---
+                                targets: {string.Join(", ", Config.Settings.JumpTargets)}
+                                times:
+                                {string.Join("\n", chartDebug.JumpTargets)}
                                 """);
         }
 

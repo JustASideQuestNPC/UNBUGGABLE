@@ -130,7 +130,7 @@ public class HoldNote : NoteBase
                          new Rect(x - 16, startY, 32, endY - startY));
 
         // also show where doubles will land
-        if (Type == NoteType.DOUBLE && Config.Settings.EnhancedPreview)
+        if (Type == NoteType.DOUBLE)
         {
             var endX = NoteViewer.GetNoteX(Lane == NoteLane.TOP ? NoteLane.BOTTOM : NoteLane.TOP);
             dc.DrawRectangle(styles.TailFillBrush, tailPen, new Rect(endX - 40, endY - 12, 80, 24));
