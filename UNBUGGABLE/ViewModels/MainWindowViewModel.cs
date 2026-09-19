@@ -74,8 +74,7 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty] private string? _chartTimeText = "";
     [ObservableProperty] private string? _breakpointTimeText = "n/a";
     [ObservableProperty] private string? _songBpmText = "";
-    [ObservableProperty] private string? _songNameText = "";
-    // [ObservableProperty] private string? _artistNameText = "";
+    [ObservableProperty] private string? _lastLabelText = "";
     [ObservableProperty] private string? _difficultyText = "";
     [ObservableProperty] private string? _currentNoteTypeText = "notes";
     [ObservableProperty] private string? _currentZoomText = "1.0";
@@ -432,7 +431,6 @@ public partial class MainWindowViewModel : ViewModelBase
             
             if (loaded)
             {
-                SongNameText = Chart.Metadata.SongName;
                 PreviewStartTimeText = TimeSpan.FromSeconds(Chart.Metadata.PreviewStartTime)
                                                .ToString(@"mm\:ss\.fff");
                 var difficultySlotName = Chart.Metadata.DifficultySlot switch
@@ -577,7 +575,6 @@ public partial class MainWindowViewModel : ViewModelBase
         if (result.HasValue)
         {
             Chart.Metadata = result.Value;
-            SongNameText = Chart.Metadata.SongName;
             PreviewStartTimeText = TimeSpan.FromSeconds(Chart.Metadata.PreviewStartTime)
                                            .ToString(@"mm\:ss\.fff");
             var difficultySlotName = Chart.Metadata.DifficultySlot switch

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Input;
 using UNBEATABLEChartEditor;
 using UNBEATABLEChartEditor.Dialogs;
@@ -316,6 +317,15 @@ public static class ChartBuilder
         if (pasted.Count == 0)
         {
             return;
+        }
+        
+        // step through and account for off-by-one errors
+        if (Config.Settings.PasteAdjustThreshold > 0)
+        {
+            foreach (var note in pasted)
+            {
+                AdjustNoteTime(note);
+            }
         }
         
         ChartBuilderCommandInvoker.Execute(new PasteNotesCommand(pasted));
@@ -954,55 +964,40 @@ public static class ChartBuilder
             return;
         }
         
-        // check for replacing before checking for extending to get around some issues where the
-        // editor thinks we're trying to extend the replaced note
-        if (oldNote != null)
-        {
-            List<NoteBase> removedNotes = [oldNote];
-            if (Config.Settings.PreserveNoiszFlag && lane is NoteLane.TOP or NoteLane.BOTTOM)
-            {
-                newNote.Flags.N = oldNote.Flags.N;
-            }
-            
-            if (newNote.Type == NoteType.DOUBLE && Config.Settings.DoublesOverwriteEndpoint)
-            {
-                var endpointNote = Chart.GetNote(
-                    newNote.EndTime,
-                    newNote.Lane == NoteLane.TOP ? NoteLane.BOTTOM : NoteLane.TOP, 1);
-                if (endpointNote != null)
-                {
-                    removedNotes.Add(endpointNote);
-                }
-            }
-            
-            ChartBuilderCommandInvoker.Execute(
-                new UpdateNotesCommand(removedNotes, [newNote],
-                                       Config.Settings.AutoSelectBehavior == "all"));
-            return;
-        }
-
         // check for extending hold notes
         if (!newNote.Instant)
         {
             List<NoteBase> removedNotes = [];
             
+            var nextNote = Chart.GetNote(end, lane,
+                                         Config.Settings.HoldExtensionSearchThreshold);
+            
+            // check for replacing to get around some issues where the editor thinks we're trying to
+            // extend the replaced note
             if (oldNote != null)
             {
+                removedNotes.Add(oldNote);
+                
                 if (Config.Settings.PreserveNoiszFlag && lane is NoteLane.TOP or NoteLane.BOTTOM)
                 {
                     newNote.Flags.N = oldNote.Flags.N;
                 }
+                
+                if (nextNote != null && nextNote.Type == newNote.Type)
+                {
+                    newNote.EndTime = nextNote.EndTime;
+                    newNote.Flags = nextNote.Flags;
+                    removedNotes.Add(nextNote);
+                }
 
                 ChartBuilderCommandInvoker.Execute(
-                    new UpdateNotesCommand([oldNote], [newNote],
+                    new UpdateNotesCommand(removedNotes, [newNote],
                                            Config.Settings.AutoSelectBehavior == "all"));
                 return;
             }
             
             var prevNote = Chart.GetNoteFromEnd(start, lane,
                                                 Config.Settings.HoldExtensionSearchThreshold, true);
-            var nextNote = Chart.GetNote(end, lane,
-                                         Config.Settings.HoldExtensionSearchThreshold);
             
             // the previous note is always removed unless it's a double and a hold is being placed
             // (or vice versa) -- without this, holds will transform into doubles if you place them
@@ -1056,6 +1051,32 @@ public static class ChartBuilder
             }
         }
         
+        if (oldNote != null)
+        {
+            List<NoteBase> removedNotes = [oldNote];
+            if (Config.Settings.PreserveNoiszFlag && lane is NoteLane.TOP or NoteLane.BOTTOM)
+            {
+                newNote.Flags.N = oldNote.Flags.N;
+            }
+            
+            if (newNote.Type == NoteType.DOUBLE && Config.Settings.DoublesOverwriteEndpoint)
+            {
+                var endpointNote = Chart.GetNote(
+                    newNote.EndTime,
+                    newNote.Lane == NoteLane.TOP ? NoteLane.BOTTOM : NoteLane.TOP, 1);
+                if (endpointNote != null)
+                {
+                    removedNotes.Add(endpointNote);
+                }
+            }
+            
+            ChartBuilderCommandInvoker.Execute(
+                new UpdateNotesCommand(removedNotes, [newNote],
+                                       Config.Settings.AutoSelectBehavior == "all"));
+            return;
+        }
+
+        
         if (LockedFlags.C)
         {
             newNote.Flags.C = true;
@@ -1100,10 +1121,43 @@ public static class ChartBuilder
         List<NoteBase> newNotes = [];
         foreach (var note in SelectedNotes)
         {
-            newNotes.Add(note.Clone(note.Time + delta));
+            var n = note.Clone(note.Time + delta);
+            if (Config.Settings.PasteAdjustThreshold > 0)
+            {
+                AdjustNoteTime(n);
+            }
+            newNotes.Add(n);
         }
         
         ChartBuilderCommandInvoker.Execute(new UpdateNotesCommand([..SelectedNotes], newNotes,
                                                                   true));
+    }
+
+    private static void AdjustNoteTime(NoteBase note)
+    {
+        var nearestStart =
+            Chart.GetSnapTimeWithinThreshold(note.Time,
+                                             Config.Settings.PasteAdjustThreshold,
+                                             Config.Settings.PasteAdjustSearchesAllSnapLineSets);
+        if (nearestStart != -1 && nearestStart != note.Time)
+        {
+            Logger.Debug("Adjusted note time from {0} to {1}", note.Time, nearestStart);
+            note.Time = nearestStart;
+        }
+
+        if (!note.Instant)
+        {
+            var nearestEnd =
+                Chart.GetSnapTimeWithinThreshold(
+                    note.EndTime,
+                    Config.Settings.PasteAdjustThreshold,
+                    Config.Settings.PasteAdjustSearchesAllSnapLineSets);
+            if (nearestEnd != -1 && nearestEnd != note.EndTime)
+            {
+                Logger.Debug("Adjusted note end time from {0} to {1}", note.Time,
+                             nearestEnd);
+                note.EndTime = nearestEnd;
+            }
+        }
     }
 }

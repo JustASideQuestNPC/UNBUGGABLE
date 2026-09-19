@@ -359,7 +359,14 @@ public static class Config
                 if (settings.HoldExtensionSearchThreshold < 0)
                 {
                     Logger.Warn("Hold extension search threshold must be >= 0");
-                    settings.HoldExtensionSearchThreshold = 2;
+                    settings.HoldExtensionSearchThreshold = 1;
+                    loadError = true;
+                }
+                
+                if (settings.PasteAdjustThreshold < 0)
+                {
+                    Logger.Warn("Paste adjust threshold >= 0");
+                    settings.PasteAdjustThreshold = 1;
                     loadError = true;
                 }
 

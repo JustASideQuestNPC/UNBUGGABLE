@@ -63,6 +63,7 @@ public class ChartDebugInfo
     public required string LastVlcOutput;
     public required double ChartTime;
     public required double PlaySpeed;
+    public required List<long> JumpTargets;
 }
 
 /// <summary>
@@ -119,7 +120,8 @@ public static partial class Chart
         MediaPlayerState = _mediaPlayer.State,
         LastVlcOutput = _lastVlcConsoleOutput,
         ChartTime = CurrentTimeRaw,
-        PlaySpeed = PlaySpeed
+        PlaySpeed = PlaySpeed,
+        JumpTargets = _jumpTargets,
     };
 
     private static List<NoteBase> _notes = [];
@@ -244,6 +246,9 @@ public static partial class Chart
                     App.MainWindowViewModel.SongBpmText = region.Bpm.ToString("0.00");
                 }
             }
+            
+            App.MainWindowViewModel.LastLabelText =
+                Labels.LastOrDefault(l => l.Time <= CurrentTimeRaw)?.Text ?? "none";
 
             if (!Playing)
             {
@@ -322,9 +327,6 @@ public static partial class Chart
     
     private static LibVLC _libVlc = null!;
     private static MediaPlayer _mediaPlayer = null!;
-
-    private static MediaPlayer _hitSoundMediaPlayer = null!;
-    // private static ChartSongPlayer? _songPlayer = null!;
     
     private static CachedSound? _hitSound = null;
     
@@ -334,6 +336,7 @@ public static partial class Chart
     private static double _lastStopwatchTime = 0;
     
     private static int _beatSnapIndex = 0;
+    private static List<int> _sortedBeatSnaps = [];
     
     // timestamps for where every line appears for every snap setting, updated whenever bpm regions
     // change
@@ -371,7 +374,6 @@ public static partial class Chart
     {
         _libVlc = new LibVLC();
         _mediaPlayer = new MediaPlayer(_libVlc);
-        _hitSoundMediaPlayer = new MediaPlayer(_libVlc);
         _mediaPlayer.EndReached += MediaPlayer_EndReached;
         _libVlc.Log += (_, args) =>
         {
@@ -511,6 +513,54 @@ public static partial class Chart
     public static long GetNextSnapTime() =>
         _currentSnapLineSetIndex < _currentSnapLineSet.Count - 1 ?
         _currentSnapLineSet[_currentSnapLineSetIndex + 1] : _currentSnapLineSet[^1];
+
+    public static long GetSnapTimeWithinThreshold(long time, long threshold,
+        bool searchAllSets = false)
+    {
+        long closest = -1;
+
+        if (searchAllSets)
+        {
+            // start with the smallest snap values to minimize duplicates
+            foreach (var i in _sortedBeatSnaps)
+            {
+                foreach (var snap in SnapLineSets[i])
+                {
+                    if (Math.Abs(snap - time) <= threshold)
+                    {
+                        closest = snap;
+                    }
+                    
+                    if (snap > time)
+                    {
+                        break;
+                    }
+                }
+
+                if (closest != -1)
+                {
+                    break;
+                }
+            }
+        }
+        else
+        {
+            foreach (var snap in _currentSnapLineSet)
+            {
+                if (Math.Abs(snap - time) <= threshold)
+                {
+                    closest = snap;
+                }
+            
+                if (snap > time)
+                {
+                    break;
+                }
+            }
+        }
+
+        return closest;
+    }
     
     /// <summary>
     /// Quick scrolls by a number of beats. Positive values go forward, negative values go back.
@@ -751,6 +801,7 @@ public static partial class Chart
         ChartFolderName = Path.GetFileName(Path.GetDirectoryName(path));
         
         App.MainWindowViewModel.SongBpmText = _bpmRegions[0].Bpm.ToString("0.000");
+        App.MainWindowViewModel.LastLabelText = "";
         App.MainWindowViewModel.PreviewStartTimeText = "n/a";
         App.MainWindowViewModel.PlaySpeed = 100;
         App.MainWindowViewModel.CanSave = false;
@@ -1103,7 +1154,6 @@ public static partial class Chart
                 NoteViewer.SetZoom(1);
             }
             
-            App.MainWindowViewModel.SongNameText = _metadata.SongName;
             App.MainWindowViewModel.PreviewStartTimeText =
                 TimeSpan.FromSeconds(Metadata.PreviewStartTime).ToString(@"mm\:ss\.fff");
 
@@ -1645,8 +1695,8 @@ public static partial class Chart
     /// </summary>
     public static void RebuildSnapLineSets()
     {
-        var sortedSnapValues = Config.Settings.BeatSnaps.OrderByDescending(x => x).ToList();
-        foreach (var snapValue in sortedSnapValues)
+        _sortedBeatSnaps = Config.Settings.BeatSnaps.OrderByDescending(x => x).ToList();
+        foreach (var snapValue in _sortedBeatSnaps)
         {
             List<long> snapLineSet = [0];
             double time = 0;
@@ -1759,6 +1809,7 @@ public static partial class Chart
         ChartFolderName = "";
         
         App.MainWindowViewModel.SongBpmText = "";
+        App.MainWindowViewModel.LastLabelText = "";
         App.MainWindowViewModel.PlaySpeed = 100;
         App.MainWindowViewModel.CanSave = false;
 
@@ -1917,6 +1968,12 @@ public static partial class Chart
     
     private static void SetTimeToNearestSnap()
     {
+        if (CurrentTimeRaw <= _currentSnapLineSet[0])
+        {
+            CurrentTimeRaw = _currentSnapLineSet[0];
+            return;
+        }
+        
         for (var i = 0; i < _currentSnapLineSet.Count - 1; ++i)
         {
             var currentSnap = _currentSnapLineSet[i];

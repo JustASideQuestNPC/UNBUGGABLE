@@ -28,11 +28,8 @@ Currently, UNBUGGABLE has 3 semi-major limitations:
    **Note:** If you rip an mp3 off of YouTube, it probably has a variable bitrate.
 2. The in-game preview in UNBUGGABLE only shows where the camera is *supposed* to be. Unlike the
    official editor, it does not account for how long it takes the camera to actually move.
-3. Because of rounding errors that I am doing my best to fix, pasting notes will sometimes place
-   them 1ms before or after a snap line. On its own this has no effect on gameplay, but it prevents
-   the notes from appearing in the placement priority list, and if you add new notes alongside them
-   it can result in forced misses. You can fix this by selecting the notes and using the nudge
-   keybinds to line them back up.
+3. In rare cases, pasting or moving notes may place them 1 or 2 milliseconds before or after a snap
+   line. This can be fixed using the nudge keybinds.
 
 Additionally, UNBUGGABLE uses milliseconds for offset, not seconds.
 
@@ -49,7 +46,7 @@ breakpoint and start at the beginning of the song.
 
 ## Placement Priority (for advanced users)
 The placement priority list shows the order that notes at the same time will appear in the chart
-fill. Drag the list items to reorder them.
+file. Drag the list items to reorder them (this is useful for camera shenanigans and other things).
 
 # Keybinds
 UNBUGGABLE supports every keybind found in the official editor's "shortcuts cheat sheet", *except*
@@ -90,10 +87,11 @@ key/mouse button bound to it (don't expect that to change any time soon, sorry).
 
 For mouse buttons, use either "leftMouse", "rightMouse", "middleMouse", "scrollUp", or "scrollDown"
 (**Note:** Keybinds for note placement cannot be used with the scroll wheel). For keyboard keys, the
-best way to find them is to enable debug mode in config.yaml, then open the editor and press
-whatever key you want. Whatever shows up next to "last pressed key" is what you need to use.
-**Note:** Because my UI library is weird, the first letter in the name will be uppercase; in the
-keybind file it should be lowercase (i.e., "pageUp" instead of "PageUp").
+best way to find them is to enable input data debug in the config (set `debug.enabled` and
+`debug.inputData` to true), then open the editor and press whatever key you want. Whatever shows up
+next to "last pressed key" is what you need to use. **Note:** Because my UI library is weird, the
+first letter in the name will be uppercase; in the keybind file it should be lowercase (i.e.,
+"pageUp" instead of "PageUp").
 
 There are a few limitations with the keybinds:
 - Actions can't share a keybind (technically they can and the editor will run, but it won't work
@@ -133,9 +131,15 @@ When creating a new chart from an audio file, the difficulty slot will be set to
 the difficulty name defaults to "Star".
 
 ## enhancedPreview
-If true, the in-game preview shows an indicator of where doubles will land, and gives mash notes a
-"tail" like hold notes have. Set this to false to make the preview more closely match what you
-actually see in-game.
+If true, the in-game preview shows:
+- Where doubles will land.
+- A "tail" indicating how long mash notes last.
+- Markers (if their preview is enabled).
+- When the camera is zoomed out, an arrow indicating the current facing direction.
+
+## markerPreviews
+Whether each marker color should appear in the game preview. **Note:** If multiple colors are
+enabled, color 1 takes priority over color 2, which takes priority over color 3.
 
 ## alwaysShowAllNoteFlags
 If true, the note viewer will always show the letters for all note flags on all notes. Normally,
@@ -226,6 +230,16 @@ or ends within this many milliseconds of the new note's start or end. If a note 
 will be extended instead of placing the new note. Setting this to 1 or 2 milliseconds should account
 for any rounding error-related issues.
 
+## pasteAdjustThreshold
+When you paste or move notes, their start and end times will be adjusted by up to this many
+milliseconds to line up with a snap line. Set to 0 to disable.
+
+## pasteAdjustSearchesAllSnapSets
+If true, paste adjustment will attempt to line notes up with any beat snap. If false, it will only
+line notes up with whatever beat snap you're currently using. Disabling this may improve performance
+if you have a lot of different beat snaps and/or are pasting very large sections of a chart, but
+may force you to do some manual note adjustments.
+
 ## minZoom
 Minimum possible zoom. Smaller values zoom out, larger values zoom in.
 
@@ -248,8 +262,8 @@ order where the center lane is on the right, change this setting to
 ## jumpTargets
 Determines where the "jump to previous/next label" keybinds can send you to. Allowed values are
 `"labels"`, `"bpmChanges"`, `"breakpoint"`, `"firstNote"`, `"lastNote"`, `"secondLastNote`,
-`"firstMarker"`, `"lastMarker"`, `"chartStart"`, and `"chartEnd"`. **Note:** Values in this array
-can be in any order. The editor will automatically sort them.
+`"firstMarker"`, and `"lastMarker"`. The start and end of the chart are always used as jump targets.
+**Note:** Values in this array can be in any order. The editor will automatically sort them.
 
 ## doublePreviewAlpha
 Opacity of doubles in the in-game preview while they are moving toward their landing point. Between
