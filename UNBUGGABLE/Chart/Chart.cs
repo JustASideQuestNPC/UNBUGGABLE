@@ -2406,7 +2406,7 @@ public static partial class Chart
     {
         await writer.WriteLineAsync("[General]");
         await writer.WriteLineAsync($"AudioFilename: {AudioFileName}");
-        await writer.WriteLineAsync($"PreviewStart: {_metadata.PreviewStartTime}");
+        await writer.WriteLineAsync($"PreviewTime: {_metadata.PreviewStartTime}");
     }
     
     private static async Task WriteOfficialEditorData(StreamWriter writer)

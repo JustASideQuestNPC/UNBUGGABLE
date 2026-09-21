@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Avalonia;
 using Avalonia.Media;
+using NLog;
 using UNBUGGABLE.Resources;
 using UNBUGGABLE.Views;
 
@@ -353,7 +354,6 @@ public abstract partial class NoteBase
         }
         
         var lane = (NoteLane)chunks[1];
-        
         if (type is NoteType.COP_SINGLE or NoteType.COP_HOLD or NoteType.COP_MASH)
         {
             // copy-paste format for cop notes:
@@ -385,22 +385,24 @@ public abstract partial class NoteBase
 
             if (type == NoteType.COP_SINGLE)
             {
-                return new CopNote(NoteType.COP_SINGLE, (int)copId, chunks[5] == 1)
+                return new CopNote(type, (int)copId, chunks[5] == 1)
                 {
-                    Time = time
+                    Time = time,
+                    Lane = lane
                 };
             }
 
             // end time
-            if (chunks[4] < time)
+            if (chunks[4] + startTime < time)
             {
                 return null;
             }
             
-            return new CopNote(NoteType.COP_HOLD, (int)copId, chunks[5] == 1)
+            return new CopNote(type, (int)copId, chunks[5] == 1)
             {
                 Time = time,
-                EndTime = chunks[4] + startTime
+                EndTime = chunks[4] + startTime,
+                Lane = lane
             };
         }
 
@@ -427,7 +429,7 @@ public abstract partial class NoteBase
 
         if (type is NoteType.HOLD or NoteType.DOUBLE or NoteType.MASH)
         {
-            if ((chunks[3] + startTime) < time)
+            if (chunks[3] + startTime < time)
             {
                 return null;
             }
