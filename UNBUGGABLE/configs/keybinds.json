@@ -207,7 +207,7 @@
     "removePreviewStart": [
         "ctrl+p"
     ],
-    "emergencyReload": [
+    "reloadChart": [
         "ctrl+alt+r"
     ]
 }

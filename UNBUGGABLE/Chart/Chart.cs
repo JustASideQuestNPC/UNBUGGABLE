@@ -248,7 +248,7 @@ public static partial class Chart
             }
             
             App.MainWindowViewModel.LastLabelText =
-                Labels.LastOrDefault(l => l.Time <= CurrentTimeRaw)?.Text ?? "none";
+                Labels.LastOrDefault(l => l.Time <= CurrentTime + AdjustedOffset)?.Text ?? "";
 
             if (!Playing)
             {
@@ -608,9 +608,9 @@ public static partial class Chart
         // skip labels within the next snap - this may end up jumping past the next label (but that
         // shouldn't be an issue unless you have multiple labels within a single beat) but prevents
         // an infinite loop if the next label isn't quite on a snap line
-        if (_jumpTargets.Any(t => t > GetNextSnapTime()))
+        if (_jumpTargets.Any(t => t >= GetNextSnapTime()))
         {
-            var time = _jumpTargets.Find( t => t > GetNextSnapTime());
+            var time = _jumpTargets.Find(t => t >= GetNextSnapTime());
             CurrentTimeRaw = time;
         }
         else
@@ -642,9 +642,9 @@ public static partial class Chart
         // skip labels within the previous snap - this may end up jumping past the actual previous
         // label (but that shouldn't be an issue unless you have multiple labels within a single
         // beat) but prevents an infinite loop if the previous label isn't quite on a snap line
-        if (_jumpTargets.Any(t => t < GetPreviousSnapTime()))
+        if (_jumpTargets.Any(t => t <= GetPreviousSnapTime()))
         {
-            var time = _jumpTargets.FindLast(t => t < GetPreviousSnapTime());
+            var time = _jumpTargets.FindLast(t => t <= GetPreviousSnapTime());
             CurrentTimeRaw = time;
         }
         else
@@ -1593,6 +1593,8 @@ public static partial class Chart
         
         UnsavedChanges = true;
         _jumpTargetsOutOfDate = true;
+        App.MainWindowViewModel.LastLabelText =
+            Labels.LastOrDefault(l => l.Time <= CurrentTime + AdjustedOffset)?.Text ?? "";
     }
 
     public static void RemoveLabel(Label label)
@@ -1600,6 +1602,8 @@ public static partial class Chart
         _labels.Remove(label);
         UnsavedChanges = true;
         _jumpTargetsOutOfDate = true;
+        App.MainWindowViewModel.LastLabelText =
+            Labels.LastOrDefault(l => l.Time <= CurrentTime + AdjustedOffset)?.Text ?? "";
     }
 
     /// <summary>
@@ -1744,7 +1748,7 @@ public static partial class Chart
 
         if (Config.Settings.JumpTargets.Contains("bpmChanges"))
         {
-            _jumpTargets.AddRange(_bpmRegions.Select(r => r.StartTime - Metadata.ChartOffset));
+            _jumpTargets.AddRange(_bpmRegions.Select(r => r.StartTime));
         }
 
         if (Config.Settings.JumpTargets.Contains("firstNote") && NonMarkerNotes.Count > 0)
