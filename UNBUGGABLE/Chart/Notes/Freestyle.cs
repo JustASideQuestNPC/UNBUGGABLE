@@ -135,14 +135,14 @@ public class FreestyleNote : NoteBase
     {
         if (Config.Settings.NegativeMashConversion && Flags.F)
         {
-            // convert to a mash note with the end set to the very beginning of the chart
+            // convert to a mash note with the end set to before the start
             List<string> chunks = [
                 "469",
                 "192",
                 (Time + Chart.Metadata.ChartOffset).ToString(),
                 isFirstNote ? "132" : "128",
                 GetFlagString(),
-                "0:0:0:0:0:"
+                $"{Math.Max(Time + Chart.Metadata.ChartOffset - 200, 0)}:0:0:0:0:"
             ];
             return string.Join(",", chunks);
         }

@@ -371,35 +371,24 @@ public static partial class Chart
     /// Initializes everything. This must be called before any other methods are used!
     /// </summary>
     public static void Init()
-    {
-        _libVlc = new LibVLC();
-        _mediaPlayer = new MediaPlayer(_libVlc);
-        _mediaPlayer.EndReached += MediaPlayer_EndReached;
-        _libVlc.Log += (_, args) =>
-        {
-            _lastVlcConsoleOutput = args.Message;
-        };
-        try
-        {
-            _hitSound = new CachedSound(
-                Path.Combine(Environment.CurrentDirectory, "Assets/hitSound.wav"));
-        }
-        catch (Exception e)
-        {
-            if (e is FileNotFoundException or DirectoryNotFoundException)
-            {
-                _hitSound = null;
-                Logger.Warn(
-                    "Hit sound (Assets/hitSound.wav) not found. Hit sounds are disabled.");
-            }
-            else
-            {
-                throw;
-            }
-        }
+    { 
+        InitAudioEngine();
         
         _stopwatch = new Stopwatch();
         _stopwatch.Start();
+    }
+
+    public static void ResetAudioEngine()
+    {
+        SfxEngine.DisposeInstances();
+        InitAudioEngine();
+        
+        SfxEngine.Volume = _sfxVolume / 100.0f;
+        if (SongLoaded)
+        {
+            _mediaPlayer.Volume = SongVolume;
+            _mediaPlayer.SetRate(PlaySpeed / 100.0f);
+        }
     }
 
     /// <summary>
@@ -1792,7 +1781,38 @@ public static partial class Chart
         // }
         // Logger.Debug(builder.ToString());
     }
-    
+
+    private static void InitAudioEngine()
+    {
+        _libVlc = new LibVLC();
+        _mediaPlayer = new MediaPlayer(_libVlc);
+        _mediaPlayer.EndReached += MediaPlayer_EndReached;
+        _libVlc.Log += (_, args) =>
+        {
+            _lastVlcConsoleOutput = args.Message;
+            // currently disabled because vlc prints a ton of unnecessary debug messages
+            // Logger.Debug("VLC Player Output: \"{0}\"", args.Message);
+        };
+        try
+        {
+            _hitSound = new CachedSound(
+                Path.Combine(Environment.CurrentDirectory, "Assets/hitSound.wav"));
+        }
+        catch (Exception e)
+        {
+            if (e is FileNotFoundException or DirectoryNotFoundException)
+            {
+                _hitSound = null;
+                Logger.Warn(
+                    "Hit sound (Assets/hitSound.wav) not found. Hit sounds are disabled.");
+            }
+            else
+            {
+                throw;
+            }
+        }
+    }
+
     private static void ClearChart()
     {
         ChartBuilder.ClearSelection();
