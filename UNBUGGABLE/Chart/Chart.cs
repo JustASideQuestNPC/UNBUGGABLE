@@ -248,7 +248,7 @@ public static partial class Chart
             }
             
             App.MainWindowViewModel.LastLabelText =
-                Labels.LastOrDefault(l => l.Time <= CurrentTimeRaw)?.Text ?? "none";
+                Labels.LastOrDefault(l => l.Time <= CurrentTime + AdjustedOffset)?.Text ?? "";
 
             if (!Playing)
             {
@@ -371,35 +371,24 @@ public static partial class Chart
     /// Initializes everything. This must be called before any other methods are used!
     /// </summary>
     public static void Init()
-    {
-        _libVlc = new LibVLC();
-        _mediaPlayer = new MediaPlayer(_libVlc);
-        _mediaPlayer.EndReached += MediaPlayer_EndReached;
-        _libVlc.Log += (_, args) =>
-        {
-            _lastVlcConsoleOutput = args.Message;
-        };
-        try
-        {
-            _hitSound = new CachedSound(
-                Path.Combine(Environment.CurrentDirectory, "Assets/hitSound.wav"));
-        }
-        catch (Exception e)
-        {
-            if (e is FileNotFoundException or DirectoryNotFoundException)
-            {
-                _hitSound = null;
-                Logger.Warn(
-                    "Hit sound (Assets/hitSound.wav) not found. Hit sounds are disabled.");
-            }
-            else
-            {
-                throw;
-            }
-        }
+    { 
+        InitAudioEngine();
         
         _stopwatch = new Stopwatch();
         _stopwatch.Start();
+    }
+
+    public static void ResetAudioEngine()
+    {
+        SfxEngine.DisposeInstances();
+        InitAudioEngine();
+        
+        SfxEngine.Volume = _sfxVolume / 100.0f;
+        if (SongLoaded)
+        {
+            _mediaPlayer.Volume = SongVolume;
+            _mediaPlayer.SetRate(PlaySpeed / 100.0f);
+        }
     }
 
     /// <summary>
@@ -608,9 +597,9 @@ public static partial class Chart
         // skip labels within the next snap - this may end up jumping past the next label (but that
         // shouldn't be an issue unless you have multiple labels within a single beat) but prevents
         // an infinite loop if the next label isn't quite on a snap line
-        if (_jumpTargets.Any(t => t > GetNextSnapTime()))
+        if (_jumpTargets.Any(t => t >= GetNextSnapTime()))
         {
-            var time = _jumpTargets.Find( t => t > GetNextSnapTime());
+            var time = _jumpTargets.Find(t => t >= GetNextSnapTime());
             CurrentTimeRaw = time;
         }
         else
@@ -642,9 +631,9 @@ public static partial class Chart
         // skip labels within the previous snap - this may end up jumping past the actual previous
         // label (but that shouldn't be an issue unless you have multiple labels within a single
         // beat) but prevents an infinite loop if the previous label isn't quite on a snap line
-        if (_jumpTargets.Any(t => t < GetPreviousSnapTime()))
+        if (_jumpTargets.Any(t => t <= GetPreviousSnapTime()))
         {
-            var time = _jumpTargets.FindLast(t => t < GetPreviousSnapTime());
+            var time = _jumpTargets.FindLast(t => t <= GetPreviousSnapTime());
             CurrentTimeRaw = time;
         }
         else
@@ -1593,6 +1582,8 @@ public static partial class Chart
         
         UnsavedChanges = true;
         _jumpTargetsOutOfDate = true;
+        App.MainWindowViewModel.LastLabelText =
+            Labels.LastOrDefault(l => l.Time <= CurrentTime + AdjustedOffset)?.Text ?? "";
     }
 
     public static void RemoveLabel(Label label)
@@ -1600,6 +1591,8 @@ public static partial class Chart
         _labels.Remove(label);
         UnsavedChanges = true;
         _jumpTargetsOutOfDate = true;
+        App.MainWindowViewModel.LastLabelText =
+            Labels.LastOrDefault(l => l.Time <= CurrentTime + AdjustedOffset)?.Text ?? "";
     }
 
     /// <summary>
@@ -1744,7 +1737,7 @@ public static partial class Chart
 
         if (Config.Settings.JumpTargets.Contains("bpmChanges"))
         {
-            _jumpTargets.AddRange(_bpmRegions.Select(r => r.StartTime - Metadata.ChartOffset));
+            _jumpTargets.AddRange(_bpmRegions.Select(r => r.StartTime));
         }
 
         if (Config.Settings.JumpTargets.Contains("firstNote") && NonMarkerNotes.Count > 0)
@@ -1788,7 +1781,38 @@ public static partial class Chart
         // }
         // Logger.Debug(builder.ToString());
     }
-    
+
+    private static void InitAudioEngine()
+    {
+        _libVlc = new LibVLC();
+        _mediaPlayer = new MediaPlayer(_libVlc);
+        _mediaPlayer.EndReached += MediaPlayer_EndReached;
+        _libVlc.Log += (_, args) =>
+        {
+            _lastVlcConsoleOutput = args.Message;
+            // currently disabled because vlc prints a ton of unnecessary debug messages
+            // Logger.Debug("VLC Player Output: \"{0}\"", args.Message);
+        };
+        try
+        {
+            _hitSound = new CachedSound(
+                Path.Combine(Environment.CurrentDirectory, "Assets/hitSound.wav"));
+        }
+        catch (Exception e)
+        {
+            if (e is FileNotFoundException or DirectoryNotFoundException)
+            {
+                _hitSound = null;
+                Logger.Warn(
+                    "Hit sound (Assets/hitSound.wav) not found. Hit sounds are disabled.");
+            }
+            else
+            {
+                throw;
+            }
+        }
+    }
+
     private static void ClearChart()
     {
         ChartBuilder.ClearSelection();

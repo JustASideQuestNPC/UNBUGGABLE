@@ -82,7 +82,7 @@ public class RemovePreviewStartAction(List<string> keybinds) : InputActionBase(k
     }
 }
 
-public class EmergencyReloadAction(List<string> keybinds) : InputActionBase(keybinds)
+public class ReloadChartAction(List<string> keybinds) : InputActionBase(keybinds)
 {
     public override async Task OnPress()
     {
@@ -94,6 +94,8 @@ public class EmergencyReloadAction(List<string> keybinds) : InputActionBase(keyb
         {
             await ChartBuilder.SaveToStandardPath(UserData.LastOpenedChartFile);
         }
+
+        
         await ChartBuilder.TryLoadChartFile(UserData.LastOpenedChartFile);
     }
 }

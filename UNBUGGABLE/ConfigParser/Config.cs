@@ -505,7 +505,7 @@ public static class Config
                 VerifyKeybindStrings(keybinds.JumpToBreakpoint, "jumpToBreakpoint") &&
                 VerifyKeybindStrings(keybinds.SetPreviewStart, "setPreviewStart") &&
                 VerifyKeybindStrings(keybinds.RemovePreviewStart, "removePreviewStart") &&
-                VerifyKeybindStrings(keybinds.EmergencyReload, "emergencyReload") &&
+                VerifyKeybindStrings(keybinds.ReloadChart, "reloadChart") &&
                 VerifyKeybindStrings(keybinds.NudgeForward, "nudgeForward") &&
                 VerifyKeybindStrings(keybinds.NudgeBack, "nudgeBack") &&
                 VerifyKeybindStrings(keybinds.NudgeTailForward, "nudgeTailForward") &&
@@ -591,7 +591,7 @@ public static class Config
             new JumpToBreakpointCommand(Keybinds.JumpToBreakpoint),
             new SetPreviewStartAction(Keybinds.SetPreviewStart),
             new RemovePreviewStartAction(Keybinds.RemovePreviewStart),
-            new EmergencyReloadAction(Keybinds.EmergencyReload),
+            new ReloadChartAction(Keybinds.ReloadChart),
             new CrashProgramAction(["ctrl+alt+oem4"]) // ctrl + alt + [
         ];
 

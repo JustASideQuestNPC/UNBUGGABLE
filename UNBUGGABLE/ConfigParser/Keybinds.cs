@@ -127,8 +127,8 @@ public class Keybinds
     public List<string> SetPreviewStart { get; set; } = ["p"];
     [JsonRequired][JsonPropertyName("removePreviewStart")]
     public List<string> RemovePreviewStart { get; set; } = ["ctrl+p"];
-    [JsonRequired][JsonPropertyName("emergencyReload")]
-    public List<string> EmergencyReload { get; set; } = ["ctrl+alt+r"];
+    [JsonRequired][JsonPropertyName("reloadChart")]
+    public List<string> ReloadChart { get; set; } = ["ctrl+alt+r"];
     [JsonRequired][JsonPropertyName("nudgeForward")]
     public List<string> NudgeForward { get; set; } = ["alt+s"];
     [JsonRequired][JsonPropertyName("nudgeBack")]
