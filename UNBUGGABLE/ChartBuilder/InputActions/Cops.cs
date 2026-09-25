@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using UNBEATABLEChartEditor.Input;
+using UNBUGGABLE.Input;
 
 namespace UNBUGGABLE.Keybinds;
 

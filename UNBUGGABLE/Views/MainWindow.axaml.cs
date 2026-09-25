@@ -5,8 +5,8 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using DialogHostAvalonia;
-using UNBEATABLEChartEditor.Dialogs;
-using UNBEATABLEChartEditor.Input;
+using UNBUGGABLE.Dialogs;
+using UNBUGGABLE.Input;
 using UNBUGGABLE.Resources;
 
 namespace UNBUGGABLE.Views;

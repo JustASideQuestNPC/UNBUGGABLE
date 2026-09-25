@@ -1,7 +1,7 @@
 ﻿using System;
 using NAudio.Wave;
 
-namespace UNBEATABLEChartEditor.Audio;
+namespace UNBUGGABLE.Audio;
 
 public class CachedSoundSampleProvider(CachedSound cachedSound, float volume) : ISampleProvider
 {

@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
-using UNBEATABLEChartEditor;
-using UNBEATABLEChartEditor.Input;
+using UNBUGGABLE;
+using UNBUGGABLE.Input;
 using UNBUGGABLE.Resources;
 
 namespace UNBUGGABLE.Views;

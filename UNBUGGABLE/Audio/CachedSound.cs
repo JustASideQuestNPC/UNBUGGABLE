@@ -2,7 +2,7 @@
 using System.Linq;
 using NAudio.Wave;
 
-namespace UNBEATABLEChartEditor.Audio;
+namespace UNBUGGABLE.Audio;
 
 public class CachedSound
 {

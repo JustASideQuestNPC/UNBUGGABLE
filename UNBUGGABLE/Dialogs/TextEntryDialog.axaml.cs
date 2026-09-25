@@ -12,7 +12,7 @@ using CommunityToolkit.Mvvm.Input;
 using UNBUGGABLE;
 using Key = Avalonia.Input.Key;
 
-namespace UNBEATABLEChartEditor.Dialogs;
+namespace UNBUGGABLE.Dialogs;
 
 /// <summary>
 /// A dialog with a single text box.

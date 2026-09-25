@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using UNBEATABLEChartEditor.Input;
+using UNBUGGABLE.Input;
 using UNBUGGABLE.Resources;
 using UNBUGGABLE.Views;
 

@@ -2,7 +2,7 @@
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 
-namespace UNBEATABLEChartEditor.Audio;
+namespace UNBUGGABLE.Audio;
 
 public class CachedAudioPlaybackEngine : IDisposable
 {

@@ -10,7 +10,7 @@ using AvaloniaDialogs.Views;
 using CommunityToolkit.Mvvm.Input;
 using UNBUGGABLE;
 
-namespace UNBEATABLEChartEditor.Dialogs;
+namespace UNBUGGABLE.Dialogs;
 
 public partial class NumberEntryDialog : BaseDialog<double>
 {

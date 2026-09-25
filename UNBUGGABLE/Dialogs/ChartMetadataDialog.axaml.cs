@@ -9,7 +9,7 @@ using AvaloniaDialogs.Views;
 using UNBUGGABLE;
 using UNBUGGABLE.Resources;
 
-namespace UNBEATABLEChartEditor.Dialogs;
+namespace UNBUGGABLE.Dialogs;
 
 public partial class ChartMetadataDialog : BaseDialog<Chart.MetadataContainer>
 {

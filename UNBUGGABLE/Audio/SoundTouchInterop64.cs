@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace UNBEATABLEChartEditor.Audio;
+namespace UNBUGGABLE.Audio;
 
 class SoundTouchInterop64
 {

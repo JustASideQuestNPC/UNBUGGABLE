@@ -6,7 +6,7 @@ using Avalonia.Markup.Xaml;
 using AvaloniaDialogs.Views;
 using UNBUGGABLE;
 
-namespace UNBEATABLEChartEditor.Dialogs;
+namespace UNBUGGABLE.Dialogs;
 
 public partial class MessageDialog : BaseDialog
 {

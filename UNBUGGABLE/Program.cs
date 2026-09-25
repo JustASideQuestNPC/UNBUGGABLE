@@ -7,8 +7,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Logging;
 using CommandLine;
-using UNBEATABLEChartEditor;
-using UNBEATABLEChartEditor.Audio;
+using UNBUGGABLE;
+using UNBUGGABLE.Audio;
 using UNBUGGABLE.Resources;
 
 namespace UNBUGGABLE;

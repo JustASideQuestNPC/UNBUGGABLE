@@ -1,4 +1,4 @@
-﻿namespace UNBEATABLEChartEditor.Audio;
+﻿namespace UNBUGGABLE.Audio;
 
 internal class SoundTouchProfile
 {

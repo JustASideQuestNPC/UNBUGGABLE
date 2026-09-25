@@ -6,7 +6,7 @@ using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using UNBUGGABLE;
 
-namespace UNBEATABLEChartEditor;
+namespace UNBUGGABLE;
 
 /// <summary>
 /// Reads and writes persistent data.

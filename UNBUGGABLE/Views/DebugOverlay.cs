@@ -3,7 +3,7 @@ using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
-using UNBEATABLEChartEditor.Input;
+using UNBUGGABLE.Input;
 using UNBUGGABLE.Resources;
 
 namespace UNBUGGABLE.Views;

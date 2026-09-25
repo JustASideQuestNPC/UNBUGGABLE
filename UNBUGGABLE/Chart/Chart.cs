@@ -15,9 +15,9 @@ using Avalonia.Threading;
 using CSCore;
 using CSCore.Codecs;
 using CSCore.SoundOut;
-using UNBEATABLEChartEditor;
-using UNBEATABLEChartEditor.Audio;
-using UNBEATABLEChartEditor.Input;
+using UNBUGGABLE;
+using UNBUGGABLE.Audio;
+using UNBUGGABLE.Input;
 using UNBUGGABLE.Resources;
 using UNBUGGABLE.Views;
 using DirectSoundOut = CSCore.SoundOut.DirectSoundOut;
@@ -112,8 +112,8 @@ public static partial class Chart
     {
         Playing = Playing,
         SongLoaded = SongLoaded,
-        MediaPlayerTime = _soundTouchSource != null ?
-            (long)_soundTouchSource.GetPosition().TotalMilliseconds : -1,
+        MediaPlayerTime = _chartSongSource != null ?
+            (long)_chartSongSource.GetPosition().TotalMilliseconds : -1,
         MediaPlayerState = _soundOut?.PlaybackState ?? PlaybackState.Stopped,
         ChartTime = CurrentTimeRaw,
         PlaySpeed = PlaySpeed,
@@ -221,7 +221,7 @@ public static partial class Chart
     public static string ChartFileName { get; private set; } = "";
     
     public static long Length =>
-        _soundTouchSource != null ? (long)_soundTouchSource.GetLength().TotalMilliseconds : -1;
+        _chartSongSource != null ? (long)_chartSongSource.GetLength().TotalMilliseconds : -1;
 
     public static long AdjustedOffset =>
         Metadata.ChartOffset + Config.Settings.HardChartOffset - Config.Settings.AudioBufferSize;
@@ -302,30 +302,16 @@ public static partial class Chart
         set
         {
             _playSpeed = value;
-            _soundTouchSource?.SetPlaySpeed(value / 100.0f);
+            _chartSongSource?.SetPlaySpeed(value / 100.0f);
         }
     }
 
-    private static bool _playing = false;
-    public static bool Playing
-    {
-        get => _playing;
-        private set
-        {
-            _playing = value;
-            App.MainWindowViewModel.EditorUiEnabled = !value && SongLoaded;
-            InputManager.ResetInputStates();
-            if (value)
-            {
-                App.MainWindowViewModel.ClearPriorityListEntries();
-            }
-        }
-    }
+    public static bool Playing { get; private set; } = false;
     
     private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
     private static ISoundOut? _soundOut;
-    private static SoundTouchSource? _soundTouchSource;
+    private static ChartSongSource? _chartSongSource;
     
     private static CachedSound? _hitSound;
     private static CachedAudioPlaybackEngine? _hitSoundEngine;
@@ -384,8 +370,8 @@ public static partial class Chart
     {
         _soundOut?.Stop();
         _soundOut?.Dispose();
-        _soundTouchSource?.ClearBuffer();
-        _soundTouchSource?.Dispose();
+        _chartSongSource?.ClearBuffer();
+        _chartSongSource?.Dispose();
         _hitSoundEngine?.Dispose();
     }
 
@@ -667,12 +653,14 @@ public static partial class Chart
             var prevTime = CurrentTimeRaw;
             CurrentTimeRaw +=
                 (_stopwatch.ElapsedMilliseconds - _lastStopwatchTime) * PlaySpeed / 100;
+            _lastStopwatchTime = _stopwatch.ElapsedMilliseconds;
+            
             if (CurrentTimeRaw + Metadata.ChartOffset >= 0 &&
                 _soundOut?.PlaybackState != PlaybackState.Playing)
             {
-                _soundTouchSource?.SetPosition(
+                _chartSongSource?.SetPosition(
                     TimeSpan.FromMilliseconds(CurrentTimeRaw + Metadata.ChartOffset));
-                _soundTouchSource?.ClearBuffer();
+                _chartSongSource?.ClearBuffer();
                 _soundOut?.Play();
             }
             else
@@ -702,9 +690,10 @@ public static partial class Chart
                 }
             }
         }
-        
-        _lastStopwatchTime = _stopwatch.ElapsedMilliseconds;
-        
+        else
+        {
+            _lastStopwatchTime = _stopwatch.ElapsedMilliseconds;
+        }
     }
     
     /// <summary>
@@ -1883,21 +1872,36 @@ public static partial class Chart
             return;
         }
         
-        Playing = true;
+        App.MainWindowViewModel.EditorUiEnabled = false;
+        InputManager.ResetInputStates();
+        App.MainWindowViewModel.ClearPriorityListEntries();
+        
         if (CurrentTimeRaw + Metadata.ChartOffset >= 0)
         {
-            _soundTouchSource.SetPosition(
+            _chartSongSource.SetPosition(
                 TimeSpan.FromMilliseconds(CurrentTimeRaw + Metadata.ChartOffset));
-            _soundTouchSource?.ClearBuffer();
+            _chartSongSource?.ClearBuffer();
             _soundOut?.Play();
+
+            // instead of starting playback immediately, we delay until the buffer is empty to
+            // prevent desync
+            _chartSongSource.FireNextReadEvent = true;
+            _soundOut.Volume = 0; // silence what's left in the buffer
+            
+            Logger.Debug("waiting for buffer to empty");
         }
     }
     
     private static void PauseSong()
     {
+        Logger.Debug("pausing song");
+        
+        App.MainWindowViewModel.EditorUiEnabled = true;
+        InputManager.ResetInputStates();
+        
         Playing = false;
         _soundOut?.Pause();
-        _soundTouchSource?.ClearBuffer();
+        _chartSongSource?.ClearBuffer();
         SetTimeToNearestSnap();
     }
     
@@ -1964,15 +1968,20 @@ public static partial class Chart
             }
             AudioFileName = Path.GetFileName(path);
 
-            _soundTouchSource?.Dispose();
+            _chartSongSource?.Dispose();
             var waveSource =
                 CodecFactory.Instance.GetCodec(path)
                             .ToSampleSource()
                             .AppendSource(
-                                x => new SoundTouchSource(x, Config.Settings.AudioBufferSize),
-                                out _soundTouchSource)
+                                x => new ChartSongSource(x, Config.Settings.AudioBufferSize),
+                                out _chartSongSource)
                             .ToWaveSource();
-            _soundTouchSource.DisposeBaseSource = true;
+            _chartSongSource.ReadEvent += (_, _) =>
+            {
+                Logger.Debug("starting playback");
+                _soundOut.Volume = _songVolume / 100.0f;
+                Playing = true;
+            };
             
             _soundOut?.Dispose();
             _soundOut = new DirectSoundOut();
@@ -1989,11 +1998,10 @@ public static partial class Chart
         errorMessage = "";
         return true;
     }
-    
+
     private static void SetTimeToNearestSnap()
     {
-        var adjustedCurrentTime = CurrentTimeRaw + Config.Settings.AudioBufferSize;
-        if (adjustedCurrentTime <= _currentSnapLineSet[0])
+        if (CurrentTimeRaw <= _currentSnapLineSet[0])
         {
             CurrentTimeRaw = _currentSnapLineSet[0];
             return;
@@ -2003,10 +2011,10 @@ public static partial class Chart
         {
             var currentSnap = _currentSnapLineSet[i];
             var nextSnap = _currentSnapLineSet[i + 1];
-            if (adjustedCurrentTime >= currentSnap && adjustedCurrentTime <= nextSnap)
+            if (CurrentTimeRaw >= currentSnap && CurrentTimeRaw <= nextSnap)
             {
-                if (Math.Abs(adjustedCurrentTime - currentSnap) <
-                    Math.Abs(adjustedCurrentTime - nextSnap))
+                if (Math.Abs(CurrentTimeRaw - currentSnap) <
+                    Math.Abs(CurrentTimeRaw - nextSnap))
                 {
                     CurrentTimeRaw = currentSnap;
                     _currentSnapLineSetIndex = i;

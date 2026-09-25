@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Input;
 
-namespace UNBEATABLEChartEditor.Input;
+namespace UNBUGGABLE.Input;
 
 // i know avalonia has a MouseButton enum, but i also need scroll wheel inputs to be part of it
 public enum MouseButton

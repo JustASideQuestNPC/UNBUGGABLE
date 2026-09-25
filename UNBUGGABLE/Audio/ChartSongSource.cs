@@ -2,10 +2,15 @@
 using CSCore;
 using UNBUGGABLE.Resources;
 
-namespace UNBEATABLEChartEditor.Audio;
+namespace UNBUGGABLE.Audio;
 
-public class SoundTouchSource : SampleAggregatorBase
+public class ChartSongSource : SampleAggregatorBase
 {
+    private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+    
+    public bool FireNextReadEvent { get; set; }
+    public event EventHandler? ReadEvent;
+    
     private bool _isDisposed;
 
     private readonly int _latency;
@@ -18,12 +23,12 @@ public class SoundTouchSource : SampleAggregatorBase
     private ISampleSource _sampleSource;
     private SoundTouch _soundTouch;
 
-    public SoundTouchSource(ISampleSource sampleSource, int latency)
+    public ChartSongSource(ISampleSource sampleSource, int latency)
         : this(sampleSource, latency, new SoundTouch())
     {
     }
 
-    public SoundTouchSource(ISampleSource sampleSource, int latency, SoundTouch soundTouch)
+    public ChartSongSource(ISampleSource sampleSource, int latency, SoundTouch soundTouch)
         : base(sampleSource)
     {
         _sampleSource = sampleSource;
@@ -74,6 +79,13 @@ public class SoundTouchSource : SampleAggregatorBase
 
     public override int Read(float[] buffer, int offset, int count)
     {
+        if (FireNextReadEvent)
+        {
+            Logger.Debug("firing next read event");
+            ReadEvent?.Invoke(this, EventArgs.Empty);
+            FireNextReadEvent = false;
+        }
+        
         lock(lockObject)
         {
             var samplesRead = 0;

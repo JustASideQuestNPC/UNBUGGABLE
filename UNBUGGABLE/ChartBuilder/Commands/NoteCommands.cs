@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using UNBEATABLEChartEditor;
+using UNBUGGABLE;
 using UNBUGGABLE.Resources;
 
 namespace UNBUGGABLE.Commands;

@@ -5,7 +5,7 @@ using Avalonia;
 using Avalonia.Input;
 using UNBUGGABLE;
 
-namespace UNBEATABLEChartEditor.Input;
+namespace UNBUGGABLE.Input;
 internal enum CallbackType
 {
     KEY_PRESS,
