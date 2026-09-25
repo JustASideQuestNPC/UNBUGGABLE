@@ -249,7 +249,7 @@ public class Settings
     public int CurrentTimePosition { get; set; } = 175;
 
     [JsonRequired][JsonPropertyName("hitSoundOffset")]
-    public int HitSoundOffset { get; set; } = -30;
+    public int HitSoundOffset { get; set; } = -80;
 
     [JsonRequired][JsonPropertyName("hardChartOffset")]
     public int HardChartOffset { get; set; } = -60;
@@ -257,8 +257,11 @@ public class Settings
     [JsonRequired][JsonPropertyName("hitSoundTickRate")]
     public int HitSoundTickRate { get; set; } = 180;
 
-    [JsonRequired][JsonPropertyName("maxConcurrentHitSounds")]
-    public int MaxConcurrentSfx { get; set; } = 16;
+    [JsonRequired][JsonPropertyName( "audioBufferSize" )]
+    public int AudioBufferSize { get; set; } = 50;
+
+    [JsonRequired][JsonPropertyName("playbackSpeedMode")]
+    public string PlaySpeedMode { get; set; } = "tempo";
 
     [JsonRequired][JsonPropertyName("autosaveInterval")]
     public int AutosaveInterval { get; set; } = 600;
@@ -314,7 +317,8 @@ public class Settings
                   hit sound offset: {HitSoundOffset}
                   hard chart offset: {HardChartOffset}
                   hit sound tick rate: {HitSoundTickRate}
-                  max concurrent hit sounds: {MaxConcurrentSfx}
+                  audio buffer size: {AudioBufferSize}
+                  playback speed mode: {PlaySpeedMode}
                   hit sounds: {HitSounds.GetFormattedString()}
                   quick scroll beats: {QuickScrollBeats}
                   slider increment: {SliderIncrement}

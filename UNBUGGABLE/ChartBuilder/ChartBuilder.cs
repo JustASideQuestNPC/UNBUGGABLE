@@ -55,6 +55,8 @@ public static class ChartBuilder
         TopLaneStartTime = -1000;
         BottomLaneStartTime = -1000;
         CenterLaneStartTime = -1000;
+        
+        
     }
 
     public static async Task OnMousePress(bool rightButton)
@@ -176,17 +178,17 @@ public static class ChartBuilder
 
     public static async Task<bool> TryCreateChartFromAudio(string path)
     {
-        var result = await Chart.TryCreateChartFromAudio(path);
-        if (result.Item1)
+        var result = Chart.TryCreateChartFromAudio(path, out var errorMessage);
+        if (result)
         {
             ChartBuilderCommandInvoker.Reset();
         }
         else
         {
-            await new MessageDialog($"Audio loading failed: {result.Item2}").ShowAsync();
+            await new MessageDialog($"Audio loading failed: {errorMessage}").ShowAsync();
         }
         
-        return result.Item1;
+        return result;
     }
 
     public static async Task<bool> TryLoadChartFile(string path, bool noErrorDialog = false)

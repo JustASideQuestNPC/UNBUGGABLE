@@ -52,7 +52,6 @@ public partial class App : Application
         Config.TryLoadColorThemes();
         Config.ApplyCurrentTheme();
         
-        SfxEngine.Init(Config.Settings.MaxConcurrentSfx);
         UserData.LoadData();
         Chart.Init();
         

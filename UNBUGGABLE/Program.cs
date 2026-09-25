@@ -135,6 +135,5 @@ sealed class Program
     private static void OnProcessExit(object? sender, EventArgs e)
     {
         UserData.SaveData();
-        SfxEngine.DisposeInstances();
     }
 }

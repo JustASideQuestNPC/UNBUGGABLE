@@ -66,7 +66,8 @@
   "hitSoundOffset": -80,
   "hardChartOffset": -60,
   "hitSoundTickRate": 180,
-  "maxConcurrentHitSounds": 1,
+  "audioBufferSize": 50,
+  "playbackSpeedMode": "tempo",
   "autosaveInterval": 600,
   "hitSounds": {
     "single": true,

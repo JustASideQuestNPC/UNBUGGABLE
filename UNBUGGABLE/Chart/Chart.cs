@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -11,21 +10,19 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Transactions;
-using Avalonia.Input;
-using Avalonia.Media;
 using Avalonia.Threading;
-using LibVLCSharp.Shared;
-using NAudio.Wave;
-using Tmds.DBus.Protocol;
+using CSCore;
+using CSCore.Codecs;
+using CSCore.SoundOut;
 using UNBEATABLEChartEditor;
 using UNBEATABLEChartEditor.Audio;
 using UNBEATABLEChartEditor.Input;
 using UNBUGGABLE.Resources;
 using UNBUGGABLE.Views;
+using DirectSoundOut = CSCore.SoundOut.DirectSoundOut;
 using Path = System.IO.Path;
+using PlaybackState = CSCore.SoundOut.PlaybackState;
 
 namespace UNBUGGABLE;
 
@@ -59,8 +56,7 @@ public class ChartDebugInfo
     public required bool SongLoaded;
     public required bool Playing;
     public required long MediaPlayerTime;
-    public required VLCState MediaPlayerState;
-    public required string LastVlcOutput;
+    public required PlaybackState MediaPlayerState;
     public required double ChartTime;
     public required double PlaySpeed;
     public required List<long> JumpTargets;
@@ -116,9 +112,9 @@ public static partial class Chart
     {
         Playing = Playing,
         SongLoaded = SongLoaded,
-        MediaPlayerTime = _mediaPlayer.Time,
-        MediaPlayerState = _mediaPlayer.State,
-        LastVlcOutput = _lastVlcConsoleOutput,
+        MediaPlayerTime = _soundTouchSource != null ?
+            (long)_soundTouchSource.GetPosition().TotalMilliseconds : -1,
+        MediaPlayerState = _soundOut?.PlaybackState ?? PlaybackState.Stopped,
         ChartTime = CurrentTimeRaw,
         PlaySpeed = PlaySpeed,
         JumpTargets = _jumpTargets,
@@ -224,10 +220,11 @@ public static partial class Chart
     public static string ChartFolderName { get; private set; } = "";
     public static string ChartFileName { get; private set; } = "";
     
-    public static long Length => _mediaPlayer.Media != null ? 
-        _mediaPlayer.Media.Duration - AdjustedOffset : -1;
+    public static long Length =>
+        _soundTouchSource != null ? (long)_soundTouchSource.GetLength().TotalMilliseconds : -1;
 
-    public static long AdjustedOffset => Metadata.ChartOffset + Config.Settings.HardChartOffset;
+    public static long AdjustedOffset =>
+        Metadata.ChartOffset + Config.Settings.HardChartOffset - Config.Settings.AudioBufferSize;
 
     public static bool UnsavedChanges { get; set; } = false;
 
@@ -277,9 +274,9 @@ public static partial class Chart
         set
         {
             _songVolume = value;
-            if (SongLoaded)
+            if (_soundOut != null)
             {
-                _mediaPlayer.Volume = value;
+                _soundOut.Volume = value / 100.0f;
             }
         }
     }
@@ -291,19 +288,21 @@ public static partial class Chart
         set
         {
             _sfxVolume = value;
-            SfxEngine.Volume = value / 100.0f;
+            if (_hitSoundEngine != null)
+            {
+                _hitSoundEngine.Volume = value / 100.0f;
+            }
         }
     }
     
+    private static int _playSpeed = 100;
     public static int PlaySpeed
     {
-        get => (int)(_mediaPlayer.Rate * 100);
+        get => _playSpeed;
         set
         {
-            if (SongLoaded)
-            {
-                _mediaPlayer.SetRate(value / 100.0f);
-            }
+            _playSpeed = value;
+            _soundTouchSource?.SetPlaySpeed(value / 100.0f);
         }
     }
 
@@ -324,11 +323,12 @@ public static partial class Chart
     }
     
     private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+
+    private static ISoundOut? _soundOut;
+    private static SoundTouchSource? _soundTouchSource;
     
-    private static LibVLC _libVlc = null!;
-    private static MediaPlayer _mediaPlayer = null!;
-    
-    private static CachedSound? _hitSound = null;
+    private static CachedSound? _hitSound;
+    private static CachedAudioPlaybackEngine? _hitSoundEngine;
     
     // used for keeping track of the song's actual play position
     private static Stopwatch _stopwatch = null!;
@@ -363,7 +363,9 @@ public static partial class Chart
     [GeneratedRegex(@".*\[(.+)\].*")]
     private static partial Regex DifficultySlotRegex();
 
-    // cursed regex because chart tags allow double quotes in a string so i can't just use json
+    // cursed regex because the official editor doesn't do any input validation and will happily
+    // save invalid json that even it can't load. this seems to be a deliberate choice on dcell's
+    // part, because unity has a built-in json library that will handle that for them
     [GeneratedRegex("""{"Level":(-?[0-9]+),"FlavorText":"(.*)","SongLength":(?:-?([0-9]*[.])?[0-9]+),"CoverArt":"(.*)"}""")]
     private static partial Regex TagRegex();
 
@@ -378,17 +380,18 @@ public static partial class Chart
         _stopwatch.Start();
     }
 
+    public static void DisposeResources()
+    {
+        _soundOut?.Stop();
+        _soundOut?.Dispose();
+        _soundTouchSource?.ClearBuffer();
+        _soundTouchSource?.Dispose();
+        _hitSoundEngine?.Dispose();
+    }
+
     public static void ResetAudioEngine()
     {
-        SfxEngine.DisposeInstances();
         InitAudioEngine();
-        
-        SfxEngine.Volume = _sfxVolume / 100.0f;
-        if (SongLoaded)
-        {
-            _mediaPlayer.Volume = SongVolume;
-            _mediaPlayer.SetRate(PlaySpeed / 100.0f);
-        }
     }
 
     /// <summary>
@@ -664,11 +667,13 @@ public static partial class Chart
             var prevTime = CurrentTimeRaw;
             CurrentTimeRaw +=
                 (_stopwatch.ElapsedMilliseconds - _lastStopwatchTime) * PlaySpeed / 100;
-            if (CurrentTimeRaw + Metadata.ChartOffset >= 0 && !_mediaPlayer.IsPlaying)
+            if (CurrentTimeRaw + Metadata.ChartOffset >= 0 &&
+                _soundOut?.PlaybackState != PlaybackState.Playing)
             {
-                _mediaPlayer.SeekTo(
+                _soundTouchSource?.SetPosition(
                     TimeSpan.FromMilliseconds(CurrentTimeRaw + Metadata.ChartOffset));
-                _mediaPlayer.Play();
+                _soundTouchSource?.ClearBuffer();
+                _soundOut?.Play();
             }
             else
             {
@@ -678,16 +683,20 @@ public static partial class Chart
                     CurrentTimeRaw = Length;
                 }
             }
-            
+
+            var hitSoundRangeStart = prevTime - Config.Settings.HitSoundOffset -
+                                     Config.Settings.AudioBufferSize;
+            var hitSoundRangeEnd = CurrentTimeRaw - Config.Settings.HitSoundOffset -
+                                   Config.Settings.AudioBufferSize;
             foreach (var note in Notes)
             {
-                if (note.ShouldPlayHitSound(prevTime - Config.Settings.HitSoundOffset,
-                                            CurrentTimeRaw - Config.Settings.HitSoundOffset)
+                if (note.ShouldPlayHitSound(hitSoundRangeStart, hitSoundRangeEnd)
                     is { } offset)
                 {
                     if (_hitSound != null)
                     {
-                        SfxEngine.Play(_hitSound, offset);
+                        // SfxEngine.Play(_hitSound, offset);
+                        _hitSoundEngine?.Play(_hitSound, offset);
                     }
                     break;
                 }
@@ -697,34 +706,21 @@ public static partial class Chart
         _lastStopwatchTime = _stopwatch.ElapsedMilliseconds;
         
     }
-
-    public static void PlayHitSound()
-    {
-        if (_hitSound != null)
-        {
-            SfxEngine.Play(_hitSound, 0);
-        }
-    }
     
     /// <summary>
     /// Attempts to load a .wav or .mp3 file and create a new chart with empty metadata.
     /// </summary>
-    /// <returns>
-    /// Whether the audio file could be loaded, followed by an error message (or an empty string if
-    /// there was no error).
-    /// </returns>
-    public static async Task<(bool, string)> TryCreateChartFromAudio(string path)
+    public static bool TryCreateChartFromAudio(string path, out string errorMessage)
     {
         SongLoaded = false;
         _canAutosave = false;
         _jumpTargetsOutOfDate = true;
-
-        var result = await TryLoadAudioFile(path);
-        if (!result.Item1)
+        
+        if (!TryLoadAudioFile(path, out errorMessage))
         {
             ClearChart();
             UpdateWindowTitle();
-            return (false, result.Item2);
+            return false;
         }
         
         Logger.Info("Creating chart from audio file...");
@@ -799,7 +795,9 @@ public static partial class Chart
         UnsavedChanges = false;
         UserData.LastOpenedChartFile = ""; 
         UpdateWindowTitle();
-        return (true, "");
+        
+        errorMessage = "";
+        return true;
     }
 
     /// <summary>
@@ -1093,8 +1091,7 @@ public static partial class Chart
         }
 
         // check for an alternate audio format
-        var result = await TryLoadAudioFile(audioPath);
-        if (result.Item1)
+        if (TryLoadAudioFile(audioPath, out var errorMessage))
         {
             LogMetadata();
             
@@ -1171,7 +1168,7 @@ public static partial class Chart
             return (true, "");
         }
         
-        await File.WriteAllTextAsync(errorFilePath, $"Audio loading error {result.Item2}");
+        await File.WriteAllTextAsync(errorFilePath, $"Audio loading error {errorMessage}");
         
         ClearChart();
         UpdateWindowTitle();
@@ -1782,65 +1779,6 @@ public static partial class Chart
         // Logger.Debug(builder.ToString());
     }
 
-    private static void InitAudioEngine()
-    {
-        _libVlc = new LibVLC();
-        _mediaPlayer = new MediaPlayer(_libVlc);
-        _mediaPlayer.EndReached += MediaPlayer_EndReached;
-        _libVlc.Log += (_, args) =>
-        {
-            _lastVlcConsoleOutput = args.Message;
-            // currently disabled because vlc prints a ton of unnecessary debug messages
-            // Logger.Debug("VLC Player Output: \"{0}\"", args.Message);
-        };
-        try
-        {
-            _hitSound = new CachedSound(
-                Path.Combine(Environment.CurrentDirectory, "Assets/hitSound.wav"));
-        }
-        catch (Exception e)
-        {
-            if (e is FileNotFoundException or DirectoryNotFoundException)
-            {
-                _hitSound = null;
-                Logger.Warn(
-                    "Hit sound (Assets/hitSound.wav) not found. Hit sounds are disabled.");
-            }
-            else
-            {
-                throw;
-            }
-        }
-    }
-
-    private static void ClearChart()
-    {
-        ChartBuilder.ClearSelection();
-        ChartBuilder.TryRemoveBreakpoint(false);
-        
-        Metadata = new MetadataContainer();
-        _notes = [];
-        _labels = [];
-            
-        _bpmRegions = [];
-        _beatSnapIndex = 0;
-        _currentSnapLineSet = [];
-        SnapLineSets.Clear();
-
-        NoteViewer.SetZoom(1.0);
-        CurrentTimeRaw = 0;
-        ChartFileName = "";
-        ChartFolderName = "";
-        
-        App.MainWindowViewModel.SongBpmText = "";
-        App.MainWindowViewModel.LastLabelText = "";
-        App.MainWindowViewModel.PlaySpeed = 100;
-        App.MainWindowViewModel.CanSave = false;
-
-        SongLoaded = false;
-        UnsavedChanges = false;
-    }
-
     public static async Task TryAutosave()
     {
         Logger.Info("Attempting to autosave chart...");
@@ -1876,6 +1814,71 @@ public static partial class Chart
         }
     }
 
+    private static void InitAudioEngine()
+    {
+        _hitSoundEngine?.Dispose();
+        _hitSoundEngine = new CachedAudioPlaybackEngine();
+        
+        try
+        {
+            _hitSound = new CachedSound(
+                Path.Combine(Environment.CurrentDirectory, "Assets/hitSound.wav"));
+        }
+        catch (Exception e)
+        {
+            if (e is FileNotFoundException or DirectoryNotFoundException)
+            {
+                _hitSound = null;
+                Logger.Warn(
+                    "Hit sound (Assets/hitSound.wav) not found. Hit sounds are disabled.");
+            }
+            else
+            {
+                throw;
+            }
+        }
+        
+        // this is set here because user data loading sets the sfx volume *before* the audio engine
+        // gets initialized
+        _hitSoundEngine.Volume = _sfxVolume / 100.0f;
+    }
+
+    private static void SoundOut_OnStopped(object? sender, PlaybackStoppedEventArgs e)
+    {
+        Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            PauseSong();
+        });
+    }
+
+    private static void ClearChart()
+    {
+        ChartBuilder.ClearSelection();
+        ChartBuilder.TryRemoveBreakpoint(false);
+        
+        Metadata = new MetadataContainer();
+        _notes = [];
+        _labels = [];
+            
+        _bpmRegions = [];
+        _beatSnapIndex = 0;
+        _currentSnapLineSet = [];
+        SnapLineSets.Clear();
+
+        NoteViewer.SetZoom(1.0);
+        CurrentTimeRaw = 0;
+        ChartFileName = "";
+        ChartFolderName = "";
+        
+        App.MainWindowViewModel.SongBpmText = "";
+        App.MainWindowViewModel.LastLabelText = "";
+        App.MainWindowViewModel.PlaySpeed = 100;
+        App.MainWindowViewModel.CanSave = false;
+
+        SongLoaded = false;
+        UnsavedChanges = false;
+    }
+
     private static void PlaySong()
     {
         if (CurrentTimeRaw + AdjustedOffset >= Length)
@@ -1886,31 +1889,19 @@ public static partial class Chart
         Playing = true;
         if (CurrentTimeRaw + Metadata.ChartOffset >= 0)
         {
-            if (_mediaPlayer.Media.State == VLCState.Ended)
-            {
-                _mediaPlayer.Play(_mediaPlayer.Media);
-            }
-            else
-            {
-                _mediaPlayer.Play();
-            }
-            _mediaPlayer.SeekTo(TimeSpan.FromMilliseconds(CurrentTimeRaw + Metadata.ChartOffset));
+            _soundTouchSource.SetPosition(
+                TimeSpan.FromMilliseconds(CurrentTimeRaw + Metadata.ChartOffset));
+            _soundTouchSource?.ClearBuffer();
+            _soundOut?.Play();
         }
     }
     
     private static void PauseSong()
     {
         Playing = false;
-        _mediaPlayer.Pause();
+        _soundOut?.Pause();
+        _soundTouchSource?.ClearBuffer();
         SetTimeToNearestSnap();
-    }
-
-    private static void MediaPlayer_EndReached(object? sender, EventArgs e)
-    {
-        Dispatcher.UIThread.InvokeAsync(() =>
-        {
-            PauseSong();
-        });
     }
     
     /// <summary>
@@ -1964,30 +1955,42 @@ public static partial class Chart
                     .Replace("[", "_").Replace("]", "_");
     }
     
-    private static async Task<(bool, string)> TryLoadAudioFile(string path)
+    private static bool TryLoadAudioFile(string path, out string errorMessage)
     {
         try
         {
             if (!File.Exists(path))
             {
                 Logger.Error("Could not load audio file \"{0}\": File not found.", path);
-                return (false, $"Could not load audio file \"{path}\": File not found.");
+                errorMessage = $"Could not load audio file \"{path}\": File not found.";
+                return false;
             }
-            
-            var media = new Media(_libVlc, path);
-            _mediaPlayer.Media = media;
-            _mediaPlayer.SeekTo(TimeSpan.FromMilliseconds(-AdjustedOffset));
             AudioFileName = Path.GetFileName(path);
+
+            _soundTouchSource?.Dispose();
+            var waveSource =
+                CodecFactory.Instance.GetCodec(path)
+                            .ToSampleSource()
+                            .AppendSource(
+                                x => new SoundTouchSource(x, Config.Settings.AudioBufferSize),
+                                out _soundTouchSource)
+                            .ToWaveSource();
+            _soundTouchSource.DisposeBaseSource = true;
             
-            await media.Parse();
+            _soundOut?.Dispose();
+            _soundOut = new DirectSoundOut();
+            _soundOut.Initialize(waveSource);
+            _soundOut.Stopped += SoundOut_OnStopped;
         }
         catch (Exception e)
         {
             Logger.Error("Could not load audio file \"{0}\": {1}", path, e.Message);
-            return (false, $"Could not load audio file \"{path}\": {e.Message}");
+            errorMessage = $"Could not load audio file \"{path}\": {e.Message}";
+            return false;
         }
         
-        return (true, "");
+        errorMessage = "";
+        return true;
     }
     
     private static void SetTimeToNearestSnap()
@@ -2364,7 +2367,8 @@ public static partial class Chart
                     _metadata.ChartOffset = regionStart;
                 }
 
-                _bpmRegions.Add(new BpmRegion(regionStart - _metadata.ChartOffset, 60000 / msPerBeat));
+                _bpmRegions.Add(new BpmRegion(regionStart - _metadata.ChartOffset,
+                                              60000 / msPerBeat));
 
                 if (_bpmRegions.Count > 1)
                 {

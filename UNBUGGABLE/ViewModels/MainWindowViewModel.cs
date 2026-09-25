@@ -286,9 +286,14 @@ public partial class MainWindowViewModel : ViewModelBase
                 }
             }
         }
+        else
+        {
+            // some part of the audio player (don't ask me which) will prevent the program from
+            // exiting if it hasn't been disposed, so this needs to be called early
+            Chart.DisposeResources();
+        }
     }
 
-    // private bool _skipEvent = false;
     private void OnPriorityListReorder(object? sender, NotifyCollectionChangedEventArgs e)
     {
         if (_updatingPriorityList)
@@ -296,8 +301,8 @@ public partial class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        // reordering the list fires 2 events for some reason? and which one needs to skipped isn't
-        // consistent?? why???
+        // reordering the list fires 2 events for some reason? and which one needs to be skipped
+        // isn't consistent?? why???
         if (ActivePriorityListEntries.Count != _initialNoteOrder.Count)
         {
             return;

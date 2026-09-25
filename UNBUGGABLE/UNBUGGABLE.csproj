@@ -29,7 +29,7 @@
         <PackageReference Include="AvaloniaDialogs" Version="3.7.0" />
         <PackageReference Include="CommandLineParser" Version="2.9.1" />
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1"/>
-        <PackageReference Include="LibVLCSharp" Version="3.10.0" />
+        <PackageReference Include="CSCore" Version="1.2.1.2" />
         <PackageReference Include="Material.Icons.Avalonia" Version="3.0.0" />
         <PackageReference Include="NAudio" Version="2.3.0" />
         <PackageReference Include="NLog" Version="6.2.0" />
@@ -41,5 +41,28 @@
 
     <ItemGroup>
       <Folder Include="logs\" />
+    </ItemGroup>
+
+<!--    <ItemGroup>-->
+<!--        <ContentWithTargetPath Include="Lib/SoundTouch.dll">-->
+<!--            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>-->
+<!--            <TargetPath>some_file.dat</TargetPath>-->
+<!--        </ContentWithTargetPath>-->
+<!--        <None Include="Lib/SoundTouch.dll" />-->
+<!--    </ItemGroup>-->
+
+    <ItemGroup>
+      <None Update="Lib\SoundTouch.dll">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <TargetPath>SoundTouch.dll</TargetPath>
+      </None>
+      <None Update="Lib\SoundTouch_x64.dll">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+          <TargetPath>SoundTouch_x64.dll</TargetPath>
+      </None>
+      <None Update="Lib\COPYING.TXT">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+          <TargetPath>COPYING.txt</TargetPath>
+      </None>
     </ItemGroup>
 </Project>

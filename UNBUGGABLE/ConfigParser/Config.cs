@@ -152,7 +152,8 @@ public static class Config
     public static bool TryLoadSettings()
     {
         Logger.Info("Loading settings from \"{0}\"", ConfigFilePath);
-        
+        // reset the playback speed to prevent issues if the speed mode is changed
+        Chart.PlaySpeed = 100;
         var loadError = false;
         try
         {
@@ -378,15 +379,28 @@ public static class Config
                     settings.DefaultDifficulty != "UNBEATABLE" &&
                     settings.DefaultDifficulty != "star")
                 {
-                    Logger.Warn("Invalid default difficulty: Should be \"beginner\"," +
-                                "\"normal\", \"hard\", \"expert\", \"UNBEATABLE\", or" +
-                                "\"star\"");
+                    Logger.Warn("Invalid default difficulty: must be \"beginner\", \"normal\", " +
+                                "\"hard\", \"expert\", \"UNBEATABLE\", or \"star\"");
                     settings.DefaultDifficulty = "beginner";
                     loadError = true;
                 }
                 else
                 {
                     settings.DefaultDifficulty = settings.DefaultDifficulty.ToLower();
+                }
+
+                if (Settings.PlaySpeedMode != "tempo" && Settings.PlaySpeedMode != "rate")
+                {
+                    Logger.Warn("Invalid playback speed mode: must be \"tempo\" or \"rate\".");
+                    Settings.PlaySpeedMode = "tempo";
+                    loadError = true;
+                }
+
+                if (Settings.AudioBufferSize <= 0)
+                {
+                    Logger.Warn("Audio buffer size must be > 0");
+                    Settings.AudioBufferSize = 50;
+                    loadError = true;
                 }
 
                 Settings = settings;
@@ -433,6 +447,7 @@ public static class Config
         {
             Logger.Info("Config loaded successfully:\r\n{0}", Settings.ToString());
         }
+        
         return !loadError;
     }
 

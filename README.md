@@ -10,7 +10,7 @@ and whistles, and even fixes the bugs! Windows only.
 - [Quickstart](#quickstart)
 - [Keybinds](#keybinds)
 - [Settings](#settings)
-- [Color Themes](#)
+- [Color Themes](#color-themes)
 
 # Installation
 To install UNBUGGABLE, download and run the installer from the
@@ -106,9 +106,11 @@ All settings for UNBUGGABLE can be changed by editing `configs/config.json` (des
 setting are in the config file). After editing the config file, either restart the editor or hit the
 "Reload Config" button in the top left corner to reload most settings. **Note:** For technical
 reasons, these settings will not change until you fully restart the editor:
-- hitSoundTickRate
-- maxConcurrentHitSounds
-- autosaveInterval
+- `hitSoundTickRate`
+- `autosaveInterval`
+- `debug.verboseLogging`
+The `audioBufferSize` won't apply until you either load a new chart/audio or reload the current
+chart.
 
 ## colorTheme
 Which color theme to use for the editor. This must be the name of one of the themes in the themes
@@ -285,9 +287,14 @@ This is only in the config file because I don't like hard-coding things. **Do no
 While the song is playing, how many times to check for whether any notes should play a hit sound.
 Lower values can improve performance, but may cause hit sounds to desync.
 
-## maxConcurrentHitSounds
-How many hit sounds can be playing at once. Turn this up if you're placing long streams of notes and
-the hit sounds are glitching.
+## playbackSpeedMode
+Determines how the audio is adjusted when changing playback speed, either "tempo" or "rate":
+- "tempo": Reduces the sample rate, which preserves pitch but degrades audio quality.
+- "rate": Stretches the audio, which preserves quality but decreases pitch at lower rates and
+          increases it at higher rates. This is the mode used by the official editor.
+
+## audioBufferSize
+Size of the streaming buffer in milliseconds.
 
 ## autosaveInterval
 How often to autosave (only if the chart was loaded from an existing chart file and/or has been
