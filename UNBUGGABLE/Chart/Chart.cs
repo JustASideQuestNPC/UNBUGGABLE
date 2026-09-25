@@ -224,7 +224,7 @@ public static partial class Chart
         _chartSongSource != null ? (long)_chartSongSource.GetLength().TotalMilliseconds : -1;
 
     public static long AdjustedOffset =>
-        Metadata.ChartOffset + Config.Settings.HardChartOffset - Config.Settings.AudioBufferSize;
+        Metadata.ChartOffset + Config.Settings.HardChartOffset;
 
     public static bool UnsavedChanges { get; set; } = false;
 
@@ -662,6 +662,11 @@ public static partial class Chart
                     TimeSpan.FromMilliseconds(CurrentTimeRaw + Metadata.ChartOffset));
                 _chartSongSource?.ClearBuffer();
                 _soundOut?.Play();
+
+                // temporarily stop playback to sync up with the audio
+                Playing = false;
+                _chartSongSource.FireNextReadEvent = true;
+                Logger.Debug("stopping playback to sync up with audio");
             }
             else
             {
@@ -672,10 +677,8 @@ public static partial class Chart
                 }
             }
 
-            var hitSoundRangeStart = prevTime - Config.Settings.HitSoundOffset -
-                                     Config.Settings.AudioBufferSize;
-            var hitSoundRangeEnd = CurrentTimeRaw - Config.Settings.HitSoundOffset -
-                                   Config.Settings.AudioBufferSize;
+            var hitSoundRangeStart = prevTime - Config.Settings.HitSoundOffset;
+            var hitSoundRangeEnd = CurrentTimeRaw - Config.Settings.HitSoundOffset;
             foreach (var note in Notes)
             {
                 if (note.ShouldPlayHitSound(hitSoundRangeStart, hitSoundRangeEnd)
@@ -1889,6 +1892,12 @@ public static partial class Chart
             _soundOut.Volume = 0; // silence what's left in the buffer
             
             Logger.Debug("waiting for buffer to empty");
+        }
+        // if the song time is < 0 (because of offset) then immediately start playback and let the
+        // tick update handle it
+        else
+        {
+            Playing = true;
         }
     }
     
