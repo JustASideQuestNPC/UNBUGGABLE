@@ -2132,23 +2132,22 @@ public static partial class Chart
                 {
                     Logger.Warn($"Nonfatal load error: Invalid LastEditorState \"{lines[i]}\"");
                 }
-
-                ++i;
             }
             else if (lines[i].StartsWith("Markers:"))
             {
                 // markers are saved across multiple lines (20 markers / line) because a single line
                 // would be hundreds of characters long
-                ++i;
-                for (; i < lines.Length; ++i)
+                for (; i < lines.Length - 1; ++i)
                 {
-                    if (lines[i] == "" || lines[i] == "\r" ||
-                        lines[i] == "\n" || lines[i] == "\r\n")
+                    // look ahead 1 line to prevent issues where the start of the next section
+                    // doesn't get picked up
+                    if (lines[i + 1] == "" || lines[i + 1] == "\r" ||
+                        lines[i + 1] == "\n" || lines[i + 1] == "\r\n")
                     {
                         break;
                     }
-
-                    var markerData = lines[i].Trim().Split(',');
+                    
+                    var markerData = lines[i + 1].Trim().Split(',');
                     foreach (var marker in markerData)
                     {
                         var split = marker.Split('`');
@@ -2185,7 +2184,8 @@ public static partial class Chart
                             }
                             else
                             {
-                                Logger.Warn($"Nonfatal load error: Invalid marker string \"{marker}\"");
+                                Logger.Warn($"Nonfatal load error: Invalid marker string " +
+                                            $"\"{marker}\"");
                             }
                             
                             AddOrUpdateMarker(time, color1, color2, color3);
