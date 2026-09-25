@@ -1845,10 +1845,7 @@ public static partial class Chart
 
     private static void SoundOut_OnStopped(object? sender, PlaybackStoppedEventArgs e)
     {
-        Dispatcher.UIThread.InvokeAsync(() =>
-        {
-            PauseSong();
-        });
+        Dispatcher.UIThread.InvokeAsync(PauseSong);
     }
 
     private static void ClearChart()
@@ -1995,7 +1992,8 @@ public static partial class Chart
     
     private static void SetTimeToNearestSnap()
     {
-        if (CurrentTimeRaw <= _currentSnapLineSet[0])
+        var adjustedCurrentTime = CurrentTimeRaw + Config.Settings.AudioBufferSize;
+        if (adjustedCurrentTime <= _currentSnapLineSet[0])
         {
             CurrentTimeRaw = _currentSnapLineSet[0];
             return;
@@ -2005,9 +2003,10 @@ public static partial class Chart
         {
             var currentSnap = _currentSnapLineSet[i];
             var nextSnap = _currentSnapLineSet[i + 1];
-            if (CurrentTimeRaw >= currentSnap && CurrentTimeRaw <= nextSnap)
+            if (adjustedCurrentTime >= currentSnap && adjustedCurrentTime <= nextSnap)
             {
-                if (Math.Abs(CurrentTimeRaw - currentSnap) < Math.Abs(CurrentTimeRaw - nextSnap))
+                if (Math.Abs(adjustedCurrentTime - currentSnap) <
+                    Math.Abs(adjustedCurrentTime - nextSnap))
                 {
                     CurrentTimeRaw = currentSnap;
                     _currentSnapLineSetIndex = i;
