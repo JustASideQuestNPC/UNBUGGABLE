@@ -2048,7 +2048,7 @@ public static partial class Chart
                     Logger.Debug("Preview start: {0}", previewStart);
                 }
             }
-            else
+            else if (!lines[i].StartsWith("//"))
             {
                 break;
             }
@@ -2065,35 +2065,38 @@ public static partial class Chart
     private static bool TryParseOfficialEditorData(string[] lines, ref int i, 
         ref List<string> errors)
     {
-        // technically theres a "Bookmarks" line above this one, but it just stores the timestamp of
-        // every label without the text
-        if (lines[i + 2].StartsWith("BookmarksPlus:"))
+        ++i;
+        for (; i < lines.Length; ++i)
         {
-            i += 2;
-            Logger.Debug("Parsing labels...");
-            var labelData = lines[i]["BookmarksPlus: ".Length..].Trim().Split(',');
-            foreach (var label in labelData)
+            if (lines[i].StartsWith("BookmarksPlus:"))
             {
-                var split = label.Split('`');
-                if (split.Length != 2)
+                Logger.Debug("Parsing labels...");
+                var labelData = lines[i]["BookmarksPlus: ".Length..].Trim().Split(',');
+                foreach (var label in labelData)
                 {
-                    break;
-                }
-                if (long.TryParse(split[0], out var time))
-                {
-                    _labels.Add(new Label(time, split[1]));
-                }
-                else
-                {
-                    errors.Add($"Invalid label \"{label}\"");
+                    var split = label.Split('`');
+                    if (split.Length != 2)
+                    {
+                        break;
+                    }
+                    if (long.TryParse(split[0], out var time))
+                    {
+                        _labels.Add(new Label(time, split[1]));
+                    }
+                    else
+                    {
+                        errors.Add($"Invalid label \"{label}\"");
+                    }
                 }
             }
-            
-            return errors.Count == 0;
+            // the "Bookmarks" line just stores the timestamps of every label without their text
+            else if (!lines[i].StartsWith("Bookmarks:") && !lines[i].StartsWith("//"))
+            {
+                break;
+            }
         }
-
-        // editor data will just be empty if there are no labels
-        return true;
+        
+        return errors.Count == 0;
     }
     
     private static bool TryParseUnbuggableData(string[] lines, ref int i,
@@ -2102,93 +2105,101 @@ public static partial class Chart
         lastEditorState = null;
 
         ++i;
-        if (lines[i].StartsWith("LastEditorState:"))
+        for (; i < lines.Length; ++i)
         {
-            var split = lines[i]["LastEditorState:".Length..].Trim().Split(',');
-            
-            // check for length 3 and 4 because older versions of the editor don't save the current
-            // cop id as part of the editor state
-            if (split.Length is 3 or 4 && double.TryParse(split[0], out var time) &&
-                int.TryParse(split[1], out var beatSnap) &&
-                double.TryParse(split[2], out var zoom))
+            if (lines[i].StartsWith("LastEditorState:"))
             {
-                if (split.Length == 3)
+                var split = lines[i]["LastEditorState:".Length..].Trim().Split(',');
+                
+                // check for length 3 and 4 because older versions of UNBUGGABLE don't save the
+                // current cop id as part of the editor state
+                if (split.Length is 3 or 4 && double.TryParse(split[0], out var time) &&
+                    int.TryParse(split[1], out var beatSnap) &&
+                    double.TryParse(split[2], out var zoom))
                 {
-                    lastEditorState = (time, beatSnap, zoom, 0);
-                }
-                else if (int.TryParse(split[3], out var copId))
-                {
-                    lastEditorState = (time, beatSnap, zoom, copId);
-                }
-            }
-            else
-            {
-                Logger.Warn($"Nonfatal load error: Invalid LastEditorState \"{lines[i]}\"");
-            }
-
-            ++i;
-        }
-
-        if (lines[i].StartsWith("Markers:"))
-        {
-            ++i;
-            for (; i < lines.Length; ++i)
-            {
-                if (lines[i] == "" || lines[i] == "\r" ||
-                    lines[i] == "\n" || lines[i] == "\r\n")
-                {
-                    break;
-                }
-
-                var markerData = lines[i].Trim().Split(',');
-                foreach (var marker in markerData)
-                {
-                    var split = marker.Split('`');
-                    if (split.Length != 2)
+                    if (split.Length == 3)
                     {
-                        Logger.Warn($"Nonfatal load error: Invalid marker string \"{marker}\"");
+                        lastEditorState = (time, beatSnap, zoom, 0);
                     }
-                    if (long.TryParse(split[0], out var time))
+                    else if (int.TryParse(split[3], out var copId))
                     {
-                        // for compatibility with pre 0.13 charts with 1-color markers
-                        var color1 = false;
-                        var color2 = false;
-                        var color3 = false;
-                        if (split[1].Length == 1)
-                        {
-                            switch (split[1])
-                            {
-                                case "0":
-                                    color1 = true;
-                                    break;
-                                case "1":
-                                    color2 = true;
-                                    break;
-                                case "2":
-                                    color3 = true;
-                                    break;
-                            }
-                        }
-                        else if (split[1].Length == 3)
-                        {
-                            color1 = split[1][0] == '1';
-                            color2 = split[1][1] == '1';
-                            color3 = split[1][2] == '1';
-                        }
-                        else
-                        {
-                            Logger.Warn($"Nonfatal load error: Invalid marker string \"{marker}\"");
-                        }
-                        
-                        AddOrUpdateMarker(time, color1, color2, color3);
+                        lastEditorState = (time, beatSnap, zoom, copId);
                     }
-                    else
+                }
+                else
+                {
+                    Logger.Warn($"Nonfatal load error: Invalid LastEditorState \"{lines[i]}\"");
+                }
+
+                ++i;
+            }
+            else if (lines[i].StartsWith("Markers:"))
+            {
+                // markers are saved across multiple lines (20 markers / line) because a single line
+                // would be hundreds of characters long
+                ++i;
+                for (; i < lines.Length; ++i)
+                {
+                    if (lines[i] == "" || lines[i] == "\r" ||
+                        lines[i] == "\n" || lines[i] == "\r\n")
                     {
                         break;
                     }
+
+                    var markerData = lines[i].Trim().Split(',');
+                    foreach (var marker in markerData)
+                    {
+                        var split = marker.Split('`');
+                        if (split.Length != 2)
+                        {
+                            Logger.Warn($"Nonfatal load error: Invalid marker string \"{marker}\"");
+                        }
+                        if (long.TryParse(split[0], out var time))
+                        {
+                            // for compatibility with pre 0.13 charts with 1-color markers
+                            var color1 = false;
+                            var color2 = false;
+                            var color3 = false;
+                            if (split[1].Length == 1)
+                            {
+                                switch (split[1])
+                                {
+                                    case "0":
+                                        color1 = true;
+                                        break;
+                                    case "1":
+                                        color2 = true;
+                                        break;
+                                    case "2":
+                                        color3 = true;
+                                        break;
+                                }
+                            }
+                            else if (split[1].Length == 3)
+                            {
+                                color1 = split[1][0] == '1';
+                                color2 = split[1][1] == '1';
+                                color3 = split[1][2] == '1';
+                            }
+                            else
+                            {
+                                Logger.Warn($"Nonfatal load error: Invalid marker string \"{marker}\"");
+                            }
+                            
+                            AddOrUpdateMarker(time, color1, color2, color3);
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
                 }
+                Logger.Debug("Loaded {0} markers", MarkerNotes.Count);
             }
-            Logger.Debug("Loaded {0} markers", MarkerNotes.Count);
+            else if (!lines[i].StartsWith("//"))
+            {
+                break;
+            }
         }
 
         // unbuggable data isn't required for the chart to work, so it never causes a parse error
@@ -2264,7 +2275,8 @@ public static partial class Chart
             }
             // i have no idea what the difference between Title/Artist and
             // TitleUnicode/ArtistUnicode is, but AFAIK they are always the same
-            else if (!line.StartsWith("Title:") && !line.StartsWith("Artist:"))
+            else if (!line.StartsWith("Title:") && !line.StartsWith("Artist:") &&
+                     !line.StartsWith("//"))
             {
                 break;
             }
@@ -2360,7 +2372,7 @@ public static partial class Chart
                     _bpmRegions[^1].Previous = _bpmRegions[^2];
                 }
             }
-            else
+            else if (!line.StartsWith("//"))
             {
                 errors.Add($"[line {i}] Could not parse timing point \"{line}\": invalid format");
             }
@@ -2385,6 +2397,11 @@ public static partial class Chart
                 lines[i] == "\r\n")
             {
                 break;
+            }
+
+            if (lines[i].StartsWith("//"))
+            {
+                continue;
             }
             
             var note = NoteBase.FromHitObjectString(lines[i].Trim(),

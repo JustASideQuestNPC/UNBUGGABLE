@@ -222,7 +222,7 @@ public static class ChartBuilder
     {
         if (UserData.LastOpenedChartFile != "")
         {
-            await TryLoadChartFile(UserData.LastOpenedChartFile, true);
+            await TryLoadChartFile(UserData.LastOpenedChartFile);
         }
     }
 
