@@ -72,9 +72,9 @@ public class ChartSongSource : SampleAggregatorBase
         }
     }
 
-    public void ClearBuffer()
+    public void Seek()
     {
-        _soundTouch.Clear();
+        _seekRequested = true;
     }
 
     public override int Read(float[] buffer, int offset, int count)
@@ -88,6 +88,12 @@ public class ChartSongSource : SampleAggregatorBase
         
         lock(lockObject)
         {
+            if(_seekRequested)
+            {
+                _soundTouch.Clear();
+                _seekRequested = false;
+            }
+            
             var samplesRead = 0;
             var endOfSource = false;
 

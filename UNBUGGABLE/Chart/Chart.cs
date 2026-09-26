@@ -370,7 +370,6 @@ public static partial class Chart
     {
         _soundOut?.Stop();
         _soundOut?.Dispose();
-        _chartSongSource?.ClearBuffer();
         _chartSongSource?.Dispose();
         _hitSoundEngine?.Dispose();
     }
@@ -660,7 +659,7 @@ public static partial class Chart
             {
                 _chartSongSource?.SetPosition(
                     TimeSpan.FromMilliseconds(CurrentTimeRaw + Metadata.ChartOffset));
-                _chartSongSource?.ClearBuffer();
+                _chartSongSource.Seek();
                 _soundOut?.Play();
 
                 // temporarily stop playback to sync up with the audio
@@ -1879,11 +1878,12 @@ public static partial class Chart
         InputManager.ResetInputStates();
         App.MainWindowViewModel.ClearPriorityListEntries();
         
-        if (CurrentTimeRaw + Metadata.ChartOffset >= 0)
+        if (CurrentTimeRaw + Metadata.ChartOffset >= 0 &&
+            CurrentTimeRaw + Metadata.ChartOffset < Length)
         {
             _chartSongSource.SetPosition(
                 TimeSpan.FromMilliseconds(CurrentTimeRaw + Metadata.ChartOffset));
-            _chartSongSource?.ClearBuffer();
+            _chartSongSource.Seek();
             _soundOut?.Play();
 
             // instead of starting playback immediately, we delay until the buffer is empty to
@@ -1910,7 +1910,6 @@ public static partial class Chart
         
         Playing = false;
         _soundOut?.Pause();
-        _chartSongSource?.ClearBuffer();
         SetTimeToNearestSnap();
     }
     
@@ -1960,7 +1959,7 @@ public static partial class Chart
     private static string SanitizeString(string str)
     {
         var invalid = Path.GetInvalidFileNameChars();
-        var pattern = "[" + Regex.Escape(new string(invalid)) + @"]|[^\x00-\x7F]";
+        var pattern = "[" + Regex.Escape(new string(invalid)) + @"]";
         return Regex.Replace(str, pattern, "_").Replace("(", "_").Replace(")", "_")
                     .Replace("[", "_").Replace("]", "_");
     }
