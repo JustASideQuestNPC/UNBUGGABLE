@@ -136,10 +136,16 @@ public class HoldNote : NoteBase
             dc.DrawRectangle(styles.TailFillBrush, tailPen, new Rect(endX - 40, endY - 12, 80, 24));
         }
         
-        var pen = selected ?
-            new Pen(styles.SelectedOutlineBrush, styles.SelectedOutlineThickness) : 
-            new Pen(styles.OutlineBrush, styles.OutlineThickness);
-        dc.DrawRectangle(selected ? styles.SelectedFillBrush : styles.FillBrush, pen,
+        var outlineBrush = selected ? styles.SelectedOutlineBrush : styles.OutlineBrush;
+        var fillBrush = selected ? styles.SelectedFillBrush : styles.FillBrush;
+        if (Invisible)
+        {
+            outlineBrush = new SolidColorBrush(outlineBrush.Color) { Opacity = 0.5 };
+            fillBrush = new SolidColorBrush(fillBrush.Color) { Opacity = 0.5 };
+        }
+        dc.DrawRectangle(fillBrush,
+                         new Pen(outlineBrush, selected ? styles.SelectedOutlineThickness :
+                                     styles.OutlineThickness),
                          new Rect(x - 40, startY - 12, 80, 24));
         
         // overriding the flags hides the letter for a double note and does nothing to a hold note
@@ -202,12 +208,21 @@ public class HoldNote : NoteBase
     {
         var startX = GamePreview.TimeToScreenCoords(Time < Chart.CurrentTimeRaw ?
                                                         Chart.CurrentTimeRaw : Time);
-        
         var endX = GamePreview.TimeToScreenCoords(EndTime);
         
-        dc.DrawLine(new Pen(_holdStyles.TailFillBrush, 20), new Point(startX, y),
-                    new Point(endX, y));
-        dc.DrawEllipse(_holdStyles.FillBrush, new Pen(_holdStyles.OutlineBrush, 6),
+        var outlineBrush = _holdStyles.OutlineBrush;
+        var fillBrush = _holdStyles.FillBrush;
+        var tailFillBrush = _holdStyles.TailFillBrush;
+
+        if (Invisible)
+        {
+            outlineBrush = new SolidColorBrush(outlineBrush.Color) { Opacity = 0.4 };
+            fillBrush = new SolidColorBrush(fillBrush.Color) { Opacity = 0.4 };
+            tailFillBrush = new SolidColorBrush(tailFillBrush.Color) { Opacity = 0.4 };
+        }
+        
+        dc.DrawLine(new Pen(tailFillBrush, 20), new Point(startX, y), new Point(endX, y));
+        dc.DrawEllipse(fillBrush, new Pen(outlineBrush, 6),
                        new Point(startX, y), 30, 30);
     }
     

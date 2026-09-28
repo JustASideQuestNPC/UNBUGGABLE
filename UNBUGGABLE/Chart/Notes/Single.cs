@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Media;
+using CSCore.Streams.Effects;
 using UNBUGGABLE.Resources;
 using UNBUGGABLE.Views;
 
@@ -138,11 +139,17 @@ public class SingleNote : NoteBase
             return;
         }
         
-            
-        var pen = selected ?
-            new Pen(_singleStyles.SelectedOutlineBrush, _singleStyles.SelectedOutlineThickness) :
-            new Pen(_singleStyles.OutlineBrush, _singleStyles.OutlineThickness);
-        dc.DrawRectangle(selected ? _singleStyles.SelectedFillBrush : _singleStyles.FillBrush, pen,
+        var outlineBrush = selected ? _singleStyles.SelectedOutlineBrush :
+            _singleStyles.OutlineBrush;
+        var fillBrush = selected ? _singleStyles.SelectedFillBrush : _singleStyles.FillBrush;
+        if (Invisible)
+        {
+            outlineBrush = new SolidColorBrush(outlineBrush.Color) { Opacity = 0.5 };
+            fillBrush = new SolidColorBrush(fillBrush.Color) { Opacity = 0.5 };
+        }
+        dc.DrawRectangle(fillBrush,
+                         new Pen(outlineBrush, selected ? _singleStyles.SelectedOutlineThickness :
+                                     _singleStyles.OutlineThickness),
                          new Rect(x - 40, y - 12, 80, 24));
         
         RenderFlags(dc, x, y);
@@ -151,7 +158,16 @@ public class SingleNote : NoteBase
 
     private void RenderSinglePreview(DrawingContext dc, double y)
     {
-        dc.DrawEllipse(_singleStyles.FillBrush, new Pen(_singleStyles.OutlineBrush, 6),
+        var outlineBrush = _singleStyles.OutlineBrush;
+        var fillBrush = _singleStyles.FillBrush;
+        
+        if (Invisible)
+        {
+            outlineBrush = new SolidColorBrush(outlineBrush.Color) { Opacity = 0.4 };
+            fillBrush = new SolidColorBrush(fillBrush.Color) { Opacity = 0.4 };
+        }
+        
+        dc.DrawEllipse(fillBrush, new Pen(outlineBrush, 6),
                        new Point(GamePreview.TimeToScreenCoords(Time), y), 30, 30);
     }
     
