@@ -519,10 +519,10 @@ public class NoteViewer : Control
                                      FlowDirection.LeftToRight, _numberTypeface,
                                      _bpmChangeStyle.TextSize, _bpmChangeStyle.Color)
         {
-            MaxTextWidth = 122
+            MaxTextWidth = 137
         };
         
-        dc.DrawText(text, new Point(137 - text.Width, y - 2 - text.Height / 2));
+        dc.DrawText(text, new Point(142 - text.Width, y - 2 - text.Height / 2));
         dc.DrawLine(new Pen(_bpmChangeStyle.Color, _bpmChangeStyle.Thickness), new Point(150, y),
                     new Point(ViewerWidth, y));
     }
@@ -540,11 +540,11 @@ public class NoteViewer : Control
                                               _labelStyle.TextSize,
                                               _labelStyle.Color)
         {
-            MaxTextWidth = 122
+            MaxTextWidth = 137
         };
         
         dc.DrawText(formattedText,
-                    new Point(137 - formattedText.Width, y - 2 - formattedText.Height / 2));
+                    new Point(142 - formattedText.Width, y - 2 - formattedText.Height / 2));
         dc.DrawLine(new Pen(_labelStyle.Color, _labelStyle.Thickness), new Point(150, y),
                     new Point(ViewerWidth, y));
     }
