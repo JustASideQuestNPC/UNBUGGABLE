@@ -282,6 +282,16 @@
                 "outlineThickness": -1
             }
         },
+        "unanimatedCamera": {
+            "fillColor": "#13F231",
+            "outlineColor": "#000000",
+            "outlineThickness": 4,
+            "selected": {
+                "fillColor": "",
+                "outlineColor": "#FFFFFF",
+                "outlineThickness": -1
+            }
+        },
         "cop1": {
             "fillColor": "#3259E5",
             "outlineColor": "#000000",

@@ -370,6 +370,8 @@ public class NoteThemesJson
     public NonInstantNoteThemeJson Mash { get; set; } = new();
     [JsonPropertyName("camera")]
     public InstantNoteThemeJson Camera { get; set; } = new();
+    [JsonPropertyName("unanimatedCamera")]
+    public InstantNoteThemeJson UnanimatedCamera { get; set; } = new();
     [JsonPropertyName("cop1")]
     public NonInstantNoteThemeJson Cop1 { get; set; } = new();
     [JsonPropertyName("cop2")]
