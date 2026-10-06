@@ -28,11 +28,18 @@ public class NoteViewer : Control
     public static double ViewerWidth => 560;
     public static double ViewerHeight { get; private set; }
     public static double CurrentZoom { get; private set; } = 1.0;
+
+    public static double SidebarWidth = 60;
     
     private static int _topLaneX;
     private static int _centerLaneX;
     private static int _bottomLaneX;
     private static int _cameraLaneX;
+    
+    private static int _topLaneSidebarX;
+    private static int _centerLaneSidebarX;
+    private static int _bottomLaneSidebarX;
+    private static int _cameraLaneSidebarX;
 
     // how many pixels a single second is on the viewer at 1.0 zoom
     private const int PixelsPerSecond = 150;
@@ -48,6 +55,18 @@ public class NoteViewer : Control
     private static SolidColorBrush _centerLaneBackgroundBrush;
     private static SolidColorBrush _bottomLaneBackgroundBrush;
     private static SolidColorBrush _cameraLaneBackgroundBrush;
+
+    private static SolidColorBrush _sidebarSingleBrush;
+    private static SolidColorBrush _sidebarSpikeBrush;
+    private static SolidColorBrush _sidebarHoldBrush;
+    private static SolidColorBrush _sidebarDoubleBrush;
+    private static SolidColorBrush _sidebarFreestyleBrush;
+    private static SolidColorBrush _sidebarMashBrush;
+    private static SolidColorBrush _sidebarCameraBrush;
+    private static SolidColorBrush _sidebarCop1Brush;
+    private static SolidColorBrush _sidebarCop2Brush;
+    private static SolidColorBrush _sidebarCop3Brush;
+    private static SolidColorBrush _sidebarCop4Brush;
     
     private static double _topLaneWidth;
     private static double _bottomLaneWidth;
@@ -78,6 +97,10 @@ public class NoteViewer : Control
         new Point(  0,  0),
         new Point(-12,  10)
     ], true);
+    
+    private static double _visibleRangeStart;
+    private static double _visibleRangeEnd;
+    private static double _scaledPixelsPerMs;
 
     public static void UpdateStyles()
     {
@@ -158,27 +181,46 @@ public class NoteViewer : Control
             Color = (SolidColorBrush)App.Current.Resources["NoteViewer.PreviewStart.Color"],
             Thickness = (double)App.Current.Resources["NoteViewer.PreviewStart.Thickness"]
         };
+        
+        _sidebarSingleBrush = (SolidColorBrush)App.Current.Resources["Notes.Single.FillColor"];
+        _sidebarSpikeBrush = (SolidColorBrush)App.Current.Resources["Notes.Spike.FillColor"];
+        _sidebarHoldBrush = (SolidColorBrush)App.Current.Resources["Notes.Hold.FillColor"];
+        _sidebarDoubleBrush = (SolidColorBrush)App.Current.Resources["Notes.Double.FillColor"];
+        _sidebarFreestyleBrush =
+            (SolidColorBrush)App.Current.Resources["Notes.Freestyle.FillColor"];
+        _sidebarMashBrush = (SolidColorBrush)App.Current.Resources["Notes.Mash.FillColor"];
+        _sidebarCameraBrush = (SolidColorBrush)App.Current.Resources["Notes.Camera.FillColor"];
+        _sidebarCop1Brush = (SolidColorBrush)App.Current.Resources["Notes.Cop1.FillColor"];
+        _sidebarCop2Brush = (SolidColorBrush)App.Current.Resources["Notes.Cop2.FillColor"];
+        _sidebarCop3Brush = (SolidColorBrush)App.Current.Resources["Notes.Cop3.FillColor"];
+        _sidebarCop4Brush = (SolidColorBrush)App.Current.Resources["Notes.Cop4.FillColor"];
     }
     
     public static void UpdateNoteColumnPositions()
     {
         List<int> columnXPositions = [208, 306, 404, 502];
+        List<int> sidebarXPositions = [560, 575, 590, 605];
         for (var i = 0; i < Config.Settings.LaneOrder.Count; ++i)
         {
             var x = columnXPositions[i];
+            var sidebarX = sidebarXPositions[i];
             switch (Config.Settings.LaneOrder[i])
             {
                 case "top":
                     _topLaneX = x;
+                    _topLaneSidebarX = sidebarX;
                     break;
                 case "bottom":
                     _bottomLaneX = x;
+                    _bottomLaneSidebarX = sidebarX;
                     break;
                 case "center":
                     _centerLaneX = x;
+                    _centerLaneSidebarX = sidebarX;
                     break;
                 case "camera":
                     _cameraLaneX = x;
+                    _cameraLaneSidebarX = sidebarX;
                     break;
             }
         }
@@ -190,10 +232,10 @@ public class NoteViewer : Control
     /// </summary>
     public static double TimeToScreenCoords(double time)
     {
-        var scaledPixelsPerMs = PixelsPerSecond * CurrentZoom / 1000;
-        var visibleRangeStart = Chart.CurrentTimeRaw - Config.Settings.CurrentTimePosition /
-                                scaledPixelsPerMs;
-        return (time - visibleRangeStart) * scaledPixelsPerMs;
+        var _scaledPixelsPerMs = PixelsPerSecond * CurrentZoom / 1000;
+        var _visibleRangeStart = Chart.CurrentTimeRaw - Config.Settings.CurrentTimePosition /
+                                _scaledPixelsPerMs;
+        return (time - _visibleRangeStart) * _scaledPixelsPerMs;
     }
     
     /// <summary>
@@ -202,10 +244,10 @@ public class NoteViewer : Control
     /// </summary>
     public static double ScreenCoordsToTime(double y)
     {
-        var scaledPixelsPerMs = PixelsPerSecond * CurrentZoom / 1000;
-        var visibleRangeStart = Chart.CurrentTimeRaw - Config.Settings.CurrentTimePosition /
-                                scaledPixelsPerMs;
-        return visibleRangeStart + y / scaledPixelsPerMs;
+        var _scaledPixelsPerMs = PixelsPerSecond * CurrentZoom / 1000;
+        var _visibleRangeStart = Chart.CurrentTimeRaw - Config.Settings.CurrentTimePosition /
+                                _scaledPixelsPerMs;
+        return _visibleRangeStart + y / _scaledPixelsPerMs;
     }
     
     public static void SetZoom(double zoom)
@@ -299,29 +341,29 @@ public class NoteViewer : Control
                          new Rect(_cameraLaneX - _cameraLaneWidth / 2, 0, _cameraLaneWidth,
                                   ViewerHeight));
         
-        // full beat lines
+        // beat/snap lines
         if (Chart.SongLoaded)
         {
-            var scaledPixelsPerMs = PixelsPerSecond * CurrentZoom / 1000;
-            var visibleRangeStart = Chart.CurrentTimeRaw - Config.Settings.CurrentTimePosition /
-                                    scaledPixelsPerMs;
-            var visibleRangeEnd =
+            _scaledPixelsPerMs = PixelsPerSecond * CurrentZoom / 1000;
+            _visibleRangeStart = Chart.CurrentTimeRaw - Config.Settings.CurrentTimePosition /
+                                    _scaledPixelsPerMs;
+            _visibleRangeEnd =
                 Chart.CurrentTimeRaw + (ViewerHeight - Config.Settings.CurrentTimePosition) /
-                scaledPixelsPerMs;
+                _scaledPixelsPerMs;
             
-            foreach (var subBeatTime in Chart.GetSnapTimesInRange(visibleRangeStart,
-                                                                         visibleRangeEnd))
+            foreach (var subBeatTime in Chart.GetSnapTimesInRange(_visibleRangeStart,
+                                                                         _visibleRangeEnd))
             {
-                var adjustedTime = subBeatTime - visibleRangeStart;
+                var adjustedTime = subBeatTime - _visibleRangeStart;
                 dc.DrawLine(new Pen(_subBeatSnapLineStyle.Color, _subBeatSnapLineStyle.Thickness),
-                            new Point(150, adjustedTime * scaledPixelsPerMs),
-                            new Point(ViewerWidth, adjustedTime * scaledPixelsPerMs));
+                            new Point(150, adjustedTime * _scaledPixelsPerMs),
+                            new Point(ViewerWidth, adjustedTime * _scaledPixelsPerMs));
             }
             
-            foreach (var beatLine in Chart.GetBeatTimesInRange(visibleRangeStart,
-                                                                      visibleRangeEnd))
+            foreach (var beatLine in Chart.GetBeatTimesInRange(_visibleRangeStart,
+                                                                      _visibleRangeEnd))
             {
-                RenderFullBeatSnapLine(dc, beatLine, visibleRangeStart, scaledPixelsPerMs);
+                RenderFullBeatSnapLine(dc, beatLine);
             }
         }
         
@@ -414,10 +456,15 @@ public class NoteViewer : Control
                              null, new Rect(left, top, right - left, bottom - top));
         }
 
-        var outlinePen = new Pen(_outlineBrush, _outlineThickness);
-        // dc.DrawRectangle(null, outlinePen,
-        //                  new RoundedRect(new Rect(0, 0, ViewerWidth, ViewerHeight), _cornerRadius));
-        dc.DrawLine(outlinePen, new Point(150, 0), new Point(150, ViewerHeight));
+        if (Chart.SongLoaded)
+        {
+            RenderSidebar(dc);
+        }
+
+        // divider lines
+        var dividerPen = new Pen(_outlineBrush, _outlineThickness);
+        dc.DrawLine(dividerPen, new Point(150, 0), new Point(150, ViewerHeight));
+        dc.DrawLine(dividerPen, new Point(560, 0), new Point(560, ViewerHeight));
         
         clip.Dispose();
     }
@@ -488,13 +535,12 @@ public class NoteViewer : Control
         return false;
     }
 
-    private void RenderFullBeatSnapLine(DrawingContext dc, (double, int) snapLine,
-        double visibleRangeStart, double scaledPixelsPerMs)
+    private void RenderFullBeatSnapLine(DrawingContext dc, (double, int) snapLine)
     {
         var time = snapLine.Item1;
         var index = snapLine.Item2;
         
-        var y = (time - visibleRangeStart) * scaledPixelsPerMs;
+        var y = (time - _visibleRangeStart) * _scaledPixelsPerMs;
         dc.DrawLine(new Pen(_fullBeatSnapLineStyle.Color, _fullBeatSnapLineStyle.Thickness),
                     new Point(150, y), new Point(ViewerWidth, y));
         
@@ -612,6 +658,57 @@ public class NoteViewer : Control
         topNote?.Render(dc, false);
         bottomNote?.Render(dc, false);
         centerNote?.Render(dc, false);
+    }
+
+    private void RenderSidebar(DrawingContext dc)
+    {
+        var scale = ViewerHeight / Chart.Length;
+
+        foreach (var note in Chart.NonMarkerNotes)
+        {
+            var x = note.Lane switch
+            {
+                NoteLane.TOP => _topLaneSidebarX,
+                NoteLane.BOTTOM => _bottomLaneSidebarX,
+                NoteLane.CENTER => _centerLaneSidebarX,
+                _ => _cameraLaneSidebarX
+            };
+
+           var brush = note.Type switch
+            {
+                NoteType.SINGLE => _sidebarSingleBrush,
+                NoteType.SPIKE => _sidebarSpikeBrush,
+                NoteType.HOLD => _sidebarHoldBrush,
+                NoteType.DOUBLE => _sidebarDoubleBrush,
+                NoteType.FREESTYLE => _sidebarFreestyleBrush,
+                NoteType.MASH => _sidebarMashBrush,
+                NoteType.CAMERA_SWAP or NoteType.CAMERA_ZOOM or NoteType.CAMERA_INSTANT
+                    or NoteType.CAMERA_SWAP_AND_ZOOM => _sidebarCameraBrush,
+                _ => note.CopId switch
+                {
+                    1 => _sidebarCop1Brush,
+                    2 => _sidebarCop2Brush,
+                    3 => _sidebarCop3Brush,
+                    _ => _sidebarCop4Brush
+                }
+            };
+
+            var y = note.Time * scale;
+            if (note.Instant)
+            {
+                dc.DrawLine(new Pen(brush, 2), new Point(x + 2, y), new Point(x + 13, y));
+            }
+            else
+            {
+                var endY = note.EndTime * scale;
+                dc.DrawRectangle(brush, null, new Rect(x + 2, y, 11, endY - y));
+            }
+        }
+        
+        // visible area
+        dc.DrawRectangle(_currentTimeLineStyle.Color, null,
+                         new Rect(560, _visibleRangeStart * scale, 60,
+                                  _visibleRangeEnd * scale - _visibleRangeStart * scale));
     }
 
     private NoteBase MakeNotePlaceholder(long start, long end)

@@ -138,7 +138,7 @@
             </StackPanel>
 
             <Panel>
-                <Grid RowDefinitions="*, 350" ColumnDefinitions="560, *" ColumnSpacing="30"
+                <Grid RowDefinitions="*, 350" ColumnDefinitions="620, *" ColumnSpacing="30"
                       RowSpacing="40" Margin="10 20 20 20" Focusable="True"
                       TabIndex="-1">
                     <Grid Grid.Row="0" Grid.Column="1" RowDefinitions="*, *"
