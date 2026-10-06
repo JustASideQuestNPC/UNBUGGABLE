@@ -111,6 +111,9 @@ public class HitSounds
 
     [JsonRequired][JsonPropertyName("cameraChange")]
     public bool CameraChange { get; set; } = true;
+    
+    [JsonRequired][JsonPropertyName("unanimatedTrigger")]
+    public bool UnanimatedTrigger { get; set; } = true;
 
     [JsonRequired][JsonPropertyName("marker1")]
     public bool Marker1 { get; set; } = false;
@@ -140,6 +143,7 @@ public class HitSounds
                     - cop mash start: {CopMashStart}
                     - cop mash end: {CopMashEnd}
                     - camera change: {CameraChange}
+                    - unanimated trigger: {UnanimatedTrigger}
                     - marker 1: {Marker1}
                     - marker 2: {Marker2}
                     - marker 3: {Marker3}

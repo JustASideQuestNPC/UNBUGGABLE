@@ -282,7 +282,7 @@
                 "outlineThickness": -1
             }
         },
-        "unanimatedCamera": {
+        "unanimatedTrigger": {
             "fillColor": "#13F231",
             "outlineColor": "#000000",
             "outlineThickness": 4,

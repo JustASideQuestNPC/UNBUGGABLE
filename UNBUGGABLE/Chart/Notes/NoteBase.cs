@@ -24,10 +24,11 @@ public enum NoteType
     CAMERA_ZOOM,
     CAMERA_INSTANT,
     CAMERA_SWAP_AND_ZOOM,
+    UNANIMATED_TRIGGER,
     COP_SINGLE,
     COP_HOLD,
     COP_MASH,
-    MARKER
+    MARKER,
 }
 
 public enum NoteLane

@@ -85,6 +85,7 @@
     "copMashStart": true,
     "copMashEnd": true,
     "cameraChange": false,
+    "unanimatedTrigger": false,
     "marker1": false,
     "marker2": false,
     "marker3": false

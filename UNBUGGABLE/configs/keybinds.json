@@ -61,6 +61,12 @@
     "placeCenterLane": [
         "d6"
     ],
+    "placeUnanimatedTrigger": [
+        "d7"
+    ],
+    "removeUnanimatedTrigger": [
+        "ctrl+d7"
+    ],
     "nudgeForward": [
         "alt+s"
     ],

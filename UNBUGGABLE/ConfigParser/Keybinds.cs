@@ -45,6 +45,10 @@ public class Keybinds
     public List<string> PlaceCameraLane { get; set; } = ["d5"];
     [JsonRequired][JsonPropertyName("placeCenterLane")]
     public List<string> PlaceCenterLane { get; set; } = ["d6"];
+    [JsonRequired][JsonPropertyName("placeUnanimatedTrigger")]
+    public List<string> PlaceUnanimatedTrigger { get; set; } = ["d7"];
+    [JsonRequired][JsonPropertyName("removeUnanimatedTrigger")]
+    public List<string> RemoveUnanimatedTrigger { get; set; } = ["ctrl+d7"];
     [JsonRequired][JsonPropertyName("selectAll")]
     public List<string> SelectAll { get; set; } = ["ctrl+a"];
     [JsonRequired][JsonPropertyName("selectAllNonMarker")]

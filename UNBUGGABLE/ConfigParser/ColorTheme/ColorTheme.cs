@@ -1164,9 +1164,9 @@ public class NoteThemes(NoteThemesJson json, ref List<string> errorMessages)
                                                      ref errorMessages);
     public readonly NonInstantNoteTheme Mash = new(json.Mash, "notes.mash", ref errorMessages);
     public readonly InstantNoteTheme Camera = new(json.Camera, "notes.camera", ref errorMessages);
-    public readonly InstantNoteTheme UnanimatedCamera = new(json.UnanimatedCamera,
-                                                            "notes.unanimatedCamera",
-                                                            ref errorMessages);
+    public readonly InstantNoteTheme UnanimatedTrigger = new(json.UnanimatedTrigger,
+                                                             "notes.unanimatedTrigger",
+                                                             ref errorMessages);
     public readonly NonInstantNoteTheme Cop1 = new(json.Cop1, "notes.cop1", ref errorMessages);
     public readonly NonInstantNoteTheme Cop2 = new(json.Cop2, "notes.cop2", ref errorMessages);
     public readonly NonInstantNoteTheme Cop3 = new(json.Cop3, "notes.cop3", ref errorMessages);
