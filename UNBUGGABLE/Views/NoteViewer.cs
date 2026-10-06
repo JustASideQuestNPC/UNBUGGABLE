@@ -705,6 +705,20 @@ public class NoteViewer : Control
             }
         }
         
+        var bpmChangePen = new Pen(_bpmChangeStyle.Color, 3);
+        foreach (var bpmRegion in Chart.BpmRegions)
+        {
+            var y = bpmRegion.StartTime * scale;
+            dc.DrawLine(bpmChangePen, new Point(560, y), new Point(620, y));
+        }
+        
+        var labelPen = new Pen(_labelStyle.Color, 3);
+        foreach (var label in Chart.Labels)
+        {
+            var y = label.Time * scale;
+            dc.DrawLine(labelPen, new Point(560, y), new Point(620, y));
+        }
+        
         // visible area
         dc.DrawRectangle(_currentTimeLineStyle.Color, null,
                          new Rect(560, _visibleRangeStart * scale, 60,
