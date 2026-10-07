@@ -9,7 +9,9 @@
         <entry key="UNBUGGABLE/App.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
         <entry key="UNBUGGABLE/Chart/Notes/UnanimatedTriggers/CameraReset.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
         <entry key="UNBUGGABLE/Chart/Notes/UnanimatedTriggers/ChangeCharacterTrigger.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Chart/Notes/UnanimatedTriggers/ChangeStageTrigger.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
         <entry key="UNBUGGABLE/Chart/Notes/UnanimatedTriggers/TriggerTypeSelector.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Chart/Notes/UnanimatedTriggers/UnanimatedTriggerBase.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
         <entry key="UNBUGGABLE/Dialogs/CallbackButtonDialog.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
         <entry key="UNBUGGABLE/Dialogs/ChartMetadataDialog.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
         <entry key="UNBUGGABLE/Dialogs/DialogStyles.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />

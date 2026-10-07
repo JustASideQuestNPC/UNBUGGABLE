@@ -1,9 +1,9 @@
 ﻿using Avalonia;
 using Avalonia.Media;
-using UNBUGGABLE.Resources;
+using UNBUGGABLE.ConfigParser;
 using UNBUGGABLE.Views;
 
-namespace UNBUGGABLE;
+namespace UNBUGGABLE.Notes;
 
 /// <summary>
 /// A note in the center lane that must be hit on beat to "catch" it, and then hit again by mashing

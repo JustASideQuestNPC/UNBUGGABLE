@@ -1,10 +1,10 @@
 ﻿using System;
 using Avalonia;
 using Avalonia.Media;
-using UNBUGGABLE.Resources;
+using UNBUGGABLE.ConfigParser;
 using UNBUGGABLE.Views;
 
-namespace UNBUGGABLE;
+namespace UNBUGGABLE.Notes;
 
 /// <summary>
 /// A note in the top or bottom lane that has a duration. If it has the <c>W</c> flag, this is a
@@ -103,7 +103,7 @@ public class HoldNote : NoteBase
             return new Rect(
                 NoteViewer.GetNoteX(Lane == NoteLane.TOP ? NoteLane.BOTTOM : NoteLane.TOP) - 40,
                 NoteViewer.TimeToScreenCoords(EndTime) - 12, 80,
-                24).ContainsPoint(ChartBuilder.MousePosition);
+                24).ContainsPoint(ChartBuilder.ChartBuilder.MousePosition);
         }
 
         return false;

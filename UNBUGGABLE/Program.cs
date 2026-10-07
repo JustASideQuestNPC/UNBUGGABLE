@@ -9,7 +9,7 @@ using Avalonia.Logging;
 using CommandLine;
 using UNBUGGABLE;
 using UNBUGGABLE.Audio;
-using UNBUGGABLE.Resources;
+using UNBUGGABLE.ConfigParser;
 
 namespace UNBUGGABLE;
 

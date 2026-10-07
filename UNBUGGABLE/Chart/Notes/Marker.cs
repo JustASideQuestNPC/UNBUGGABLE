@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Avalonia;
 using Avalonia.Media;
-using UNBUGGABLE.Resources;
+using UNBUGGABLE.ConfigParser;
 using UNBUGGABLE.Views;
 
-namespace UNBUGGABLE;
+namespace UNBUGGABLE.Notes;
 
 /// <summary>
 /// A "note" that acts as a marker in both the note viewer and game preview (if enabled in the

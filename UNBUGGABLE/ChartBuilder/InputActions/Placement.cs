@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using UNBUGGABLE.ConfigParser;
 using UNBUGGABLE.Input;
-using UNBUGGABLE.Resources;
 
-namespace UNBUGGABLE.Keybinds;
+namespace UNBUGGABLE.ChartBuilder.InputActions;
 
 public class PlaceTopLaneAction(List<string> keybinds) : InputActionBase(keybinds)
 {
@@ -75,5 +75,21 @@ public class NudgeAction(List<string> keybinds, bool head, int direction) :
         {
             ChartBuilder.NudgeNoteTails(direction);
         }
+    }
+}
+
+public class PlaceUnanimatedTriggerAction(List<string> keybinds) : InputActionBase(keybinds)
+{
+    public override async Task OnPress()
+    {
+        await ChartBuilder.AddLabel();
+    }
+}
+
+public class RemoveUnanimatedTriggerAction(List<string> keybinds) : InputActionBase(keybinds)
+{
+    public override async Task OnPress()
+    {
+        ChartBuilder.RemoveLabel();
     }
 }

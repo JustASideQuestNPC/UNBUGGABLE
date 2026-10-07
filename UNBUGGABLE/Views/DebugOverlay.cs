@@ -3,8 +3,9 @@ using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using UNBUGGABLE.ChartBuilder;
+using UNBUGGABLE.ConfigParser;
 using UNBUGGABLE.Input;
-using UNBUGGABLE.Resources;
 
 namespace UNBUGGABLE.Views;
 

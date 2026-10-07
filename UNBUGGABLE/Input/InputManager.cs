@@ -38,7 +38,7 @@ public static class InputManager
     {
         _keyStates.Clear();
         _mouseButtonStates.Clear();
-        ChartBuilder.ResetInputStates();
+        ChartBuilder.ChartBuilder.ResetInputStates();
     }
 
     public static async Task OnKeyDown(KeyEventArgs e)
@@ -112,7 +112,7 @@ public static class InputManager
         _mouseButtonStates[button] = true;
         
         // the chart builder doesn't care if this gets called repeatedly
-        await ChartBuilder.OnMousePress(e.Properties.IsRightButtonPressed);
+        await ChartBuilder.ChartBuilder.OnMousePress(e.Properties.IsRightButtonPressed);
     }
 
     public static async Task OnMouseRelease(PointerReleasedEventArgs e)
@@ -132,7 +132,7 @@ public static class InputManager
         }
         _mouseButtonStates[button] = false;
         
-        ChartBuilder.OnMouseRelease();
+        ChartBuilder.ChartBuilder.OnMouseRelease();
     }
 
     private static async Task RunCallbacks(CallbackType type, object arg)
@@ -146,7 +146,7 @@ public static class InputManager
                 continue;
             }
 
-            if (ChartBuilder.PlacingNote && !action.CanUseWhilePlacingNotes)
+            if (ChartBuilder.ChartBuilder.PlacingNote && !action.CanUseWhilePlacingNotes)
             {
                 continue;
             }

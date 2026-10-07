@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace UNBUGGABLE.Resources;
+namespace UNBUGGABLE.ConfigParser;
 
 public class Keybinds
 {

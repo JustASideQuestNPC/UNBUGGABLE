@@ -15,10 +15,10 @@ using Avalonia.Threading;
 using CSCore;
 using CSCore.Codecs;
 using CSCore.SoundOut;
-using UNBUGGABLE;
 using UNBUGGABLE.Audio;
+using UNBUGGABLE.ConfigParser;
 using UNBUGGABLE.Input;
-using UNBUGGABLE.Resources;
+using UNBUGGABLE.Notes;
 using UNBUGGABLE.Views;
 using DirectSoundOut = CSCore.SoundOut.DirectSoundOut;
 using Path = System.IO.Path;
@@ -120,16 +120,16 @@ public static partial class Chart
         JumpTargets = _jumpTargets,
     };
 
-    private static List<NoteBase> _notes = [];
+    private static List<Notes.NoteBase> _notes = [];
     /// <summary>
     /// All notes in the chart, including markers.
     /// </summary>
-    public static ReadOnlyCollection<NoteBase> Notes => _notes.AsReadOnly();
+    public static ReadOnlyCollection<Notes.NoteBase> Notes => _notes.AsReadOnly();
 
-    public static ReadOnlyCollection<NoteBase> NonMarkerNotes =>
+    public static ReadOnlyCollection<Notes.NoteBase> NonMarkerNotes =>
         _notes.Where(n => n is not MarkerNote).ToList().AsReadOnly();
     
-    public static ReadOnlyCollection<NoteBase> MarkerNotes =>
+    public static ReadOnlyCollection<Notes.NoteBase> MarkerNotes =>
         _notes.Where(n => n is MarkerNote).ToList().AsReadOnly();
     
     private static List<BpmRegion> _bpmRegions = [];
@@ -197,17 +197,17 @@ public static partial class Chart
             }
 
             var transferBreakpoint = (_metadata.ChartOffset != value.ChartOffset);
-            var prevBreakpoint = ChartBuilder.BreakpointTime;
+            var prevBreakpoint = ChartBuilder.ChartBuilder.BreakpointTime;
             if (transferBreakpoint)
             {
-                ChartBuilder.TryRemoveBreakpoint(false);
+                ChartBuilder.ChartBuilder.TryRemoveBreakpoint(false);
             }
             
             _metadata = value;
             
             if (transferBreakpoint)
             {
-                ChartBuilder.SetBreakpoint(prevBreakpoint, false);
+                ChartBuilder.ChartBuilder.SetBreakpoint(prevBreakpoint, false);
             }
             
             UpdateWindowTitle();
@@ -635,9 +635,9 @@ public static partial class Chart
 
     public static void MoveToBreakpoint()
     {
-        if (ChartBuilder.BreakpointTime != -1000)
+        if (ChartBuilder.ChartBuilder.BreakpointTime != -1000)
         {
-            CurrentTimeRaw = ChartBuilder.BreakpointTime;
+            CurrentTimeRaw = ChartBuilder.ChartBuilder.BreakpointTime;
             SetTimeToNearestSnap();
         }
     }
@@ -763,8 +763,8 @@ public static partial class Chart
         
         _notes = [];
         _labels = [];
-        ChartBuilder.ClearSelection();
-        ChartBuilder.TryRemoveBreakpoint();
+        ChartBuilder.ChartBuilder.ClearSelection();
+        ChartBuilder.ChartBuilder.TryRemoveBreakpoint();
             
         _bpmRegions = [new BpmRegion(0, 60)];
         RebuildSnapLineSets();
@@ -841,7 +841,7 @@ public static partial class Chart
         
         _labels = [];
         _notes = [];
-        ChartBuilder.ClearSelection();
+        ChartBuilder.ChartBuilder.ClearSelection();
         _bpmRegions = [];
         var success = true;
         for (var i = 0; i < chartData.Length; ++i)
@@ -1100,7 +1100,7 @@ public static partial class Chart
                 var time = lastEditorState.Value.Item1;
                 var beatSnap = lastEditorState.Value.Item2;
                 var zoom = lastEditorState.Value.Item3;
-                ChartBuilder.SetCopId(lastEditorState.Value.Item4);
+                ChartBuilder.ChartBuilder.SetCopId(lastEditorState.Value.Item4);
 
                 if (time >= 0 && time <= Length)
                 {
@@ -1149,7 +1149,7 @@ public static partial class Chart
                                                _metadata.ArtistName != "" &&
                                                _metadata.CharterName != "");
             
-            ChartBuilder.CheckExistingBreakpoint();
+            ChartBuilder.ChartBuilder.CheckExistingBreakpoint();
             SetTimeToNearestSnap();
             _canAutosave = true;
             
@@ -1326,10 +1326,10 @@ public static partial class Chart
     /// Returns a list of every non-marker note that exists at a timestamp (in milliseconds). List
     /// elements are formatted as <c>(note, index in the main note list)</c>.
     /// </summary>
-    public static List<(NoteBase, int)> GetNotesAtTime(long time)
+    public static List<(Notes.NoteBase, int)> GetNotesAtTime(long time)
     {
-        List<(NoteBase, int)> notes = [];
-        foreach (NoteBase note in NonMarkerNotes)
+        List<(Notes.NoteBase, int)> notes = [];
+        foreach (Notes.NoteBase note in NonMarkerNotes)
         {
             if (note.Time == time)
             {
@@ -1343,17 +1343,17 @@ public static partial class Chart
         return notes;
     }
     
-    public static List<(NoteBase, int)> GetNotesAtCurrentTime() => GetNotesAtTime(CurrentTime);
+    public static List<(Notes.NoteBase, int)> GetNotesAtCurrentTime() => GetNotesAtTime(CurrentTime);
 
     /// <summary>
     /// Returns a list of every non-marker, non-instant note that ends at a timestamp
     /// (in milliseconds). List elements are formatted as <c>(note, index in the main note
     /// list)</c>.
     /// </summary>
-    public static List<(NoteBase, int)> GetNoteEndsAtTime(long time)
+    public static List<(Notes.NoteBase, int)> GetNoteEndsAtTime(long time)
     {
-        List<(NoteBase, int)> notes = [];
-        foreach (NoteBase note in NonMarkerNotes)
+        List<(Notes.NoteBase, int)> notes = [];
+        foreach (Notes.NoteBase note in NonMarkerNotes)
         {
             if (!note.Instant && note.EndTime == time)
             {
@@ -1367,7 +1367,7 @@ public static partial class Chart
     /// <summary>
     /// Returns the note in a specific lane at a specific time, or null if it doesn't exist.
     /// </summary>
-    public static NoteBase? GetNote(long time, NoteLane lane, long maxDistance = 0)
+    public static Notes.NoteBase? GetNote(long time, NoteLane lane, long maxDistance = 0)
         => _notes.FirstOrDefault(n => Math.Abs(n.Time - time) <= maxDistance && n.Lane == lane);
     
     /// <summary>
@@ -1377,7 +1377,7 @@ public static partial class Chart
     ///     If true, an instant note placed at that time will also be returned.
     /// </param>
     /// </summary>
-    public static NoteBase? GetNoteFromEnd(long time, NoteLane lane, long maxDistance = 0,
+    public static Notes.NoteBase? GetNoteFromEnd(long time, NoteLane lane, long maxDistance = 0,
         bool includeInstant = false) =>
         _notes.FirstOrDefault(n => n.Lane == lane &&
                                    ((!n.Instant && Math.Abs(n.EndTime - time) <= maxDistance) ||
@@ -1387,7 +1387,7 @@ public static partial class Chart
     /// <summary>
     /// Returns the note before another note, or null if it doesn't exist.
     /// </summary>
-    public static NoteBase? GetPreviousNote(NoteBase note)
+    public static Notes.NoteBase? GetPreviousNote(Notes.NoteBase note)
     {
         var index = NonMarkerNotes.IndexOf(note);
         return index > 0 ? NonMarkerNotes[index - 1] : null;
@@ -1396,13 +1396,13 @@ public static partial class Chart
     /// <summary>
     /// Returns the note after another note, or null if it doesn't exist.
     /// </summary>
-    public static NoteBase? GetNextNote(NoteBase note)
+    public static Notes.NoteBase? GetNextNote(Notes.NoteBase note)
     {
         var index = NonMarkerNotes.IndexOf(note);
         return index < NonMarkerNotes.Count - 1 ? NonMarkerNotes[index + 1] : null;
     }
     
-    public static int GetNoteIndex(NoteBase note) => Notes.IndexOf(note);
+    public static int GetNoteIndex(Notes.NoteBase note) => Notes.IndexOf(note);
 
     /// <summary>
     /// Returns all the notes between a start and end time.
@@ -1412,7 +1412,7 @@ public static partial class Chart
     ///     lane, except for markers.
     /// </param>
     /// <returns></returns>
-    public static List<NoteBase> GetNoteRegion(double start, double end,
+    public static List<Notes.NoteBase> GetNoteRegion(double start, double end,
         List<NoteLane>? lanes = null)
     {
         lanes ??= [NoteLane.TOP, NoteLane.BOTTOM, NoteLane.CENTER, NoteLane.CAMERA];
@@ -1420,29 +1420,29 @@ public static partial class Chart
                      .ToList();
     }
     
-    public static NoteBase? GetLastNoteBeforeTime(long time) =>
+    public static Notes.NoteBase? GetLastNoteBeforeTime(long time) =>
         NonMarkerNotes.LastOrDefault(n => n.Time <= time);
     
-    public static NoteBase? GetLastNoteBeforeTime(long time, NoteLane lane) =>
+    public static Notes.NoteBase? GetLastNoteBeforeTime(long time, NoteLane lane) =>
         NonMarkerNotes.LastOrDefault(n => n.Time <= time && n.Lane == lane);
     
-    public static NoteBase? GetLastNoteBeforeTime(long time, List<NoteLane> lanes) =>
+    public static Notes.NoteBase? GetLastNoteBeforeTime(long time, List<NoteLane> lanes) =>
         NonMarkerNotes.LastOrDefault(n => n.Time <= time && lanes.Contains(n.Lane));
 
-    public static NoteBase? GetFirstNoteAfterTime(long time) =>
+    public static Notes.NoteBase? GetFirstNoteAfterTime(long time) =>
         NonMarkerNotes.FirstOrDefault(n => n.Time >= time);
     
-    public static NoteBase? GetFirstNoteAfterTime(long time, NoteLane lane) =>
+    public static Notes.NoteBase? GetFirstNoteAfterTime(long time, NoteLane lane) =>
         NonMarkerNotes.FirstOrDefault(n => n.Time >= time && n.Lane == lane);
     
-    public static NoteBase? GetFirstNoteAfterTime(long time, List<NoteLane> lanes) =>
+    public static Notes.NoteBase? GetFirstNoteAfterTime(long time, List<NoteLane> lanes) =>
         NonMarkerNotes.FirstOrDefault(n => n.Time >= time && lanes.Contains(n.Lane));
 
     /// <summary>
     /// Adds a note. If one or more notes already exist at that timestamp, the new note will be
     /// placed in the note list after the existing notes.
     /// </summary>
-    public static void AddNote(NoteBase note)
+    public static void AddNote(Notes.NoteBase note)
     {
         if (_notes.Count == 0 || _notes[^1].Time <= note.Time)
         {
@@ -1463,7 +1463,7 @@ public static partial class Chart
         _jumpTargetsOutOfDate = true;
     }
 
-    public static void RemoveNote(NoteBase note)
+    public static void RemoveNote(Notes.NoteBase note)
     {
         _notes.Remove(note);
         App.MainWindowViewModel.UpdatePriorityListEntries(GetNotesAtCurrentTime());
@@ -1474,7 +1474,7 @@ public static partial class Chart
     /// <summary>
     /// Replaces a note, preserving placement priority.
     /// </summary>
-    public static void ReplaceNote(NoteBase oldNote, NoteBase newNote)
+    public static void ReplaceNote(Notes.NoteBase oldNote, Notes.NoteBase newNote)
     {
         _notes[_notes.IndexOf(oldNote)] = newNote;
         App.MainWindowViewModel.UpdatePriorityListEntries(GetNotesAtCurrentTime());
@@ -1485,7 +1485,7 @@ public static partial class Chart
     /// <summary>
     /// Sets the order of a set of notes in the note list.
     /// </summary>
-    public static void SetNoteOrder(List<NoteBase> notes)
+    public static void SetNoteOrder(List<Notes.NoteBase> notes)
     {
         List<int> indices = [];
         foreach (var note in notes)
@@ -1754,9 +1754,9 @@ public static partial class Chart
         }
 
         if (Config.Settings.JumpTargets.Contains("breakpoint") &&
-            ChartBuilder.BreakpointTime != -1000)
+            ChartBuilder.ChartBuilder.BreakpointTime != -1000)
         {
-            _jumpTargets.Add(ChartBuilder.BreakpointTime);
+            _jumpTargets.Add(ChartBuilder.ChartBuilder.BreakpointTime);
         }
         
         _jumpTargets = _jumpTargets.Distinct().ToList();
@@ -1841,8 +1841,8 @@ public static partial class Chart
 
     private static void ClearChart()
     {
-        ChartBuilder.ClearSelection();
-        ChartBuilder.TryRemoveBreakpoint(false);
+        ChartBuilder.ChartBuilder.ClearSelection();
+        ChartBuilder.ChartBuilder.TryRemoveBreakpoint(false);
         
         Metadata = new MetadataContainer();
         _notes = [];
@@ -2423,8 +2423,8 @@ public static partial class Chart
                 continue;
             }
             
-            var note = NoteBase.FromHitObjectString(lines[i].Trim(),
-                                                    out var noteErrorMessage);
+            var note = UNBUGGABLE.Notes.NoteBase.FromHitObjectString(lines[i].Trim(),
+                                                                     out var noteErrorMessage);
             if (note != null)
             {
                 // merge stacked camera notes into a single note with both flags
@@ -2493,7 +2493,7 @@ public static partial class Chart
         await writer.WriteLineAsync("[UNBUGGABLE]");
         await writer.WriteLineAsync(
             $"LastEditorState:{CurrentTime},{BeatSnap},{NoteViewer.CurrentZoom}," +
-            $"{ChartBuilder.CopId}");
+            $"{ChartBuilder.ChartBuilder.CopId}");
         
         List<string> markerStrings = [];
         foreach (var marker in MarkerNotes)

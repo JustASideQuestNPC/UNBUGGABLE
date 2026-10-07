@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using UNBUGGABLE;
-using UNBUGGABLE.Resources;
+using UNBUGGABLE.ConfigParser;
+using UNBUGGABLE.Notes;
 
-namespace UNBUGGABLE.Commands;
+namespace UNBUGGABLE.ChartBuilder.Commands;
 
-public class AddNotesCommand(List<NoteBase> notes) : ICommand
+public class AddNotesCommand(List<Notes.NoteBase> notes) : ICommand
 {
     public string Name => "Add Notes";
     
@@ -46,10 +46,10 @@ public class PasteNotesCommand : ICommand
     
     public bool UpdatesPriorityList => true;
 
-    private readonly List<NoteBase> _addedNotes;
-    private readonly List<NoteBase> _removedNotes = [];
+    private readonly List<Notes.NoteBase> _addedNotes;
+    private readonly List<Notes.NoteBase> _removedNotes = [];
     
-    public PasteNotesCommand(List<NoteBase> notes)
+    public PasteNotesCommand(List<Notes.NoteBase> notes)
     {
         switch (Config.Settings.PasteBehavior)
         {
@@ -128,7 +128,7 @@ public class PasteNotesCommand : ICommand
                                          $"{_removedNotes.Count} existing note(s))";
 }
 
-public class DeleteNotesCommand(List<NoteBase> notes) : ICommand
+public class DeleteNotesCommand(List<Notes.NoteBase> notes) : ICommand
 {
     public string Name => "Delete Notes";
     
@@ -155,7 +155,7 @@ public class DeleteNotesCommand(List<NoteBase> notes) : ICommand
     public override string ToString() => $"Delete {notes.Count} note(s)";
 }
 
-public class UpdateNotesCommand(List<NoteBase> oldNotes, List<NoteBase> newNotes,
+public class UpdateNotesCommand(List<Notes.NoteBase> oldNotes, List<Notes.NoteBase> newNotes,
     bool transferSelected = false) : ICommand
 {
     public string Name => "Update Notes";
@@ -208,7 +208,7 @@ public class UpdateNotesCommand(List<NoteBase> oldNotes, List<NoteBase> newNotes
                                          $"transferSelected = {transferSelected}";
 }
 
-public class MirrorNotesCommand(List<NoteBase> notes) : ICommand
+public class MirrorNotesCommand(List<Notes.NoteBase> notes) : ICommand
 {
     public string Name => "Mirror Notes";
     
@@ -230,7 +230,7 @@ public class MirrorNotesCommand(List<NoteBase> notes) : ICommand
         }
     }
     
-    private void MirrorNote(NoteBase note)
+    private void MirrorNote(Notes.NoteBase note)
     {
         if (note.Lane == NoteLane.TOP)
         {
@@ -245,7 +245,7 @@ public class MirrorNotesCommand(List<NoteBase> notes) : ICommand
     public override string ToString() => $"Mirror {notes.Count} note(s)";
 }
 
-public class SetFlagsCommand(char flag, bool newValue, List<(NoteBase, bool)> notes) : ICommand
+public class SetFlagsCommand(char flag, bool newValue, List<(Notes.NoteBase, bool)> notes) : ICommand
 {
     public string Name => newValue ? "Set note flags" : "Unset note flags";
     
@@ -315,10 +315,10 @@ public class SetNotesCopIdCommand : ICommand
     
     public bool UpdatesPriorityList => true;
     
-    private readonly List<NoteBase> _oldNotes;
-    private readonly List<NoteBase> _newNotes;
+    private readonly List<Notes.NoteBase> _oldNotes;
+    private readonly List<Notes.NoteBase> _newNotes;
 
-    public SetNotesCopIdCommand(List<NoteBase> notes, int copId)
+    public SetNotesCopIdCommand(List<Notes.NoteBase> notes, int copId)
     {
         _oldNotes = notes;
         _newNotes = notes.Select(note => GetNoteWithCopId(note, copId)).ToList();
@@ -352,11 +352,11 @@ public class SetNotesCopIdCommand : ICommand
     /// notes, both cop holds and cop mashes will become hold notes. Note flags are reset when
     /// converting between cop notes and non-cop notes.
     /// </summary>
-    private static NoteBase GetNoteWithCopId(NoteBase note, int copId)
+    private static Notes.NoteBase GetNoteWithCopId(Notes.NoteBase note, int copId)
     {
         Trace.WriteLine($"{note.Type}");
         
-        NoteBase newNote;
+        Notes.NoteBase newNote;
         if (copId == 0)
         {
             newNote = note.Type switch
@@ -398,15 +398,15 @@ public class SetNotesCopIdCommand : ICommand
     }
 }
 
-public class ReorderNotesCommand(List<(NoteBase, int)> indexedOldOrder, List<NoteBase> newOrder) :
+public class ReorderNotesCommand(List<(Notes.NoteBase, int)> indexedOldOrder, List<Notes.NoteBase> newOrder) :
     ICommand
 {
     public string Name => "Reorder Notes";
     
     public bool UpdatesPriorityList => false;
     
-    private readonly List<NoteBase> _oldOrder = indexedOldOrder.Select(i => i.Item1).ToList();
-    private readonly List<(NoteBase, int)> _indexedNewOrder =
+    private readonly List<Notes.NoteBase> _oldOrder = indexedOldOrder.Select(i => i.Item1).ToList();
+    private readonly List<(Notes.NoteBase, int)> _indexedNewOrder =
         newOrder.Select((note, i) => (note, i)).ToList();
 
     // prevents a crash caused by modifying the ui during an event
@@ -438,7 +438,7 @@ public class ReorderNotesCommand(List<(NoteBase, int)> indexedOldOrder, List<Not
         $"[{string.Join(',', _indexedNewOrder.Select(n => n.Item1.Lane))}]";
 }
 
-public class NudgeNotesCommand(List<(NoteBase, int, int)> nudges) : ICommand
+public class NudgeNotesCommand(List<(Notes.NoteBase, int, int)> nudges) : ICommand
 {
     public string Name => "Nudge Notes";
     

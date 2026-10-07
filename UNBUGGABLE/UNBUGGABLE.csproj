@@ -6,7 +6,6 @@
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-        <RootNamespace>UNBEATABLEChartEditor</RootNamespace>
         <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
         <Company>NonPlayerCharacterSoftware</Company>
         <AssemblyVersion>0.13.9.0</AssemblyVersion>

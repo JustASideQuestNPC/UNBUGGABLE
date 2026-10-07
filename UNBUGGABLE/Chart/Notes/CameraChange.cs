@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Media;
-using UNBUGGABLE.Resources;
+using UNBUGGABLE.ConfigParser;
 using UNBUGGABLE.Views;
 
-namespace UNBUGGABLE;
+namespace UNBUGGABLE.Notes;
 
 /// <summary>
 /// A "note" that manipulates the camera. Without any flags, they shift the camera to the other side

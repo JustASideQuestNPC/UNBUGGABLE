@@ -5,11 +5,10 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Avalonia;
 using Avalonia.Media;
-using NLog;
-using UNBUGGABLE.Resources;
+using UNBUGGABLE.ConfigParser;
 using UNBUGGABLE.Views;
 
-namespace UNBUGGABLE;
+namespace UNBUGGABLE.Notes;
 
 public enum NoteType
 {
@@ -49,7 +48,7 @@ public class NoteFlags(bool c, bool f, bool w, bool n = false)
     /// <summary>
     /// Whether to make the note spawn in the center of the screen like in the Noisz stages from the
     /// base game; only applies to singles and holds. This isn't actually a note flag, but treating
-    /// it like one makes things work infinitely better under the hood. 
+    /// it like one makes things work infinitely better under the hood.
     /// </summary>
     public bool N { get; set; } = n;
     
@@ -514,7 +513,7 @@ public abstract partial class NoteBase
     {
         var x = NoteViewer.GetNoteX(Lane);
         var y = NoteViewer.TimeToScreenCoords(Time);
-        return new Rect(x - 40, y - 12, 80, 24).ContainsPoint(ChartBuilder.MousePosition);
+        return new Rect(x - 40, y - 12, 80, 24).ContainsPoint(ChartBuilder.ChartBuilder.MousePosition);
     }
 
     /// <summary>
@@ -528,7 +527,7 @@ public abstract partial class NoteBase
         var startY = NoteViewer.TimeToScreenCoords(Time);
         var endY = NoteViewer.TimeToScreenCoords(EndTime);
         return new Rect(x - 16, startY, 32, endY - startY)
-            .ContainsPoint(ChartBuilder.MousePosition);
+            .ContainsPoint(ChartBuilder.ChartBuilder.MousePosition);
     }
     
     public NoteBase Clone(long? newTime = null)

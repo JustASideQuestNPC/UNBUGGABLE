@@ -1,4 +1,4 @@
-﻿namespace UNBUGGABLE.Commands;
+﻿namespace UNBUGGABLE.ChartBuilder.Commands;
 
 public class AddBpmRegionCommand(long time, double bpm) : ICommand
 {

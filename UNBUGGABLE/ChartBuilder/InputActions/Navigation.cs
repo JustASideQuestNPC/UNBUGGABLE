@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using UNBUGGABLE.ConfigParser;
 using UNBUGGABLE.Input;
-using UNBUGGABLE.Resources;
 using UNBUGGABLE.Views;
 
-namespace UNBUGGABLE.Keybinds;
+namespace UNBUGGABLE.ChartBuilder.InputActions;
 
 public class MoveForwardAction(List<string> keybinds) : InputActionBase(keybinds)
 {

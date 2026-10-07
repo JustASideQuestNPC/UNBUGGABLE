@@ -5,16 +5,14 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Input;
-using UNBUGGABLE;
+using UNBUGGABLE.ChartBuilder.Commands;
+using UNBUGGABLE.ConfigParser;
 using UNBUGGABLE.Dialogs;
 using UNBUGGABLE.Input;
-using UNBUGGABLE.Commands;
-using UNBUGGABLE.Resources;
+using UNBUGGABLE.Notes;
 using UNBUGGABLE.Views;
 
-namespace UNBUGGABLE;
+namespace UNBUGGABLE.ChartBuilder;
 
 public static class ChartBuilder
 {
@@ -32,7 +30,7 @@ public static class ChartBuilder
     
     public static bool QuickScroll { get; set; } = false;
     
-    public static List<NoteBase> SelectedNotes = [];
+    public static List<Notes.NoteBase> SelectedNotes = [];
     
     public static long BreakpointTime { get; private set; } = -1000;
     
@@ -130,7 +128,7 @@ public static class ChartBuilder
         // tail selection only works if you don't drag select
         if (notes.Count == 0 && Config.Settings.HoldTailSelect != "none")
         {
-            List<NoteBase> clickedNotes = [];
+            List<Notes.NoteBase> clickedNotes = [];
             if (Config.Settings.HoldTailSelect == "all")
             {
                 clickedNotes = Chart.NonMarkerNotes.Where(n => !n.Instant && n.MouseOverTail())
@@ -295,7 +293,7 @@ public static class ChartBuilder
     
     public static async Task Paste()
     {
-        List<NoteBase> pasted = [];
+        List<Notes.NoteBase> pasted = [];
         var clipboardText = await App.TopLevel.Clipboard.GetTextAsync();
         if (clipboardText is null or "")
         {
@@ -306,7 +304,7 @@ public static class ChartBuilder
         var noteStrings = clipboardText.Split(';');
         foreach (var noteString in noteStrings)
         {
-            var note = NoteBase.FromCopyPasteString(noteString, Chart.CurrentTime);
+            var note = Notes.NoteBase.FromCopyPasteString(noteString, Chart.CurrentTime);
             if (note == null)
             {
                 Logger.Warn("Paste failed: {0} is invalid", noteString);
@@ -742,7 +740,7 @@ public static class ChartBuilder
 
     public static void SetNoteFlags(char flag)
     {
-        List<NoteBase> notes_ = [];
+        List<Notes.NoteBase> notes_ = [];
         if (SelectedNotes.Count > 0)
         {
             notes_ = [..SelectedNotes];
@@ -759,7 +757,7 @@ public static class ChartBuilder
         
         // flag operations prioritize making the flag true for all notes
         var newValue = false;
-        List<(NoteBase, bool)> notes = [];
+        List<(Notes.NoteBase, bool)> notes = [];
         foreach (var note in notes_)
         {
             if (flag == 'n' && (note.Type is not NoteType.SINGLE and not NoteType.SPIKE
@@ -793,7 +791,7 @@ public static class ChartBuilder
             return;
         }
         
-        List<(NoteBase, int, int)> nudges = [];
+        List<(Notes.NoteBase, int, int)> nudges = [];
         foreach (var note in SelectedNotes)
         {
             nudges.Add((note, distance, 0));
@@ -809,7 +807,7 @@ public static class ChartBuilder
             return;
         }
         
-        List<(NoteBase, int, int)> nudges = [];
+        List<(Notes.NoteBase, int, int)> nudges = [];
         foreach (var note in SelectedNotes)
         {
             nudges.Add((note, 0, distance));
@@ -865,7 +863,7 @@ public static class ChartBuilder
             }
         }
 
-        NoteBase newNote;
+        Notes.NoteBase newNote;
         switch (lane)
         {
             case NoteLane.TOP:
@@ -969,7 +967,7 @@ public static class ChartBuilder
         // check for extending hold notes
         if (!newNote.Instant)
         {
-            List<NoteBase> removedNotes = [];
+            List<Notes.NoteBase> removedNotes = [];
             
             var nextNote = Chart.GetNote(end, lane,
                                          Config.Settings.HoldExtensionSearchThreshold);
@@ -1055,7 +1053,7 @@ public static class ChartBuilder
         
         if (oldNote != null)
         {
-            List<NoteBase> removedNotes = [oldNote];
+            List<Notes.NoteBase> removedNotes = [oldNote];
             if (Config.Settings.PreserveNoiszFlag && lane is NoteLane.TOP or NoteLane.BOTTOM)
             {
                 newNote.Flags.N = oldNote.Flags.N;
@@ -1120,7 +1118,7 @@ public static class ChartBuilder
             return;
         }
 
-        List<NoteBase> newNotes = [];
+        List<Notes.NoteBase> newNotes = [];
         foreach (var note in SelectedNotes)
         {
             var n = note.Clone(note.Time + delta);
@@ -1135,7 +1133,7 @@ public static class ChartBuilder
                                                                   true));
     }
 
-    private static void AdjustNoteTime(NoteBase note)
+    private static void AdjustNoteTime(Notes.NoteBase note)
     {
         var nearestStart =
             Chart.GetSnapTimeWithinThreshold(note.Time,

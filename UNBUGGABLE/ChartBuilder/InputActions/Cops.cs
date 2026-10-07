@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using UNBUGGABLE.Input;
 
-namespace UNBUGGABLE.Keybinds;
+namespace UNBUGGABLE.ChartBuilder.InputActions;
 
 public class CopId0Action(List<string> keybinds) : InputActionBase(keybinds)
 {

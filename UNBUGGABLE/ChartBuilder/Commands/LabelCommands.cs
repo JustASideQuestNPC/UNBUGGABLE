@@ -1,4 +1,4 @@
-﻿namespace UNBUGGABLE.Commands;
+﻿namespace UNBUGGABLE.ChartBuilder.Commands;
 
 public class AddLabelCommand(long time, string text) : ICommand
 {

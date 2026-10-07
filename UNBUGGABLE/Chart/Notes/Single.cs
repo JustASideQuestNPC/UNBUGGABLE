@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Media;
-using CSCore.Streams.Effects;
-using UNBUGGABLE.Resources;
+using UNBUGGABLE.ConfigParser;
 using UNBUGGABLE.Views;
 
-namespace UNBUGGABLE;
+namespace UNBUGGABLE.Notes;
 
 /// <summary>
 /// A note in the top or bottom lane that has no duration. If it has the <c>W</c> flag, this is a

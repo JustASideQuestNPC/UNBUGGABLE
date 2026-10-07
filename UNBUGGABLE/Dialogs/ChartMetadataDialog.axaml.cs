@@ -6,8 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Interactivity;
 using AvaloniaDialogs.Views;
-using UNBUGGABLE;
-using UNBUGGABLE.Resources;
+using UNBUGGABLE.ConfigParser;
 
 namespace UNBUGGABLE.Dialogs;
 

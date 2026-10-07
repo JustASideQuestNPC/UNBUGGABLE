@@ -7,8 +7,9 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using UNBUGGABLE;
+using UNBUGGABLE.ConfigParser;
 using UNBUGGABLE.Input;
-using UNBUGGABLE.Resources;
+using UNBUGGABLE.Notes;
 
 namespace UNBUGGABLE.Views;
 
@@ -276,8 +277,8 @@ public class NoteViewer : Control
 
     public static List<NoteLane> GetSelectedLanes()
     {
-        var left = Math.Min(ChartBuilder.MouseDragStart.Value.X, ChartBuilder.MousePosition.X);
-        var right = Math.Max(ChartBuilder.MouseDragStart.Value.X, ChartBuilder.MousePosition.X);
+        var left = Math.Min(ChartBuilder.ChartBuilder.MouseDragStart.Value.X, ChartBuilder.ChartBuilder.MousePosition.X);
+        var right = Math.Max(ChartBuilder.ChartBuilder.MouseDragStart.Value.X, ChartBuilder.ChartBuilder.MousePosition.X);
 
         List<NoteLane> lanes = [];
         if (_topLaneX > left && _topLaneX < right)
@@ -375,7 +376,7 @@ public class NoteViewer : Control
         // render markers early so they don't cover up label names or BPM numbers
         foreach (var note in Chart.MarkerNotes)
         {
-            note.Render(dc, ChartBuilder.SelectedNotes.Contains(note));
+            note.Render(dc, ChartBuilder.ChartBuilder.SelectedNotes.Contains(note));
         }
         
         foreach (var bpmRegion in Chart.BpmRegions)
@@ -425,9 +426,9 @@ public class NoteViewer : Control
                                                       cameraLaneText.Height / 2),
                             _laneNumberFillBrush, laneNumberPen);
 
-        if (ChartBuilder.BreakpointTime != -1000)
+        if (ChartBuilder.ChartBuilder.BreakpointTime != -1000)
         {
-            RenderArrowLine(dc, ChartBuilder.BreakpointTime, _breakpointLineStyle,
+            RenderArrowLine(dc, ChartBuilder.ChartBuilder.BreakpointTime, _breakpointLineStyle,
                             _breakpointArrowScale);
         }
 
@@ -440,19 +441,19 @@ public class NoteViewer : Control
         
         foreach (var note in Chart.NonMarkerNotes)
         {
-            note.Render(dc, ChartBuilder.SelectedNotes.Contains(note));
+            note.Render(dc, ChartBuilder.ChartBuilder.SelectedNotes.Contains(note));
         }
         
         RenderPlacingNotes(dc);
 
-        if (ChartBuilder.MouseDragStartTime.SoftNotEquals(-1000))
+        if (ChartBuilder.ChartBuilder.MouseDragStartTime.SoftNotEquals(-1000))
         {
-            var startY = TimeToScreenCoords(ChartBuilder.MouseDragStartTime);
-            var top = Math.Min(startY, ChartBuilder.MousePosition.Y);
-            var bottom = Math.Max(startY, ChartBuilder.MousePosition.Y);
-            var left = Math.Min(ChartBuilder.MouseDragStart.Value.X, ChartBuilder.MousePosition.X);
-            var right = Math.Max(ChartBuilder.MouseDragStart.Value.X, ChartBuilder.MousePosition.X);
-            dc.DrawRectangle(ChartBuilder.RightMouseDrag ? _deleteDragBrush : _selectDragBrush,
+            var startY = TimeToScreenCoords(ChartBuilder.ChartBuilder.MouseDragStartTime);
+            var top = Math.Min(startY, ChartBuilder.ChartBuilder.MousePosition.Y);
+            var bottom = Math.Max(startY, ChartBuilder.ChartBuilder.MousePosition.Y);
+            var left = Math.Min(ChartBuilder.ChartBuilder.MouseDragStart.Value.X, ChartBuilder.ChartBuilder.MousePosition.X);
+            var right = Math.Max(ChartBuilder.ChartBuilder.MouseDragStart.Value.X, ChartBuilder.ChartBuilder.MousePosition.X);
+            dc.DrawRectangle(ChartBuilder.ChartBuilder.RightMouseDrag ? _deleteDragBrush : _selectDragBrush,
                              null, new Rect(left, top, right - left, bottom - top));
         }
 
@@ -471,7 +472,7 @@ public class NoteViewer : Control
 
     public static async Task<bool> CheckForEditByMouse(bool rightClick)
     {
-        if (ChartBuilder.MousePosition.X > 150)
+        if (ChartBuilder.ChartBuilder.MousePosition.X > 150)
         {
             return false;
         }
@@ -481,8 +482,8 @@ public class NoteViewer : Control
         {
             var rangeStart = TimeToScreenCoords(bpmRegion.StartTime) - 25;
             var rangeEnd = TimeToScreenCoords(bpmRegion.StartTime) + 25;
-            if (ChartBuilder.MousePosition.Y > rangeStart &&
-                ChartBuilder.MousePosition.Y < rangeEnd)
+            if (ChartBuilder.ChartBuilder.MousePosition.Y > rangeStart &&
+                ChartBuilder.ChartBuilder.MousePosition.Y < rangeEnd)
             {
                 hoveredRegion = bpmRegion;
                 break;
@@ -495,13 +496,13 @@ public class NoteViewer : Control
             {
                 if (hoveredRegion != Chart.BpmRegions[0])
                 {
-                    ChartBuilder.DeleteBpmRegion(hoveredRegion);
+                    ChartBuilder.ChartBuilder.DeleteBpmRegion(hoveredRegion);
                     return true;
                 }
             }
             else
             {
-                await ChartBuilder.EditBpmRegion(hoveredRegion);
+                await ChartBuilder.ChartBuilder.EditBpmRegion(hoveredRegion);
                 return true;
             }
         }
@@ -511,8 +512,8 @@ public class NoteViewer : Control
         {
             var rangeStart = TimeToScreenCoords(label.Time - Chart.Metadata.ChartOffset) - 25;
             var rangeEnd = TimeToScreenCoords(label.Time - Chart.Metadata.ChartOffset) + 25;
-            if (ChartBuilder.MousePosition.Y > rangeStart &&
-                ChartBuilder.MousePosition.Y < rangeEnd)
+            if (ChartBuilder.ChartBuilder.MousePosition.Y > rangeStart &&
+                ChartBuilder.ChartBuilder.MousePosition.Y < rangeEnd)
             {
                 hoveredLabel = label;
                 break;
@@ -523,11 +524,11 @@ public class NoteViewer : Control
         {
             if (rightClick)
             {
-                ChartBuilder.DeleteLabel(hoveredLabel);
+                ChartBuilder.ChartBuilder.DeleteLabel(hoveredLabel);
             }
             else
             {
-                await ChartBuilder.EditLabel(hoveredLabel);
+                await ChartBuilder.ChartBuilder.EditLabel(hoveredLabel);
             }
             return true;
         }
@@ -618,11 +619,11 @@ public class NoteViewer : Control
 
     private void RenderPlacingNotes(DrawingContext dc)
     {
-        NoteBase? topNote = null, centerNote = null, bottomNote = null;
+        Notes.NoteBase? topNote = null, centerNote = null, bottomNote = null;
         // cop id doesn't change the center lane
-        if (ChartBuilder.CenterLaneStartTime != -1000)
+        if (ChartBuilder.ChartBuilder.CenterLaneStartTime != -1000)
         {
-            if (ChartBuilder.CenterLaneStartTime == Chart.CurrentTime)
+            if (ChartBuilder.ChartBuilder.CenterLaneStartTime == Chart.CurrentTime)
             {
                 centerNote = new FreestyleNote
                 {
@@ -633,25 +634,25 @@ public class NoteViewer : Control
             {
                 centerNote = new MashNote
                 {
-                    Time = Math.Min(ChartBuilder.CenterLaneStartTime, Chart.CurrentTime),
-                    EndTime = Math.Max(ChartBuilder.CenterLaneStartTime, Chart.CurrentTime)
+                    Time = Math.Min(ChartBuilder.ChartBuilder.CenterLaneStartTime, Chart.CurrentTime),
+                    EndTime = Math.Max(ChartBuilder.ChartBuilder.CenterLaneStartTime, Chart.CurrentTime)
                 };
             }
         }
 
-        if (ChartBuilder.TopLaneStartTime != -1000)
+        if (ChartBuilder.ChartBuilder.TopLaneStartTime != -1000)
         {
             topNote = MakeNotePlaceholder(
-                Math.Min(ChartBuilder.TopLaneStartTime, Chart.CurrentTime),
-                Math.Max(ChartBuilder.TopLaneStartTime, Chart.CurrentTime));
+                Math.Min(ChartBuilder.ChartBuilder.TopLaneStartTime, Chart.CurrentTime),
+                Math.Max(ChartBuilder.ChartBuilder.TopLaneStartTime, Chart.CurrentTime));
             topNote.Lane = NoteLane.TOP;
         }
             
-        if (ChartBuilder.BottomLaneStartTime != -1000)
+        if (ChartBuilder.ChartBuilder.BottomLaneStartTime != -1000)
         {
             bottomNote = MakeNotePlaceholder(
-                Math.Min(ChartBuilder.BottomLaneStartTime, Chart.CurrentTime),
-                Math.Max(ChartBuilder.BottomLaneStartTime, Chart.CurrentTime));
+                Math.Min(ChartBuilder.ChartBuilder.BottomLaneStartTime, Chart.CurrentTime),
+                Math.Max(ChartBuilder.ChartBuilder.BottomLaneStartTime, Chart.CurrentTime));
             bottomNote.Lane = NoteLane.BOTTOM;
         }
 
@@ -725,9 +726,9 @@ public class NoteViewer : Control
                                   _visibleRangeEnd * scale - _visibleRangeStart * scale));
     }
 
-    private NoteBase MakeNotePlaceholder(long start, long end)
+    private Notes.NoteBase MakeNotePlaceholder(long start, long end)
     {
-        if (ChartBuilder.CopId != 0)
+        if (ChartBuilder.ChartBuilder.CopId != 0)
         {
             if (start == end)
             {
@@ -741,14 +742,14 @@ public class NoteViewer : Control
                     };
                 }
                 
-                return new CopNote(NoteType.COP_SINGLE, ChartBuilder.CopId)
+                return new CopNote(NoteType.COP_SINGLE, ChartBuilder.ChartBuilder.CopId)
                 {
                     Time = start
                 };
             }
             
             return new CopNote(InputManager.ShiftPressed ? NoteType.COP_MASH : NoteType.COP_HOLD,
-                               ChartBuilder.CopId)
+                               ChartBuilder.ChartBuilder.CopId)
             {
                 Time = start,
                 EndTime = end

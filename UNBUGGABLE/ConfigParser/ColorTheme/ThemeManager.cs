@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
-using UNBUGGABLE.UnanimatedTriggers;
+using UNBUGGABLE.Notes;
+using UNBUGGABLE.Notes.UnanimatedTriggers;
 using UNBUGGABLE.Views;
 
-namespace UNBUGGABLE.Resources;
+namespace UNBUGGABLE.ConfigParser.ColorTheme;
 
 public static class ThemeManager
 {

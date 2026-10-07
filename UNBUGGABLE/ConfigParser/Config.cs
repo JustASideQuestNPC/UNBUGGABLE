@@ -3,23 +3,15 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Security.Authentication.ExtendedProtection;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Nodes;
-using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Media;
-using Tmds.DBus.Protocol;
-using UNBUGGABLE;
+using UNBUGGABLE.ChartBuilder.InputActions;
+using UNBUGGABLE.ConfigParser.ColorTheme;
 using UNBUGGABLE.Input;
-using UNBUGGABLE.Keybinds;
-using YamlDotNet.Core;
-using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
+using UNBUGGABLE.Notes;
 
-namespace UNBUGGABLE.Resources;
+namespace UNBUGGABLE.ConfigParser;
 
 /// <summary>
 /// Loads color themes and user settings when the app starts.
@@ -51,7 +43,7 @@ public static class Config
     private static string ThemesFolderPath { get; set; } =
         Path.Combine(Environment.CurrentDirectory, "themes");
 
-    private static readonly Dictionary<string, ColorTheme> ColorThemes = new();
+    private static readonly Dictionary<string, ColorTheme.ColorTheme> ColorThemes = new();
 
     public static void ApplyCurrentTheme()
     {
@@ -632,7 +624,7 @@ public static class Config
                     if (themeJson != null)
                     {
                         errors = [];
-                        var theme = new ColorTheme(themeJson, ref errors);
+                        var theme = new ColorTheme.ColorTheme(themeJson, ref errors);
                         
                         if (errors.Count > 0)
                         {
@@ -665,14 +657,14 @@ public static class Config
             if (!ColorThemes.ContainsKey("default"))
             {
                 errors = [];
-                ColorThemes["default"] = new ColorTheme(new ColorThemeJson(), ref errors);
+                ColorThemes["default"] = new ColorTheme.ColorTheme(new ColorThemeJson(), ref errors);
             }
             
             return true;
         }
         
         errors = [];
-        ColorThemes["default"] = new ColorTheme(new ColorThemeJson(), ref errors);
+        ColorThemes["default"] = new ColorTheme.ColorTheme(new ColorThemeJson(), ref errors);
         
         Trace.WriteLine("Color theme folder not found.");
         return false;

@@ -7,7 +7,6 @@ using Avalonia.Interactivity;
 using DialogHostAvalonia;
 using UNBUGGABLE.Dialogs;
 using UNBUGGABLE.Input;
-using UNBUGGABLE.Resources;
 
 namespace UNBUGGABLE.Views;
 
@@ -42,7 +41,7 @@ public partial class MainWindow : Window
 
     private void OnNoteViewerPointerMove(object? sender, PointerEventArgs e)
     {
-        ChartBuilder.MousePosition = e.GetPosition((Border)sender);
+        ChartBuilder.ChartBuilder.MousePosition = e.GetPosition((Border)sender);
     }
 
     private async void OnNoteViewerPointerPress(object? sender, PointerPressedEventArgs e)

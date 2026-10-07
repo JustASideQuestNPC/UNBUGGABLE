@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Media;
-using UNBUGGABLE.Resources;
+using UNBUGGABLE.ConfigParser;
 using UNBUGGABLE.Views;
 
-namespace UNBUGGABLE;
+namespace UNBUGGABLE.Notes;
 
 /// <summary>
 /// An instant note that appears in the center lane. Freestyles that are next to each other in the

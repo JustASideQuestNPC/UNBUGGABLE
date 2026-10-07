@@ -1,11 +1,40 @@
-﻿using System;
+﻿using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
+using System;
 using System.Collections.Generic;
 using Avalonia;
+using Avalonia.Interactivity;
 using Avalonia.Media;
-using UNBUGGABLE.Resources;
+using AvaloniaDialogs.Views;
+using UNBUGGABLE;
+using UNBUGGABLE.ConfigParser;
 using UNBUGGABLE.Views;
 
-namespace UNBUGGABLE.UnanimatedTriggers;
+namespace UNBUGGABLE.Notes.UnanimatedTriggers;
+
+public partial class UnanimatedTriggerBaseDialog : BaseDialog
+{
+    public UnanimatedTriggerBaseDialog()
+    {
+        InitializeComponent();
+    }
+    
+    private void ConfirmButtonClick(object? sender, RoutedEventArgs e)
+    {
+        Close();
+    }
+    
+    private void CancelButtonClick(object? sender, RoutedEventArgs e)
+    {
+        Close();
+    }
+    
+    private void DeleteButtonClick(object? sender, RoutedEventArgs e)
+    {
+        Close();
+    }
+}
 
 /// <summary>
 /// All available trigger types. Camera triggers with both offset and target modes are merged into
@@ -35,6 +64,8 @@ public abstract class UnanimatedTriggerBase : NoteBase
 {
     public override NoteType Type => NoteType.UNANIMATED_TRIGGER;
     public override NoteLane Lane => NoteLane.CAMERA;
+    
+    public abstract TriggerType TriggerType { get; }
     
     private static readonly List<Point> Vertices =
     [
@@ -113,8 +144,11 @@ public abstract class UnanimatedTriggerBase : NoteBase
     {
         return null;
     }
+
+    public static async void ShowEditDialog()
+    {
+        
+    }
     
     public abstract string ToEventString();
-
-    // public abstract void ShowEditDialog();
 }

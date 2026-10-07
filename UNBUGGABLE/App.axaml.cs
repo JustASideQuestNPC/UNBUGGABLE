@@ -9,8 +9,9 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using UNBUGGABLE;
 using UNBUGGABLE.Audio;
+using UNBUGGABLE.ConfigParser;
+using UNBUGGABLE.ConfigParser.ColorTheme;
 using UNBUGGABLE.Input;
-using UNBUGGABLE.Resources;
 using UNBUGGABLE.ViewModels;
 using UNBUGGABLE.Views;
 
@@ -73,7 +74,7 @@ public partial class App : Application
                 // this doesn't *need* to be done after the main window loads, but doing it here
                 // ensures that the logs for loading the file will come after the logs for loading
                 // the config settings
-                ChartBuilder.TryAutoLoadChartFile();
+                ChartBuilder.ChartBuilder.TryAutoLoadChartFile();
             };
             MainWindow.Closing += (sender, e) => MainWindowViewModel.OnWindowClosed(sender, e);
         }

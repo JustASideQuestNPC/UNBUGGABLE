@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using UNBUGGABLE.Commands;
+using UNBUGGABLE.ChartBuilder.Commands;
 
-namespace UNBUGGABLE;
+namespace UNBUGGABLE.ChartBuilder;
 
 public class CommandInvokerDebugInfo
 {

@@ -16,16 +16,18 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DialogHostAvalonia;
 using UNBUGGABLE;
+using UNBUGGABLE.ChartBuilder;
+using UNBUGGABLE.ChartBuilder.Commands;
+using UNBUGGABLE.ConfigParser;
 using UNBUGGABLE.Dialogs;
-using UNBUGGABLE.Commands;
-using UNBUGGABLE.Resources;
+using UNBUGGABLE.Notes;
 using UNBUGGABLE.Views;
 
 namespace UNBUGGABLE.ViewModels;
 
 public class PlacementPriorityListEntry : ViewModelBase
 {
-    public NoteBase? Note { get; set; }
+    public Notes.NoteBase? Note { get; set; }
 
     public string DisplayName
     {
@@ -124,7 +126,7 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     private bool _updatingPriorityList = false;
-    private List<(NoteBase, int)> _initialNoteOrder = [];
+    private List<(Notes.NoteBase, int)> _initialNoteOrder = [];
 
     // used to disable the "reloaded config" event indicator when the app starts
     private bool _firstConfigReload = true;
@@ -222,7 +224,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public void UpdatePriorityListEntries() =>
         UpdatePriorityListEntries(Chart.GetNotesAtCurrentTime());
-    public void UpdatePriorityListEntries(List<(NoteBase, int)> notes)
+    public void UpdatePriorityListEntries(List<(Notes.NoteBase, int)> notes)
     {
         _updatingPriorityList = true;
         ActivePriorityListEntries.Clear();
@@ -427,11 +429,11 @@ public partial class MainWindowViewModel : ViewModelBase
             bool loaded;
             if (path.AbsoluteUri.EndsWith(".mp3") || path.AbsoluteUri.EndsWith(".wav"))
             {
-                loaded = await ChartBuilder.TryCreateChartFromAudio(path.LocalPath);
+                loaded = await ChartBuilder.ChartBuilder.TryCreateChartFromAudio(path.LocalPath);
             }
             else
             {
-                loaded = await ChartBuilder.TryLoadChartFile(path.LocalPath);
+                loaded = await ChartBuilder.ChartBuilder.TryLoadChartFile(path.LocalPath);
             }
             
             if (loaded)
@@ -483,7 +485,7 @@ public partial class MainWindowViewModel : ViewModelBase
         }
         else
         {
-            await ChartBuilder.SaveToBeatPath(fullPath);
+            await ChartBuilder.ChartBuilder.SaveToBeatPath(fullPath);
             ShowEventIndicator($"Saved to {Chart.ChartFileName}.beat.txt");
         }
     }
@@ -515,7 +517,7 @@ public partial class MainWindowViewModel : ViewModelBase
         if (file != null)
         {
             var fullPath = file.Path.LocalPath;
-            await ChartBuilder.SaveToBeatPath(fullPath);
+            await ChartBuilder.ChartBuilder.SaveToBeatPath(fullPath);
             ShowEventIndicator($"Saved to {Chart.ChartFileName}.beat.txt");
         }
     }
@@ -536,7 +538,7 @@ public partial class MainWindowViewModel : ViewModelBase
         }
         else
         {
-            var success = await ChartBuilder.SaveToStandardPath(fullPath);
+            var success = await ChartBuilder.ChartBuilder.SaveToStandardPath(fullPath);
             ShowEventIndicator(success ? $"Saved to {Chart.ChartFileName}.txt" : "Failed to save");
         }
     }
@@ -568,7 +570,7 @@ public partial class MainWindowViewModel : ViewModelBase
         if (file != null)
         {
             var fullPath = file.Path.LocalPath;
-            var success = await ChartBuilder.SaveToStandardPath(fullPath);
+            var success = await ChartBuilder.ChartBuilder.SaveToStandardPath(fullPath);
             ShowEventIndicator(success ? $"Saved to {Chart.ChartFileName}.txt" : "Failed to save");
         }
     }

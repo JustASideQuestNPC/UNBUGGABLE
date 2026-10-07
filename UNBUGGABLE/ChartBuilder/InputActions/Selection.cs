@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using UNBUGGABLE.Input;
+using UNBUGGABLE.Notes;
 
-namespace UNBUGGABLE.Keybinds;
+namespace UNBUGGABLE.ChartBuilder.InputActions;
 
 public class SelectAllAction(List<string> keybinds) : InputActionBase(keybinds)
 {

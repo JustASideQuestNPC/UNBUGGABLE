@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace UNBUGGABLE.Resources;
+namespace UNBUGGABLE.ConfigParser.ColorTheme;
 public class MainWindowThemeJson
 {
     public class EventIndicatorThemeJson

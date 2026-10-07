@@ -1,6 +1,6 @@
 ﻿using System;
 using CSCore;
-using UNBUGGABLE.Resources;
+using UNBUGGABLE.ConfigParser;
 
 namespace UNBUGGABLE.Audio;
 

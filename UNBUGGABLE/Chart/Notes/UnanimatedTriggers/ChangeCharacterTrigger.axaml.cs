@@ -4,10 +4,11 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.Xaml.Interactivity;
 using AvaloniaDialogs.Views;
-using UNBUGGABLE.UnanimatedTriggers;
+using UNBUGGABLE.Notes.UnanimatedTriggers;
 
-namespace UNBEATABLEChartEditor.Chart.Notes.UnanimatedTriggers;
+namespace UNBUGGABLE.Notes.UnanimatedTriggers;
 
 public class CharacterSelectorBoxItem(Character character) : ComboBoxItem
 {
@@ -15,7 +16,7 @@ public class CharacterSelectorBoxItem(Character character) : ComboBoxItem
     public new object Content => Character.Name();
 }
 
-public partial class ChangeCharacterTriggerDialog : BaseDialog
+public partial class ChangeCharacterTriggerDialog : UserControl
 {
     private ChangeCharacterTrigger _trigger;
     private Character _currentPrimaryCharacter;
@@ -27,21 +28,11 @@ public partial class ChangeCharacterTriggerDialog : BaseDialog
     {
         InitializeComponent();
 
-        foreach (var c in Enum.GetValues(typeof(Character)))
+        foreach (var c in Enum.GetValues<Character>())
         {
-            PrimaryCharacterBox.Items.Add(new CharacterSelectorBoxItem((Character) c));
-            AssistCharacterBox.Items.Add(new CharacterSelectorBoxItem((Character) c));
+            PrimaryCharacterBox.Items.Add(new CharacterSelectorBoxItem(c));
+            AssistCharacterBox.Items.Add(new CharacterSelectorBoxItem(c));
         }
-    }
-    
-    private void ConfirmButtonClick(object? sender, RoutedEventArgs e)
-    {
-        Close();
-    }
-    
-    private void CancelButtonClick(object? sender, RoutedEventArgs e)
-    {
-        Close();
     }
 }
 
@@ -113,7 +104,9 @@ public class ChangeCharacterTrigger : UnanimatedTriggerBase
 {
     public Character PrimaryCharacter { get; set; } = Character.BEAT;
     public Character AssistCharacter { get; set; } = Character.BEAT;
-    
+
+    public override TriggerType TriggerType => TriggerType.CHARACTER_CHANGE;
+
     public override string ToEventString()
     {
         return $"Character,{Time},SetCharacter:{PrimaryCharacter.Name()},{AssistCharacter.Name()}";

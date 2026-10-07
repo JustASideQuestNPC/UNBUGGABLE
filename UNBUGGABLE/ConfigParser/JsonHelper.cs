@@ -4,7 +4,7 @@ using System.IO;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace UNBUGGABLE.Resources;
+namespace UNBUGGABLE.ConfigParser;
 
 public static class JsonHelper
 {

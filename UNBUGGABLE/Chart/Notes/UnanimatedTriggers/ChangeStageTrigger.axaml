@@ -3,15 +3,14 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="UNBUGGABLE.Notes.UnanimatedTriggers.ChangeCharacterTriggerDialog">
+             x:Class="UNBUGGABLE.Notes.UnanimatedTriggers.ChangeStageTriggerDialog">
     <UserControl.Styles>
         <StyleInclude Source="/Dialogs/DialogStyles.axaml" />
     </UserControl.Styles>
     
     <Border Classes="Container">
         <StackPanel Width="400" Spacing="5">
-            <ComboBox Name="PrimaryCharacterBox" />
-            <ComboBox Name="AssistCharacterBox" />
+            <ComboBox Name="StageBox" />
         </StackPanel>
     </Border>
 </UserControl>
