@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Avalonia.Threading;
@@ -119,6 +120,18 @@ public static partial class Chart
                         - Default stage: {UnanimatedConfig.DefaultStage.Name()}
                     """;
         }
+    }
+
+    public class TagJson
+    {
+        [JsonPropertyName("Level")]
+        public int DifficultyLevel { get; set; }
+
+        [JsonPropertyName("FlavorText")]
+        public string FlavorText { get; set; } = "";
+        
+        [JsonPropertyName("CoverArtist")]
+        public string CoverArtistName { get; set; } = "";
     }
     
     public static ChartDebugInfo DebugInfo => new()
@@ -247,7 +260,6 @@ public static partial class Chart
     public static bool IsSaving { get; private set; }
 
     public static bool UnsavedChanges { get; set; }
-    
 
     private static double _currentTimeRaw = 0;
     public static double CurrentTimeRaw
@@ -369,12 +381,6 @@ public static partial class Chart
 
     [GeneratedRegex(@".*\[(.+)\].*")]
     private static partial Regex DifficultySlotRegex();
-
-    // cursed regex because the official editor doesn't do any input validation and will happily
-    // save invalid json that even it can't load. this seems to be a deliberate choice on dcell's
-    // part, because unity has a built-in json library that will handle that for them
-    [GeneratedRegex("""{"Level":(-?[0-9]+),"FlavorText":"(.*)","SongLength":(?:-?([0-9]*[.])?[0-9]+),"CoverArt":"(.*)"}""")]
-    private static partial Regex TagRegex();
 
     /// <summary>
     /// Initializes everything. This must be called before any other methods are used!
@@ -2171,7 +2177,7 @@ public static partial class Chart
                     Logger.Debug("Preview start: {0}", previewStart);
                 }
             }
-            else if (!lines[i].StartsWith("//"))
+            else if (string.IsNullOrWhiteSpace(lines[i]))
             {
                 break;
             }
@@ -2213,7 +2219,7 @@ public static partial class Chart
                 }
             }
             // the "Bookmarks" line just stores the timestamps of every label without their text
-            else if (!lines[i].StartsWith("Bookmarks:") && !lines[i].StartsWith("//"))
+            else if (string.IsNullOrWhiteSpace(lines[i]))
             {
                 break;
             }
@@ -2339,7 +2345,7 @@ public static partial class Chart
         var hasDifficulty = false;
         var hasLevelTag = false;
         var hasFlavorTextTag = false;
-        var hasCoverArtTag = false;
+        var hasCoverArtistTag = false;
         
         ++i;
         for (; i < lines.Length; ++i)
@@ -2375,38 +2381,35 @@ public static partial class Chart
             {
                 try
                 {
-                    var match = TagRegex().Match(line);
-                    if (match.Success)
-                    {
-                        _metadata.DifficultyLevel = int.Parse(match.Groups[1].Value);
-                        Logger.Debug("Difficulty level: {0}", _metadata.DifficultyLevel);
-                        hasLevelTag = true;
-                        
-                        _metadata.FlavorText = Regex.Unescape(match.Groups[2].Value);
-                        Logger.Debug("Flavor text: {0}", _metadata.FlavorText);
-                        hasFlavorTextTag = true;
-                        
-                        _metadata.CoverArtistName = Regex.Unescape(match.Groups[4].Value);
-                        Logger.Debug("Cover artist: {0}", _metadata.CoverArtistName);
-                        hasCoverArtTag = true;
-                    }
+                    // there's actually a chance that this fails on charts created by the official
+                    // editor -- it doesn't do any input validation when saving the tags, so if you
+                    // put a double quote somewhere it'll happily save it as invalid json
+                    var tags = JsonSerializer.Deserialize<TagJson>(line["Tags:".Length..].Trim());
+                    _metadata.DifficultyLevel = tags.DifficultyLevel;
+                    _metadata.FlavorText = tags.FlavorText;
+                    _metadata.CoverArtistName = tags.CoverArtistName;
+                    hasLevelTag = true;
+                    hasFlavorTextTag = true;
+                    hasCoverArtistTag = true;
                 }
-                catch (Exception e)
+                catch (JsonException e)
                 {
-                    errors.Add($"Could not parse tags: {e.Message}");
+                    errors.Add($"Could not parse tags: {e.Message}\r\n" +
+                               $"If you loaded this chart from the official editor, make sure" +
+                               $"you don't have any double quotes (\") in the flavor text or" +
+                               $"cover artist name.");
                 }
             }
             // i have no idea what the difference between Title/Artist and
             // TitleUnicode/ArtistUnicode is, but AFAIK they are always the same
-            else if (!line.StartsWith("Title:") && !line.StartsWith("Artist:") &&
-                     !line.StartsWith("//"))
+            else if (string.IsNullOrWhiteSpace(line))
             {
                 break;
             }
         }
 
         if (!hasTitle || !hasArtist || !hasCharterName || !hasDifficulty || !hasLevelTag ||
-            !hasFlavorTextTag || !hasCoverArtTag)
+            !hasFlavorTextTag || !hasCoverArtistTag)
         {
             List<string> errorMessages = [];
             if (!hasTitle)
@@ -2439,7 +2442,7 @@ public static partial class Chart
                 errorMessages.Add("Flavor text (in the Tags object)");
             }
 
-            if (!hasCoverArtTag)
+            if (!hasCoverArtistTag)
             {
                 errorMessages.Add("Cover artist (in the Tags object)");
             }
