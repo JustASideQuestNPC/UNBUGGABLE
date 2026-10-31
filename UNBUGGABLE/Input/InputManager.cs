@@ -27,8 +27,6 @@ public static class InputManager
 
     public static List<InputActionBase> Actions { get; set; } = [];
     
-    private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
-    
     // the state of every keyboard key and mouse button; used to prevent OnPress from being called
     // every frame when the key is held
     private static readonly Dictionary<Key, bool> _keyStates = new();
@@ -43,7 +41,7 @@ public static class InputManager
 
     public static async Task OnKeyDown(KeyEventArgs e)
     {
-        if (!Chart.SongLoaded || App.DialogIsOpen)
+        if (!Chart.SongLoaded || App.DialogIsOpen || Chart.IsSaving)
         {
             return;
         }
@@ -62,7 +60,7 @@ public static class InputManager
 
     public static async Task OnKeyUp(KeyEventArgs e)
     {
-        if (!Chart.SongLoaded || App.DialogIsOpen)
+        if (!Chart.SongLoaded || App.DialogIsOpen || Chart.IsSaving)
         {
             return;
         }
@@ -81,7 +79,7 @@ public static class InputManager
 
     public static async Task OnScroll(PointerWheelEventArgs e)
     {
-        if (!Chart.SongLoaded || App.DialogIsOpen)
+        if (!Chart.SongLoaded || App.DialogIsOpen || Chart.IsSaving)
         {
             return;
         }
@@ -96,7 +94,7 @@ public static class InputManager
 
     public static async Task OnMousePress(PointerPressedEventArgs e)
     {
-        if (!Chart.SongLoaded || App.DialogIsOpen)
+        if (!Chart.SongLoaded || App.DialogIsOpen || Chart.IsSaving)
         {
             return;
         }
@@ -117,7 +115,7 @@ public static class InputManager
 
     public static async Task OnMouseRelease(PointerReleasedEventArgs e)
     {
-        if (!Chart.SongLoaded || App.DialogIsOpen)
+        if (!Chart.SongLoaded || App.DialogIsOpen || Chart.IsSaving)
         {
             return;
         }
@@ -132,7 +130,7 @@ public static class InputManager
         }
         _mouseButtonStates[button] = false;
         
-        ChartBuilder.ChartBuilder.OnMouseRelease();
+        await ChartBuilder.ChartBuilder.OnMouseRelease();
     }
 
     private static async Task RunCallbacks(CallbackType type, object arg)

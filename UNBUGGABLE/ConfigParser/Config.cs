@@ -409,7 +409,8 @@ public static class Config
             Logger.Error(e, "JSON error while parsing config");
             loadError = true;
         }
-        // Settings.PrintSettings();
+        // update the suggested filename in case the setting for that is changed
+        Chart.UpdateSuggestedFileName();
 
         // look for your custom songs directory
         var gameDataDirectory = Path.GetFullPath(
@@ -471,6 +472,8 @@ public static class Config
                 VerifyKeybindStrings(keybinds.PlaceBottomLane, "placeBottomLane") &&
                 VerifyKeybindStrings(keybinds.PlaceCameraLane, "placeCameraLane") &&
                 VerifyKeybindStrings(keybinds.PlaceCenterLane, "placeCenterLane") &&
+                VerifyKeybindStrings(keybinds.PlaceUnanimatedEvent, "placeUnanimatedTrigger") &&
+                VerifyKeybindStrings(keybinds.RemoveUnanimatedEvent, "removeUnanimatedTrigger") &&
                 VerifyKeybindStrings(keybinds.SelectAll, "selectAll") &&
                 VerifyKeybindStrings(keybinds.SelectNonMarker, "selectNonMarker") &&
                 VerifyKeybindStrings(keybinds.SelectTopLane, "selectTopLane") &&
@@ -486,13 +489,9 @@ public static class Config
                 VerifyKeybindStrings(keybinds.MoveSelectionForward, "moveSelectionForward") &&
                 VerifyKeybindStrings(keybinds.MoveSelectionBack, "moveSelectionBack") &&
                 VerifyKeybindStrings(keybinds.SetFinishFlag, "setFinishFlag") &&
-                VerifyKeybindStrings(keybinds.LockFinishFlag, "lockFinishFlag") &&
                 VerifyKeybindStrings(keybinds.SetWhistleFlag, "setWhistleFlag") &&
-                VerifyKeybindStrings(keybinds.LockWhistleFlag, "lockWhistleFlag") &&
                 VerifyKeybindStrings(keybinds.SetClapFlag, "setClapFlag") &&
-                VerifyKeybindStrings(keybinds.LockClapFlag, "lockClapFlag") &&
                 VerifyKeybindStrings(keybinds.SetNoiszFlag, "setNoiszSpawn") &&
-                VerifyKeybindStrings(keybinds.LockNoiszFlag, "lockNoiszSpawn") &&
                 VerifyKeybindStrings(keybinds.CopId0, "copId0") &&
                 VerifyKeybindStrings(keybinds.CopId1, "copId1") &&
                 VerifyKeybindStrings(keybinds.CopId2, "copId2") &&
@@ -553,10 +552,14 @@ public static class Config
             new PlaceBottomLaneAction(Keybinds.PlaceBottomLane),
             new PlaceCameraLaneAction(Keybinds.PlaceCameraLane),
             new PlaceCenterLaneAction(Keybinds.PlaceCenterLane),
-            new NudgeAction(Keybinds.NudgeForward, true, 1),
-            new NudgeAction(Keybinds.NudgeBack, true, -1),
-            new NudgeAction(Keybinds.NudgeTailForward, false, 1),
-            new NudgeAction(Keybinds.NudgeTailBack, false, -1),
+            new PlaceUnanimatedTriggerAction(Keybinds.PlaceUnanimatedEvent),
+            new RemoveUnanimatedTriggerAction(Keybinds.RemoveUnanimatedEvent),
+            new NudgeAction(Keybinds.NudgeForward, 0, 1),
+            new NudgeAction(Keybinds.NudgeBack, 0, -1),
+            new NudgeAction(Keybinds.NudgeTailForward, 1, 1),
+            new NudgeAction(Keybinds.NudgeTailBack, 1, -1),
+            new NudgeAction(Keybinds.NudgeAllForward, 2, 1),
+            new NudgeAction(Keybinds.NudgeAllBack, 2, -1),
             new SelectAllAction(Keybinds.SelectAll),
             new SelectNonMarkerAction(Keybinds.SelectNonMarker),
             new SelectLaneAction(Keybinds.SelectTopLane, NoteLane.TOP),
@@ -575,10 +578,6 @@ public static class Config
             new SetNoteFlagAction(Keybinds.SetWhistleFlag, 'w'),
             new SetNoteFlagAction(Keybinds.SetClapFlag, 'c'),
             new SetNoteFlagAction(Keybinds.SetNoiszFlag, 'n'),
-            new LockNoteFlagAction(Keybinds.LockFinishFlag, 'f'),
-            new LockNoteFlagAction(Keybinds.LockWhistleFlag, 'w'),
-            new LockNoteFlagAction(Keybinds.LockClapFlag, 'c'),
-            new LockNoteFlagAction(Keybinds.LockNoiszFlag, 'n'),
             new CopId0Action(Keybinds.CopId0),
             new CopId1Action(Keybinds.CopId1),
             new CopId2Action(Keybinds.CopId2),

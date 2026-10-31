@@ -1,0 +1,33 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:events="clr-namespace:UNBUGGABLE.Notes.UnanimatedEvents"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UNBUGGABLE.Notes.UnanimatedEvents.ChooseEventTypeDialog">
+    <UserControl.Styles>
+        <StyleInclude Source="/Dialogs/DialogStyles.axaml" />
+    </UserControl.Styles>
+    
+    <Border Classes="Container">
+        <StackPanel Spacing="5">
+            <TextBlock>choose event type</TextBlock>
+            <ComboBox Width="400" Name="EventTypeSelectorBox">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="events:EventTypeSelectorBoxItem">
+                        <TextBlock Text="{Binding Name}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <StackPanel Orientation="Horizontal" Height="50">
+                <Button Classes="SquareIconButton" Click="ConfirmButtonClick">
+                    <materialIcons:MaterialIcon Kind="Check" />
+                </Button>
+                <Button Classes="SquareIconButton" Click="CancelButtonClick">
+                    <materialIcons:MaterialIcon Kind="Cancel" />
+                </Button>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

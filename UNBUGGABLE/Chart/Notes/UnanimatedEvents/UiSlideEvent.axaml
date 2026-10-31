@@ -1,0 +1,49 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UNBUGGABLE.Notes.UnanimatedEvents.UiSlideEventDialog">
+    <UserControl.Styles>
+        <StyleInclude Source="/Dialogs/DialogStyles.axaml" />
+    </UserControl.Styles>
+    
+    <Border Classes="Container">
+        <Grid RowDefinitions="50, 50, 50, 50, 50, 50, 50"
+              ColumnDefinitions="Auto, 60, 10, Auto, 60" RowSpacing="5"
+              ColumnSpacing="10">
+            <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+                unanimated: toggle gameplay motion
+            </TextBlock>
+            <TextBlock Grid.Row="1" Grid.Column="0">all overlay ui</TextBlock>
+            <ToggleButton Grid.Row="1" Grid.Column="1" Name="OverlayToggle" />
+            <TextBlock Grid.Row="1" Grid.Column="3">bg gradient</TextBlock>
+            <ToggleButton Grid.Row="1" Grid.Column="4" Name="GradientToggle" />
+            <TextBlock Grid.Row="2" Grid.Column="0">bg bars</TextBlock>
+            <ToggleButton Grid.Row="2" Grid.Column="1" Name="BgBarsToggle" />
+            <TextBlock Grid.Row="2" Grid.Column="3">4x3 bars</TextBlock>
+            <ToggleButton Grid.Row="2" Grid.Column="4" Name="FourByThreeBarsToggle" />
+            <TextBlock Grid.Row="3" Grid.Column="0">left judgement</TextBlock>
+            <ToggleButton Grid.Row="3" Grid.Column="1" Name="LeftJudgementToggle" />
+            <TextBlock Grid.Row="3" Grid.Column="3">right judgment</TextBlock>
+            <ToggleButton Grid.Row="3" Grid.Column="4" Name="RightJudgementToggle" />
+            <TextBlock Grid.Row="4" Grid.Column="0">health</TextBlock>
+            <ToggleButton Grid.Row="4" Grid.Column="1" Name="HealthToggle" />
+            <TextBlock Grid.Row="4" Grid.Column="3">speed lines</TextBlock>
+            <ToggleButton Grid.Row="4" Grid.Column="4" Name="SpeedLinesToggle" />
+            <TextBlock Grid.Row="5" Grid.Column="0">end time</TextBlock>
+            <TextBox Grid.Row="5" Grid.Column="1" Name="EndTimeBox"
+                     LostFocus="EndTimeBoxLostFocus" />
+            <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal">
+                <Button Classes="SquareIconButton" Click="ConfirmButtonClick">
+                    <materialIcons:MaterialIcon Kind="Check" />
+                </Button>
+        
+                <Button Classes="SquareIconButton" Click="CancelButtonClick">
+                    <materialIcons:MaterialIcon Kind="Cancel" />
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

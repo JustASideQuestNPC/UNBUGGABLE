@@ -3,8 +3,6 @@ using System.Text.Json.Serialization;
 
 namespace UNBUGGABLE.ConfigParser;
 
-
-// Root myDeserializedClass = JsonSerializer.Deserialize<Root>(myJsonResponse);
 public class Debug
 {
     [JsonRequired][JsonPropertyName("enabled")]
@@ -22,9 +20,6 @@ public class Debug
     [JsonRequired][JsonPropertyName("mediaPlayer")]
     public bool MediaPlayer { get; set; } = true;
 
-    [JsonRequired][JsonPropertyName("noteTimestamps")]
-    public bool NoteTimeStamps { get; set; } = true;
-
     [JsonRequired][JsonPropertyName("jumpTargets")]
     public bool JumpTargets { get; set; } = false;
     
@@ -36,7 +31,6 @@ public class Debug
                     - command stacks: {CommandStacks}
                     - input data: {InputData}
                     - media player: {MediaPlayer}
-                    - note timestamps: {NoteTimeStamps}
                     - jump targets: {JumpTargets}
                 """;
     }
@@ -111,8 +105,8 @@ public class HitSounds
     [JsonRequired][JsonPropertyName("cameraChange")]
     public bool CameraChange { get; set; } = true;
     
-    [JsonRequired][JsonPropertyName("unanimatedTrigger")]
-    public bool UnanimatedTrigger { get; set; } = true;
+    [JsonRequired][JsonPropertyName("unanimatedEvent")]
+    public bool UnanimatedEvent { get; set; } = true;
 
     [JsonRequired][JsonPropertyName("marker1")]
     public bool Marker1 { get; set; } = false;
@@ -142,7 +136,7 @@ public class HitSounds
                     - cop mash start: {CopMashStart}
                     - cop mash end: {CopMashEnd}
                     - camera change: {CameraChange}
-                    - unanimated trigger: {UnanimatedTrigger}
+                    - unanimated trigger: {UnanimatedEvent}
                     - marker 1: {Marker1}
                     - marker 2: {Marker2}
                     - marker 3: {Marker3}
@@ -158,13 +152,16 @@ public class Settings
     [JsonRequired][JsonPropertyName("useBeatFiles")]
     public bool DefaultSaveToBeatFiles { get; set; } = true;
 
+    [JsonRequired][JsonPropertyName("shortFileNames")]
+    public bool ShortFileNames { get; set; } = false;
+
     [JsonRequired][JsonPropertyName("enhancedPreview")]
     public bool EnhancedPreview { get; set; } = true;
 
     [JsonRequired][JsonPropertyName("markerPreviews")]
     public MarkerPreviewToggles MarkerPreviews { get; set; } = new();
 
-    [JsonRequired] [JsonPropertyName("alwaysShowAllNoteFlags")]
+    [JsonRequired][JsonPropertyName("alwaysShowAllNoteFlags")]
     public bool AlwaysShowAllFlags { get; set; } = false;
 
     [JsonRequired] [JsonPropertyName("enableBreakpoints")]
@@ -179,7 +176,7 @@ public class Settings
     [JsonRequired][JsonPropertyName("alwaysEnableCustomDifficultyName")]
     public bool AlwaysEnableCustomDifficultyName { get; set; } = false;
 
-    [JsonRequired][JsonPropertyName("autoSelect")]
+    [JsonRequired][JsonPropertyName("autoSelectOnPlace")]
     public string AutoSelectBehavior { get; set; } = "pasted";
     
     [JsonRequired][JsonPropertyName("selectHoldNotesFromTail")]
@@ -287,6 +284,12 @@ public class Settings
     [JsonRequired][JsonPropertyName("defaultDifficulty")]
     public string DefaultDifficulty { get; set; } = "beginner";
     
+    [JsonRequired][JsonPropertyName("enableUnanimated")]
+    public bool EnableUnanimated { get; set; } = false;
+    
+    [JsonRequired][JsonPropertyName("showNoteTimestamps")]
+    public bool ShowNoteTimestamps { get; set; } = false;
+    
     public override string ToString()
     {
         return $"""
@@ -304,6 +307,7 @@ public class Settings
                   allow top lane cop mashes: {AllowTopLaneCopMashes}
                   show sub freestyles while placing: {ShowSubFreestylesInNoteViewer}
                   negative mash conversion: {NegativeMashConversion}
+                  enable unanimated: {EnableUnanimated}
                   live placement: {EnableLivePlacement}
                   double preview alpha: {DoublePreviewAlpha}
                   autosave interval: {AutosaveInterval} seconds
@@ -326,6 +330,7 @@ public class Settings
                   quick scroll beats: {QuickScrollBeats}
                   slider increment: {SliderIncrement}
                   default charter name: {DefaultCharterName}
+                  show note timestamps: {ShowNoteTimestamps}
                   debug mode: {DebugToggles.Enabled}{DebugToggles.GetFormattedString()}
                 """;
     }

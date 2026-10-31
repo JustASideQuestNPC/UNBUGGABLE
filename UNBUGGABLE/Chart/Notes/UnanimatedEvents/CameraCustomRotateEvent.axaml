@@ -1,0 +1,57 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:events="clr-namespace:UNBUGGABLE.Notes.UnanimatedEvents"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UNBUGGABLE.Notes.UnanimatedEvents.CameraCustomRotateEventDialog">
+    <UserControl.Styles>
+        <StyleInclude Source="/Dialogs/DialogStyles.axaml" />
+    </UserControl.Styles>
+    
+    <Border Classes="Container">
+        <Grid RowDefinitions="50, 50, 50, 50, 50, 50, 50, Auto, 50"
+              ColumnDefinitions="Auto, 400" RowSpacing="5" ColumnSpacing="10">
+            <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+                unanimated: custom camera rotation
+            </TextBlock>
+            <TextBlock Grid.Row="1" Grid.Column="0">offset</TextBlock>
+            <ToggleButton Grid.Row="1" Grid.Column="1" Name="OffsetToggle" />
+            <TextBlock Grid.Row="2" Grid.Column="0">instant</TextBlock>
+            <ToggleButton Grid.Row="2" Grid.Column="1" Name="InstantToggle" />
+            <TextBlock Grid.Row="3" Grid.Column="0">x</TextBlock>
+            <NumericUpDown Grid.Row="3" Grid.Column="1" Increment="0.1" Name="XInput" />
+            <TextBlock Grid.Row="4" Grid.Column="0">y</TextBlock>
+            <NumericUpDown Grid.Row="4" Grid.Column="1" Increment="0.1" Name="YInput" />
+            <TextBlock Grid.Row="5" Grid.Column="0">z</TextBlock>
+            <NumericUpDown Grid.Row="5" Grid.Column="1" Increment="0.1" Name="ZInput" />
+            
+            <TextBlock Grid.Row="6" Grid.Column="0">use start angle</TextBlock>
+            <ToggleButton Grid.Row="6" Grid.Column="1" Name="UseStartToggleButton"
+                          IsCheckedChanged="UseStartToggleClicked"/>
+            
+            <Grid Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2" RowDefinitions="50, 50, 50"
+                  ColumnDefinitions="Auto, 400" RowSpacing="5" ColumnSpacing="10"
+                  Name="StartPointContainer">
+                <TextBlock Grid.Row="0" Grid.Column="0">x</TextBlock>
+                <NumericUpDown Grid.Row="0" Grid.Column="1" Increment="0.1" Name="StartXInput" />
+                <TextBlock Grid.Row="1" Grid.Column="0">y</TextBlock>
+                <NumericUpDown Grid.Row="1" Grid.Column="1" Increment="0.1" Name="StartYInput" />
+                <TextBlock Grid.Row="2" Grid.Column="0">z</TextBlock>
+                <NumericUpDown Grid.Row="2" Grid.Column="1" Increment="0.1" Name="StartZInput" />
+            </Grid>
+            
+            <StackPanel Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" 
+                        Height="50">
+                <Button Classes="SquareIconButton" Click="ConfirmButtonClick">
+                    <materialIcons:MaterialIcon Kind="Check" />
+                </Button>
+    
+                <Button Classes="SquareIconButton" Click="CancelButtonClick">
+                    <materialIcons:MaterialIcon Kind="Cancel" />
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

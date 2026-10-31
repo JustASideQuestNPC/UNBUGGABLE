@@ -45,10 +45,10 @@ public class Keybinds
     public List<string> PlaceCameraLane { get; set; } = ["d5"];
     [JsonRequired][JsonPropertyName("placeCenterLane")]
     public List<string> PlaceCenterLane { get; set; } = ["d6"];
-    [JsonRequired][JsonPropertyName("placeUnanimatedTrigger")]
-    public List<string> PlaceUnanimatedTrigger { get; set; } = ["d7"];
-    [JsonRequired][JsonPropertyName("removeUnanimatedTrigger")]
-    public List<string> RemoveUnanimatedTrigger { get; set; } = ["ctrl+d7"];
+    [JsonRequired][JsonPropertyName("placeUnanimatedEvent")]
+    public List<string> PlaceUnanimatedEvent { get; set; } = ["d7"];
+    [JsonRequired][JsonPropertyName("removeUnanimatedEvent")]
+    public List<string> RemoveUnanimatedEvent { get; set; } = ["ctrl+d7"];
     [JsonRequired][JsonPropertyName("selectAll")]
     public List<string> SelectAll { get; set; } = ["ctrl+a"];
     [JsonRequired][JsonPropertyName("selectAllNonMarker")]
@@ -85,14 +85,6 @@ public class Keybinds
     public List<string> SetNoiszFlag { get; set; } = ["n"];
     [JsonRequired][JsonPropertyName("setClapFlag")]
     public List<string> SetClapFlag { get; set; } = ["c", "r"];
-    [JsonRequired][JsonPropertyName("lockFinishFlag")]
-    public List<string> LockFinishFlag { get; set; } = ["shift+e", "shift+f"];
-    [JsonRequired][JsonPropertyName("lockWhistleFlag")]
-    public List<string> LockWhistleFlag { get; set; } = ["shift+w"];
-    [JsonRequired][JsonPropertyName("lockClapFlag")]
-    public List<string> LockClapFlag { get; set; } = ["shift+c", "shift+r"];
-    [JsonRequired][JsonPropertyName("lockNoiszSpawn")]
-    public List<string> LockNoiszFlag { get; set; } = ["shift+n"];
     [JsonRequired][JsonPropertyName("copId0")]
     public List<string> CopId0 { get; set; } = ["ctrl+d0", "ctrl+oem3"];
     [JsonRequired][JsonPropertyName("copId1")] 
@@ -141,4 +133,8 @@ public class Keybinds
     public List<string> NudgeTailForward { get; set; } = ["alt+shift+s"];
     [JsonRequired][JsonPropertyName("nudgeTailBack")]
     public List<string> NudgeTailBack { get; set; } = ["alt+shift+w"];
+    [JsonRequired][JsonPropertyName("nudgeAllForward")]
+    public List<string> NudgeAllForward { get; set; } = ["alt+ctrl+s"];
+    [JsonRequired][JsonPropertyName("nudgeAllBack")]
+    public List<string> NudgeAllBack { get; set; } = ["alt+ctrl+w"];
 }

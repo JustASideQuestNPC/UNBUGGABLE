@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:changeStageTrigger="clr-namespace:UNBUGGABLE.Notes.UnanimatedEvents"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UNBUGGABLE.Dialogs.ChartMetadataDialog"
              Background="Transparent">
@@ -12,8 +13,8 @@
     </UserControl.Styles>
     
     <Border Classes="Container">
-        <Grid RowDefinitions="50, 50, 50, 50, 50, 50, 50, 50, 50, 50" ColumnDefinitions="Auto, 400"
-              RowSpacing="5" ColumnSpacing="10">
+        <Grid RowDefinitions="50, 50, 50, 50, 50, 50, 50, 50, 50, Auto, Auto, 50"
+              ColumnDefinitions="Auto, 400" RowSpacing="5" ColumnSpacing="10">
             <TextBlock Grid.Row="0" Grid.Column="0">song name</TextBlock>
             <TextBox Grid.Row="0" Grid.Column="1" Name="SongNameBox" />
         
@@ -27,7 +28,7 @@
             <TextBox Grid.Row="3" Grid.Column="1" Name="CharterNameBox" />
             
             <TextBlock Grid.Row="4" Grid.Column="0">offset</TextBlock>
-            <TextBox Classes="NumberBox" Grid.Row="4" Grid.Column="1" Name="OffsetBox" Text="0"
+            <TextBox Grid.Row="4" Grid.Column="1" Name="OffsetBox" Text="0"
                      LostFocus="OffsetBoxLostFocus" />
         
             <TextBlock Grid.Row="5" Grid.Column="0">difficulty slot</TextBlock>
@@ -52,7 +53,28 @@
             <TextBlock Grid.Row="8" Grid.Column="0">flavor text</TextBlock>
             <TextBox Grid.Row="8" Grid.Column="1" Name="FlavorTextBox" />
         
-            <StackPanel Grid.Row="9" Grid.Column="0" Orientation="Horizontal">
+            <TextBlock Grid.Row="9" Grid.Column="0" IsVisible="False">enable unanimated</TextBlock>
+            <ToggleButton Grid.Row="9" Grid.Column="1" Name="UnanimatedToggle"
+                          IsCheckedChanged="UnanimatedToggleClicked"
+                          IsEnabled="False" IsVisible="False"/>
+            
+            <Grid Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="2" RowDefinitions="50, 50"
+                  ColumnDefinitions="Auto, 400" RowSpacing="5" ColumnSpacing="10"
+                  Name="UnanimatedConfigContainer">
+                <TextBlock Grid.Row="0" Grid.Column="0">background video</TextBlock>
+                <ToggleButton Grid.Row="0" Grid.Column="1"
+                              Name="UnanimatedShowBackgroundVideoToggle" />
+                <TextBlock Grid.Row="1" Grid.Column="0">default stage</TextBlock>
+                <ComboBox Grid.Row="1" Grid.Column="1" Width="400" Name="UnanimatedDefaultStageBox">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="changeStageTrigger:StageSelectorBoxItem">
+                            <TextBlock Text="{Binding Name}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </Grid>
+            
+            <StackPanel Grid.Row="11" Grid.Column="0" Orientation="Horizontal">
                 <Button Classes="SquareIconButton" Click="ConfirmButtonClick">
                     <materialIcons:MaterialIcon Kind="Check" />
                 </Button>

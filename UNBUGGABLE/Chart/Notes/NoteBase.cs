@@ -23,7 +23,7 @@ public enum NoteType
     CAMERA_ZOOM,
     CAMERA_INSTANT,
     CAMERA_SWAP_AND_ZOOM,
-    UNANIMATED_TRIGGER,
+    UNANIMATED_EVENT,
     COP_SINGLE,
     COP_HOLD,
     COP_MASH,
@@ -634,7 +634,7 @@ public abstract partial class NoteBase
 
     protected void RenderDebugTime(DrawingContext dc, double x, double y, double tailY = -1)
     {
-        if (!Config.Settings.DebugToggles.Enabled || !Config.Settings.DebugToggles.NoteTimeStamps)
+        if (!Config.Settings.ShowNoteTimestamps)
         {
             return;
         }

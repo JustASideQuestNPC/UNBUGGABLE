@@ -8,49 +8,6 @@ namespace UNBUGGABLE.ConfigParser;
 
 public static class JsonHelper
 {
-    /// <summary>
-    /// Verifies that a JSON object has the correct keys and types.
-    /// </summary>
-    /// <param name="json">The JSON value to check.</param>
-    /// <param name="types">A dictionary with the correct keys and types. Allowed types are</param>
-    /// <param name="allowMissing">Whether the object can be missing one or more of the required
-    ///                            keys. Useful for JSON objects that have default values.</param>
-    public static bool VerifyJsonObject(JsonObject json, Dictionary<string, JsonValueKind> types, 
-        bool allowMissing = false)
-    {
-        // why is there no JSON.tryParse?
-        try
-        {
-            foreach (var (themeName, _) in json)
-            {
-                if (!types.ContainsKey(themeName))
-                {
-                    return false;
-                }
-            }
-
-            foreach (var (themeName, type) in types)
-            {
-                if (!json.ContainsKey(themeName) && !allowMissing)
-                {
-                    return false;
-                }
-                
-                if (json[themeName]!.GetValueKind() != type)
-                {
-                    return false;
-                }
-            }
-        }
-        catch (JsonException e)
-        {
-            Trace.WriteLine($"Could not parse JSON: {e.Message}");
-            return false;
-        }
-
-        return true;
-    }
-
     public static bool TryMergeFiles(string file1Path, string file2Path, string outputPath)
     {
         Trace.WriteLine($"Merging JSON files: {file1Path} and {file2Path} into {outputPath}");

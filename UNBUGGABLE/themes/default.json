@@ -282,14 +282,20 @@
                 "outlineThickness": -1
             }
         },
-        "unanimatedTrigger": {
+        "unanimatedEvent": {
             "fillColor": "#13F231",
             "outlineColor": "#000000",
             "outlineThickness": 4,
+            "tailColor": "#13F23196",
+            "tailOutlineColor": "#00000000",
+            "tailOutlineThickness": 0,
             "selected": {
                 "fillColor": "",
                 "outlineColor": "#FFFFFF",
-                "outlineThickness": -1
+                "outlineThickness": -1,
+                "tailColor": "",
+                "tailOutlineColor": "#FFFFFF",
+                "tailOutlineThickness": 2
             }
         },
         "cop1": {

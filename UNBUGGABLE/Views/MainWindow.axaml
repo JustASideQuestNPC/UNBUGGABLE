@@ -213,12 +213,6 @@
                                                Text="{Binding Cop4State}" />
                                 </Grid>
                             </StackPanel>
-                            
-                            <StackPanel Orientation="Vertical" Spacing="0">
-                                <TextBlock Classes="QuickInfoNames">locked flags</TextBlock>
-                                <TextBlock Classes="QuickInfoValues"
-                                           Text="{Binding LockedFlagsText}" />
-                            </StackPanel>
                         </StackPanel>
                         
                         <StackPanel Grid.Row="0" Grid.Column="1" Grid.RowSpan="2"

@@ -10,6 +10,7 @@ using UNBUGGABLE.ConfigParser;
 using UNBUGGABLE.Dialogs;
 using UNBUGGABLE.Input;
 using UNBUGGABLE.Notes;
+using UNBUGGABLE.Notes.UnanimatedEvents;
 using UNBUGGABLE.Views;
 
 namespace UNBUGGABLE.ChartBuilder;
@@ -30,7 +31,7 @@ public static class ChartBuilder
     
     public static bool QuickScroll { get; set; } = false;
     
-    public static List<Notes.NoteBase> SelectedNotes = [];
+    public static List<NoteBase> SelectedNotes = [];
     
     public static long BreakpointTime { get; private set; } = -1000;
     
@@ -53,8 +54,6 @@ public static class ChartBuilder
         TopLaneStartTime = -1000;
         BottomLaneStartTime = -1000;
         CenterLaneStartTime = -1000;
-        
-        
     }
 
     public static async Task OnMousePress(bool rightButton)
@@ -77,7 +76,7 @@ public static class ChartBuilder
         }
     }
 
-    public static void OnMouseRelease()
+    public static async Task OnMouseRelease()
     {
         if (!Chart.SongLoaded || App.DialogIsOpen)
         {
@@ -114,6 +113,18 @@ public static class ChartBuilder
             {
                 SelectedNotes.AddRange(notes.Where(n => !SelectedNotes.Contains(n)).ToList());
             }
+            else if (notes.Count == 1 && notes[0].GetType()
+                                                 .IsSubclassOf(typeof(UnanimatedEventBase)))
+            {
+                var editedNote = await ((UnanimatedEventBase)notes[0]).ShowEditDialog();
+                if (editedNote != null)
+                {
+                    ChartBuilderCommandInvoker.Execute(
+                        new UpdateNotesCommand([notes[0]], [editedNote]));
+                }
+
+                return;
+            }
             else
             {
                 SelectedNotes = notes;
@@ -128,7 +139,7 @@ public static class ChartBuilder
         // tail selection only works if you don't drag select
         if (notes.Count == 0 && Config.Settings.HoldTailSelect != "none")
         {
-            List<Notes.NoteBase> clickedNotes = [];
+            List<NoteBase> clickedNotes = [];
             if (Config.Settings.HoldTailSelect == "all")
             {
                 clickedNotes = Chart.NonMarkerNotes.Where(n => !n.Instant && n.MouseOverTail())
@@ -226,9 +237,9 @@ public static class ChartBuilder
         }
     }
 
-    public static async Task<bool> SaveToBeatPath(string path)
+    public static async Task SaveToBeatPath(string path)
     {
-        return await Chart.SaveToBeatPath(path);
+        await Chart.SaveToBeatPath(path);
     }
     
     public static async Task<bool> SaveToStandardPath(string path)
@@ -293,7 +304,7 @@ public static class ChartBuilder
     
     public static async Task Paste()
     {
-        List<Notes.NoteBase> pasted = [];
+        List<NoteBase> pasted = [];
         var clipboardText = await App.TopLevel.Clipboard.GetTextAsync();
         if (clipboardText is null or "")
         {
@@ -304,7 +315,7 @@ public static class ChartBuilder
         var noteStrings = clipboardText.Split(';');
         foreach (var noteString in noteStrings)
         {
-            var note = Notes.NoteBase.FromCopyPasteString(noteString, Chart.CurrentTime);
+            var note = NoteBase.FromCopyPasteString(noteString, Chart.CurrentTime);
             if (note == null)
             {
                 Logger.Warn("Paste failed: {0} is invalid", noteString);
@@ -469,10 +480,16 @@ public static class ChartBuilder
             CenterLaneStartTime = -1000;
         }
     }
+
+    public static void ClearLanePlacements()
+    {
+        TopLaneStartTime = BottomLaneStartTime = CenterLaneStartTime = -1000;
+    }
     
     public static void PlaceCameraChange()
     {
-        if (Chart.GetNote(Chart.CurrentTime, NoteLane.CAMERA) is { } note)
+        if (Chart.GetNote(Chart.CurrentTime, NoteLane.CAMERA) is { } note &&
+            note.GetType() == typeof(CameraChange))
         {
             ChartBuilderCommandInvoker.Execute(new DeleteNotesCommand([note]));
         }
@@ -486,6 +503,64 @@ public static class ChartBuilder
                         false, false, InputManager.ShiftPressed)
                 }
             ]));
+        }
+    }
+
+    public static async Task AddOrEditUnanimatedEvent()
+    {
+        if (!Chart.Metadata.UnanimatedConfig.Enabled)
+        {
+            return;
+        }
+        
+        if (Chart.GetNote(Chart.CurrentTime, NoteLane.CAMERA) is { } note &&
+            note.GetType().IsSubclassOf(typeof(UnanimatedEventBase)))
+        {
+            var edited = await ((UnanimatedEventBase)note).ShowEditDialog();
+            if (edited != null)
+            {
+                ChartBuilderCommandInvoker.Execute(new UpdateNotesCommand([note], [edited], true));
+            }
+        }
+        else
+        {
+            var eventType = await new ChooseEventTypeDialog().ShowAsync();
+            if (eventType != null && eventType is { HasValue: true, Value: not null })
+            {
+                var eventClass = ((EventType)eventType.Value).NoteClass();
+                if (eventClass == null)
+                {
+                    return;
+                }
+                
+                Logger.Debug("Creating unanimated event: {0}", eventType);
+                
+                // create a dummy instance of the note to spawn the edit dialog and generate the
+                // actual note
+                if (Activator.CreateInstance(eventClass) is UnanimatedEventBase eventInstance)
+                {
+                    eventInstance.Time = Chart.CurrentTime;
+                    var configured = await eventInstance.ShowEditDialog(true);
+                    if (configured != null)
+                    {
+                        ChartBuilderCommandInvoker.Execute(new AddNotesCommand([configured]));
+                    }
+                }
+            }
+        }
+    }
+
+    public static void TryRemoveUnanimatedEvent()
+    {
+        if (!Chart.Metadata.UnanimatedConfig.Enabled)
+        {
+            return;
+        }
+        
+        if (Chart.GetNote(Chart.CurrentTime, NoteLane.CAMERA) is { } note &&
+            note.GetType().IsSubclassOf(typeof(UnanimatedEventBase)))
+        {
+            ChartBuilderCommandInvoker.Execute(new DeleteNotesCommand([note]));
         }
     }
 
@@ -740,7 +815,7 @@ public static class ChartBuilder
 
     public static void SetNoteFlags(char flag)
     {
-        List<Notes.NoteBase> notes_ = [];
+        List<NoteBase> notes_ = [];
         if (SelectedNotes.Count > 0)
         {
             notes_ = [..SelectedNotes];
@@ -757,7 +832,7 @@ public static class ChartBuilder
         
         // flag operations prioritize making the flag true for all notes
         var newValue = false;
-        List<(Notes.NoteBase, bool)> notes = [];
+        List<(NoteBase, bool)> notes = [];
         foreach (var note in notes_)
         {
             if (flag == 'n' && (note.Type is not NoteType.SINGLE and not NoteType.SPIKE
@@ -784,6 +859,22 @@ public static class ChartBuilder
         ChartBuilderCommandInvoker.Execute(new SetFlagsCommand(flag, newValue, notes));
     }
 
+    public static void NudgeNotes(int distance)
+    {
+        if (SelectedNotes.Count == 0)
+        {
+            return;
+        }
+        
+        List<(NoteBase, int, int)> nudges = [];
+        foreach (var note in SelectedNotes)
+        {
+            nudges.Add((note, distance, distance));
+        }
+        
+        ChartBuilderCommandInvoker.Execute(new NudgeNotesCommand(nudges));
+    }
+
     public static void NudgeNoteHeads(int distance)
     {
         if (SelectedNotes.Count == 0)
@@ -791,7 +882,7 @@ public static class ChartBuilder
             return;
         }
         
-        List<(Notes.NoteBase, int, int)> nudges = [];
+        List<(NoteBase, int, int)> nudges = [];
         foreach (var note in SelectedNotes)
         {
             nudges.Add((note, distance, 0));
@@ -807,48 +898,13 @@ public static class ChartBuilder
             return;
         }
         
-        List<(Notes.NoteBase, int, int)> nudges = [];
+        List<(NoteBase, int, int)> nudges = [];
         foreach (var note in SelectedNotes)
         {
             nudges.Add((note, 0, distance));
         }
         
         ChartBuilderCommandInvoker.Execute(new NudgeNotesCommand(nudges));
-    }
-
-    public static void ToggleFlagLock(char flag)
-    {
-        bool newValue;
-        switch (flag)
-        {
-            case 'c':
-                LockedFlags.C = !LockedFlags.C;
-                newValue = LockedFlags.C;
-                break;
-            case 'f':
-                LockedFlags.F = !LockedFlags.F;
-                newValue = LockedFlags.F;
-                break;
-            case 'w':
-                LockedFlags.W = !LockedFlags.W;
-                newValue = LockedFlags.W;
-                break;
-            case 'n':
-                LockedFlags.N = !LockedFlags.N;
-                newValue = LockedFlags.N;
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(flag), flag, null);
-        }
-
-        App.MainWindowViewModel.ShowEventIndicator(
-            flag == 'n'
-                ? $"Noisz spawn {(newValue ? "locked" : "unlocked")}"
-                : $"{char.ToUpper(flag)} flag {(newValue ? "locked" : "unlocked")}");
-        App.MainWindowViewModel.LockedFlagsText = (LockedFlags.N ? "N" : "") +
-                                                  (LockedFlags.C ? "C" : "") +
-                                                  (LockedFlags.F ? "F" : "") +
-                                                  (LockedFlags.W ? "W" : "");
     }
 
     private static void CheckForNoteOperation(NoteLane lane, long start, long end)
@@ -863,7 +919,7 @@ public static class ChartBuilder
             }
         }
 
-        Notes.NoteBase newNote;
+        NoteBase newNote;
         switch (lane)
         {
             case NoteLane.TOP:
@@ -967,7 +1023,7 @@ public static class ChartBuilder
         // check for extending hold notes
         if (!newNote.Instant)
         {
-            List<Notes.NoteBase> removedNotes = [];
+            List<NoteBase> removedNotes = [];
             
             var nextNote = Chart.GetNote(end, lane,
                                          Config.Settings.HoldExtensionSearchThreshold);
@@ -1053,7 +1109,7 @@ public static class ChartBuilder
         
         if (oldNote != null)
         {
-            List<Notes.NoteBase> removedNotes = [oldNote];
+            List<NoteBase> removedNotes = [oldNote];
             if (Config.Settings.PreserveNoiszFlag && lane is NoteLane.TOP or NoteLane.BOTTOM)
             {
                 newNote.Flags.N = oldNote.Flags.N;
@@ -1118,7 +1174,7 @@ public static class ChartBuilder
             return;
         }
 
-        List<Notes.NoteBase> newNotes = [];
+        List<NoteBase> newNotes = [];
         foreach (var note in SelectedNotes)
         {
             var n = note.Clone(note.Time + delta);
@@ -1133,7 +1189,7 @@ public static class ChartBuilder
                                                                   true));
     }
 
-    private static void AdjustNoteTime(Notes.NoteBase note)
+    private static void AdjustNoteTime(NoteBase note)
     {
         var nearestStart =
             Chart.GetSnapTimeWithinThreshold(note.Time,

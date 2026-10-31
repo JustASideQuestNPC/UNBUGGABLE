@@ -7,9 +7,36 @@
         <entry key="UNBEATABLEChartEditor/Views/CustomSkiaPage.axaml" value="UNBEATABLEChartEditor/UNBEATABLEChartEditor.csproj" />
         <entry key="UNBEATABLEChartEditor/Views/MainWindow.axaml" value="UNBEATABLEChartEditor/UNBEATABLEChartEditor.csproj" />
         <entry key="UNBUGGABLE/App.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/CameraCustomPositionEvent.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/CameraCustomRotateEvent.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/CameraCustomRotationEvent.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/CameraEaseDurationEvent.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/CameraEaseModeEvent.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/CameraFovEvent.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/CameraHorizontalEvent.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/CameraPresetPosition.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/CameraPresetPositionEvent.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/CameraResetAll.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/CameraResetAllEvent.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/CameraRotateEvent.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/CameraZoomEvent.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/ChangeCharacterEvent.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/ChangeCharacterTrigger.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/ChangeStageEvent.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/ChooseEventTypeDialog.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/EventTemplate.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/GameplayMotionEvent.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/TimeAndWeatherEvent.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/UiLockEvent.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/UiShowHideEvent.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/UiSlideEvent.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/UnanimatedEventBase.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/WeatherEvent.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
         <entry key="UNBUGGABLE/Chart/Notes/UnanimatedTriggers/CameraReset.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
         <entry key="UNBUGGABLE/Chart/Notes/UnanimatedTriggers/ChangeCharacterTrigger.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
         <entry key="UNBUGGABLE/Chart/Notes/UnanimatedTriggers/ChangeStageTrigger.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Chart/Notes/UnanimatedTriggers/ChooseTriggerTypeDialog.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Chart/Notes/UnanimatedTriggers/CreateTriggerDialog.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
         <entry key="UNBUGGABLE/Chart/Notes/UnanimatedTriggers/TriggerTypeSelector.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
         <entry key="UNBUGGABLE/Chart/Notes/UnanimatedTriggers/UnanimatedTriggerBase.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
         <entry key="UNBUGGABLE/Dialogs/CallbackButtonDialog.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />

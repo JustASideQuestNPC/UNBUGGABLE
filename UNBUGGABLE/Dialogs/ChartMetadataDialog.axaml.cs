@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
@@ -7,11 +8,14 @@ using Avalonia.Data;
 using Avalonia.Interactivity;
 using AvaloniaDialogs.Views;
 using UNBUGGABLE.ConfigParser;
+using UNBUGGABLE.Notes.UnanimatedEvents;
 
 namespace UNBUGGABLE.Dialogs;
 
 public partial class ChartMetadataDialog : BaseDialog<Chart.MetadataContainer>
 {
+    private ObservableCollection<StageSelectorBoxItem> _stageSelectors = [];
+    
     private DifficultySlot _difficultySlot;
     private double _initialOffset;
     
@@ -33,18 +37,35 @@ public partial class ChartMetadataDialog : BaseDialog<Chart.MetadataContainer>
         
         DifficultySlotBox.SelectedIndex = (int)_difficultySlot;
         
-        if (_difficultySlot == DifficultySlot.STAR || Config.Settings.AlwaysEnableCustomDifficultyName)
+        if (_difficultySlot == DifficultySlot.STAR ||
+            Config.Settings.AlwaysEnableCustomDifficultyName)
         {
             DifficultyNameBox.IsEnabled = true;
         }
         else
         {
             DifficultyNameBox.IsEnabled = false;
-            DifficultyNameBox.Text = 
+            DifficultyNameBox.Text =
                 _difficultySlot == DifficultySlot.UNBEATABLE ? "UNBEATABLE" :
                     CultureInfo.CurrentCulture.TextInfo.ToTitleCase(
                         _difficultySlot.ToString().ToLower());
         }
+
+        UnanimatedToggle.IsChecked = currentMetadata.UnanimatedConfig.Enabled;
+        UnanimatedConfigContainer.IsEnabled = currentMetadata.UnanimatedConfig.Enabled;
+        UnanimatedConfigContainer.IsVisible = currentMetadata.UnanimatedConfig.Enabled;
+
+        UnanimatedShowBackgroundVideoToggle.IsChecked =
+            currentMetadata.UnanimatedConfig.ShowBackgroundVideo;
+        
+        foreach (var stage in Enum.GetValues<Stage>())
+        {
+            _stageSelectors.Add(new StageSelectorBoxItem(stage));
+        }
+        UnanimatedDefaultStageBox.ItemsSource = _stageSelectors;
+
+        UnanimatedDefaultStageBox.SelectedIndex =
+            (int)currentMetadata.UnanimatedConfig.DefaultStage;
     }
     
     public async Task<Optional<Chart.MetadataContainer>> ShowAsync()
@@ -94,7 +115,7 @@ public partial class ChartMetadataDialog : BaseDialog<Chart.MetadataContainer>
 
     private void ConfirmButtonClick(object? sender, RoutedEventArgs e)
     {
-        var metadata = new Chart.MetadataContainer()
+        var metadata = new Chart.MetadataContainer
         {
             SongName = SongNameBox.Text ?? "",
             ArtistName = ArtistNameBox.Text ?? "",
@@ -104,8 +125,15 @@ public partial class ChartMetadataDialog : BaseDialog<Chart.MetadataContainer>
             DifficultySlot = _difficultySlot,
             DifficultyName = DifficultyNameBox.Text ?? "",
             DifficultyLevel = (int)(DifficultyLevelBox.Value ?? 0),
-            ChartOffset = long.Parse(OffsetBox.Text ?? "0")
-            
+            ChartOffset = long.Parse(OffsetBox.Text ?? "0"),
+            UnanimatedConfig = new Chart.MetadataContainer.UnanimatedConfigContainer
+            {
+                Enabled = UnanimatedToggle.IsChecked ?? false,
+                ShowBackgroundVideo = UnanimatedShowBackgroundVideoToggle.IsChecked ?? false,
+                DefaultStage =
+                    ((StageSelectorBoxItem?)UnanimatedDefaultStageBox.SelectedItem)?.Stage ??
+                    Stage.NONE
+            }
         };
         
         Close(metadata);
@@ -122,5 +150,11 @@ public partial class ChartMetadataDialog : BaseDialog<Chart.MetadataContainer>
         {
             OffsetBox.Text = _initialOffset.ToString();
         }
+    }
+
+    private void UnanimatedToggleClicked(object? sender, RoutedEventArgs e)
+    {
+        UnanimatedConfigContainer.IsEnabled = UnanimatedToggle.IsChecked ?? false;
+        UnanimatedConfigContainer.IsVisible = UnanimatedToggle.IsChecked ?? false;
     }
 }

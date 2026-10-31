@@ -1,0 +1,31 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UNBUGGABLE.Notes.UnanimatedEvents.UiLockEventDialog">
+    <UserControl.Styles>
+        <StyleInclude Source="/Dialogs/DialogStyles.axaml" />
+    </UserControl.Styles>
+    
+    <Border Classes="Container">
+        <Grid RowDefinitions="50, 50, 50" ColumnDefinitions="Auto, 400" RowSpacing="5"
+              ColumnSpacing="10">
+            <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+                unanimated: lock/unlock ui
+            </TextBlock>
+            <TextBlock Grid.Row="1" Grid.Column="0">lock ui</TextBlock>
+            <ToggleButton Grid.Row="1" Grid.Column="1" Name="LockUiToggle" />
+            <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal">
+                <Button Classes="SquareIconButton" Click="ConfirmButtonClick">
+                    <materialIcons:MaterialIcon Kind="Check" />
+                </Button>
+        
+                <Button Classes="SquareIconButton" Click="CancelButtonClick">
+                    <materialIcons:MaterialIcon Kind="Cancel" />
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

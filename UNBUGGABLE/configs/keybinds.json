@@ -61,10 +61,10 @@
     "placeCenterLane": [
         "d6"
     ],
-    "placeUnanimatedTrigger": [
+    "placeUnanimatedEvent": [
         "d7"
     ],
-    "removeUnanimatedTrigger": [
+    "removeUnanimatedEvent": [
         "ctrl+d7"
     ],
     "nudgeForward": [
@@ -78,6 +78,12 @@
     ],
     "nudgeTailBack": [
         "alt+shift+w"
+    ],
+    "nudgeAllForward": [
+        "alt+ctrl+s"
+    ],
+    "nudgeAllBack": [
+        "alt+ctrl+w"
     ],
     "selectAll": [
         "ctrl+a"

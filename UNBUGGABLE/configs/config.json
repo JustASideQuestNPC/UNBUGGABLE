@@ -1,9 +1,11 @@
 {
   "colorTheme": "default",
   "useBeatFiles": true,
+  "shortFileNames": false,
   "useAudioFileMetadata": true,
   "defaultCharterName": "",
   "defaultDifficulty": "beginner",
+  "enableUnanimated": false,
   "enhancedPreview": true,
   "markerPreviews": {
     "color1": true,
@@ -15,7 +17,7 @@
   "useLane2AsMarkers": true,
   "saveMarkersAsLane2Notes": false,
   "alwaysEnableCustomDifficultyName": false,
-  "autoSelect": "all",
+  "autoSelectOnPlace": "pasted",
   "selectHoldNotesFromTail": "all",
   "allowTopLaneCopMashes": false,
   "showFreestyleSubNotesWhilePlacing": true,
@@ -85,18 +87,18 @@
     "copMashStart": true,
     "copMashEnd": true,
     "cameraChange": false,
-    "unanimatedTrigger": false,
+    "unanimatedEvent": false,
     "marker1": false,
     "marker2": false,
     "marker3": false
   },
+  "showNoteTimestamps": true,
   "debug": {
-    "enabled": true,
-    "verboseLogging": false,
+    "enabled": false,
+    "verboseLogging": true,
     "commandStacks": false,
     "inputData": false,
     "mediaPlayer": false,
-    "noteTimestamps": true,
     "jumpTargets": false
   },
   "quickScrollBeats": 5,

@@ -98,14 +98,6 @@ public class ReloadChartAction(List<string> keybinds) : InputActionBase(keybinds
     }
 }
 
-public class LockNoteFlagAction(List<string> keybinds, char flag) : InputActionBase(keybinds)
-{
-    public override async Task OnPress()
-    {
-        ChartBuilder.ToggleFlagLock(flag);
-    }
-}
-
 public class CrashProgramAction(List<string> keybinds) : InputActionBase(keybinds)
 {
     public override Task OnPress()

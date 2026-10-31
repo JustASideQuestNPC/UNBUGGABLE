@@ -64,4 +64,71 @@
           <TargetPath>COPYING.txt</TargetPath>
       </None>
     </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Chart\Notes\UnanimatedEvents\CameraResetAllEvent.axaml.cs">
+        <DependentUpon>CameraResetAllEvent.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Chart\Notes\UnanimatedEvents\CameraPresetPositionEvent.axaml.cs">
+        <DependentUpon>CameraPresetPositionEvent.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Chart\Notes\UnanimatedEvents\CameraHorizontalEvent.axaml.cs">
+        <DependentUpon>CameraHorizontalEvent.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Chart\Notes\UnanimatedEvents\CameraRotateEvent.axaml.cs">
+        <DependentUpon>CameraRotateEvent.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Chart\Notes\UnanimatedEvents\CameraZoomEvent.axaml.cs">
+        <DependentUpon>CameraZoomEvent.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Chart\Notes\UnanimatedEvents\CameraFovEvent.axaml.cs">
+        <DependentUpon>CameraFovEvent.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Chart\Notes\UnanimatedEvents\CameraCustomPositionEvent.axaml.cs">
+        <DependentUpon>CameraCustomPositionEvent.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Chart\Notes\UnanimatedEvents\CameraCustomRotateEvent.axaml.cs">
+        <DependentUpon>CameraCustomRotationEvent.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Chart\Notes\UnanimatedEvents\CameraEaseDurationEvent.axaml.cs">
+        <DependentUpon>CameraEaseDurationEvent.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Chart\Notes\UnanimatedEvents\CameraEaseModeEvent.axaml.cs">
+        <DependentUpon>CameraEaseModeEvent.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Chart\Notes\UnanimatedEvents\GameplayMotionEvent.axaml.cs">
+        <DependentUpon>GameplayMotionEvent.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Chart\Notes\UnanimatedEvents\UiLockEvent.axaml.cs">
+        <DependentUpon>UiLockEvent.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Chart\Notes\UnanimatedEvents\UiShowHideEvent.axaml.cs">
+        <DependentUpon>UiShowHideEvent.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Chart\Notes\UnanimatedEvents\UiSlideEvent.axaml.cs">
+        <DependentUpon>UiSlideEvent.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Chart\Notes\UnanimatedEvents\WeatherEvent.axaml.cs">
+        <DependentUpon>TimeAndWeatherEvent.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Chart\Notes\UnanimatedEvents\TimeAndWeatherEvent.axaml.cs">
+        <DependentUpon>TimeAndWeatherEvent.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+    </ItemGroup>
 </Project>

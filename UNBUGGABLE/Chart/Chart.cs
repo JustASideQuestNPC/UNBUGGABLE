@@ -19,6 +19,7 @@ using UNBUGGABLE.Audio;
 using UNBUGGABLE.ConfigParser;
 using UNBUGGABLE.Input;
 using UNBUGGABLE.Notes;
+using UNBUGGABLE.Notes.UnanimatedEvents;
 using UNBUGGABLE.Views;
 using DirectSoundOut = CSCore.SoundOut.DirectSoundOut;
 using Path = System.IO.Path;
@@ -78,6 +79,13 @@ public static partial class Chart
     
     public class MetadataContainer
     {
+        public class UnanimatedConfigContainer
+        {
+            public bool Enabled = false;
+            public bool ShowBackgroundVideo = false;
+            public Stage DefaultStage = Stage.NONE;
+        }
+        
         public string SongName = "";
         public string ArtistName = "";
         public string CoverArtistName = "";
@@ -90,6 +98,7 @@ public static partial class Chart
         public int DifficultyLevel = 0;
         public long ChartOffset = 0;
         public long PreviewStartTime = 0;
+        public UnanimatedConfigContainer UnanimatedConfig = new();
 
         public override string ToString()
         {
@@ -104,6 +113,10 @@ public static partial class Chart
                     - Difficulty level: {DifficultyLevel}
                     - Offset: {ChartOffset} ms
                     - Preview start time: {PreviewStartTime} s
+                    - Unanimated:
+                        - Enabled: {UnanimatedConfig.Enabled}
+                        - Show background video: {UnanimatedConfig.ShowBackgroundVideo}
+                        - Default stage: {UnanimatedConfig.DefaultStage.Name()}
                     """;
         }
     }
@@ -120,16 +133,16 @@ public static partial class Chart
         JumpTargets = _jumpTargets,
     };
 
-    private static List<Notes.NoteBase> _notes = [];
+    private static List<NoteBase> _notes = [];
     /// <summary>
     /// All notes in the chart, including markers.
     /// </summary>
-    public static ReadOnlyCollection<Notes.NoteBase> Notes => _notes.AsReadOnly();
+    public static ReadOnlyCollection<NoteBase> Notes => _notes.AsReadOnly();
 
-    public static ReadOnlyCollection<Notes.NoteBase> NonMarkerNotes =>
+    public static ReadOnlyCollection<NoteBase> NonMarkerNotes =>
         _notes.Where(n => n is not MarkerNote).ToList().AsReadOnly();
     
-    public static ReadOnlyCollection<Notes.NoteBase> MarkerNotes =>
+    public static ReadOnlyCollection<NoteBase> MarkerNotes =>
         _notes.Where(n => n is MarkerNote).ToList().AsReadOnly();
     
     private static List<BpmRegion> _bpmRegions = [];
@@ -153,7 +166,12 @@ public static partial class Chart
                              _metadata.DifficultyName != value.DifficultyName ||
                              _metadata.DifficultyLevel != value.DifficultyLevel ||
                              _metadata.ChartOffset != value.ChartOffset ||
-                             _metadata.PreviewStartTime != value.PreviewStartTime;
+                             _metadata.PreviewStartTime != value.PreviewStartTime ||
+                             _metadata.UnanimatedConfig.Enabled != value.UnanimatedConfig.Enabled ||
+                             _metadata.UnanimatedConfig.ShowBackgroundVideo !=
+                                value.UnanimatedConfig.ShowBackgroundVideo ||
+                             _metadata.UnanimatedConfig.DefaultStage !=
+                                value.UnanimatedConfig.DefaultStage;
             
             // metadata was unchanged, so updates can be skipped
             if (!UnsavedChanges)
@@ -225,8 +243,11 @@ public static partial class Chart
 
     public static long AdjustedOffset =>
         Metadata.ChartOffset + Config.Settings.HardChartOffset;
+    
+    public static bool IsSaving { get; private set; }
 
-    public static bool UnsavedChanges { get; set; } = false;
+    public static bool UnsavedChanges { get; set; }
+    
 
     private static double _currentTimeRaw = 0;
     public static double CurrentTimeRaw
@@ -387,7 +408,7 @@ public static partial class Chart
         Logger.Info("updated chart metadata:\r\n{0}", Metadata.ToString());
         if (App.MainWindowViewModel.CanSave)
         {
-            ChartFileName = GetChartFileName();
+            UpdateSuggestedFileName();
             Logger.Info("chart file name: \"{0}\"", ChartFileName);
         }
     }
@@ -825,6 +846,7 @@ public static partial class Chart
         var hasOfficialEditorData = false;
         var hasUnbuggableData = false;
         var hasMetadata = false;
+        var hasEvents = false;
         var hasTimingPoints = false;
         var hasHitObjects = false;
 
@@ -833,6 +855,7 @@ public static partial class Chart
         List<string> officialEditorErrors = [];
         List<string> unbuggableErrors = [];
         List<string> metadataErrors = [];
+        List<string> eventErrors = [];
         List<string> timingPointErrors = [];
         List<string> hitObjectErrors = [];
 
@@ -931,7 +954,22 @@ public static partial class Chart
                         _ => DifficultySlot.STAR
                     };
                     break;
-                // there are also [Difficulty] and [Events] sections here but they do nothing
+                case "[Events]":
+                    if (hasEvents)
+                    {
+                        sectionErrors.Add("duplicate section [Events]");
+                        success = false;
+                        break;
+                    }
+                    
+                    Logger.Debug("Parsing events...");
+                    hasEvents = true;
+                    if (!TryParseEvents(chartData, ref i, ref eventErrors))
+                    {
+                        Logger.Debug("event parsing failed");
+                        success = false;
+                    }
+                    break;
                 case "[TimingPoints]":
                     if (hasTimingPoints)
                     {
@@ -986,6 +1024,9 @@ public static partial class Chart
             sectionErrors.Add("[Metadata] section not found");
             success = false;
         }
+        
+        // also no check for unanimated events because they're for modded charts and the official
+        // editor doesn't support them
 
         if (!hasTimingPoints)
         {
@@ -1049,6 +1090,18 @@ public static partial class Chart
                 errorMessageBuilder.AppendLine();
             }
             
+            if (eventErrors.Count > 0)
+            {
+                var builder = new StringBuilder();
+                builder.AppendLine($"[Events]: {eventErrors.Count} error(s)");
+                foreach (var error in eventErrors)
+                {
+                    builder.AppendLine(error);
+                }
+                errorMessageBuilder.AppendLine(builder.ToString());
+                errorMessageBuilder.AppendLine();
+            }
+            
             if (timingPointErrors.Count > 0)
             {
                 var builder = new StringBuilder();
@@ -1088,7 +1141,7 @@ public static partial class Chart
             
             RebuildSnapLineSets();
             SetBeatSnapIndex(0);
-            ChartFileName = GetChartFileName();
+            UpdateSuggestedFileName();
             ChartFolderName = Directory.GetParent(path)?.Name ?? "";
             SongLoaded = true;
             UnsavedChanges = false;
@@ -1131,6 +1184,14 @@ public static partial class Chart
                 NoteViewer.SetZoom(1);
             }
             
+            // apply offset to unanimated events -- this can't be done when parsing them because the
+            // offset is in the timing points which come after events in the chart file
+            foreach (var e in NonMarkerNotes.Where(n => n.Type == NoteType.UNANIMATED_EVENT))
+            {
+                e.Time -= Metadata.ChartOffset;
+                e.EndTime -= Metadata.ChartOffset;
+            }
+            
             App.MainWindowViewModel.PreviewStartTimeText =
                 TimeSpan.FromSeconds(Metadata.PreviewStartTime).ToString(@"mm\:ss\.fff");
 
@@ -1171,6 +1232,10 @@ public static partial class Chart
     /// </summary>
     public static async Task<bool> SaveToBeatPath(string path, bool isManualSave = true)
     {
+        ChartBuilder.ChartBuilder.ClearLanePlacements();
+        InputManager.ResetInputStates();
+        IsSaving = true;
+        
         await using var writer = await Utils.TryWaitForFileStream(path);
         if (writer == null)
         {
@@ -1199,14 +1264,25 @@ public static partial class Chart
         await writer.WriteLineAsync("");
         await WriteMetadata(writer);
         
-        // for some reason there are just some random empty sections here (probably from osu)
-        await writer.WriteLineAsync("\n[Difficulty]\n\n[Events]\n");
+        // difficulty is a holdover from osu and does nothing in unbeatable
+        await writer.WriteLineAsync("\n[Difficulty]\n");
+        
+        // events are only used by unanimated
+        if (Metadata.UnanimatedConfig.Enabled)
+        {
+            Logger.Debug("writing unanimated events");
+            await WriteUnanimatedEvents(writer);
+            await writer.WriteLineAsync("");
+        }
+        else
+        {
+            await writer.WriteLineAsync("[Events]\n");
+        }
 
         Logger.Debug("writing timing points");
         await WriteTimingPoints(writer);
         
-        Logger.Debug("writing hit objects");   
-        await writer.WriteLineAsync("");
+        Logger.Debug("writing hit objects");
         await WriteHitObjects(writer, false);
         
         UserData.LastOpenedChartFile = path;
@@ -1217,6 +1293,8 @@ public static partial class Chart
         {
             _canAutosave = true;
         }
+        
+        IsSaving = false;
         return true;
     }
     
@@ -1225,6 +1303,10 @@ public static partial class Chart
     /// </summary>
     public static async Task<bool> SaveToStandardPath(string path, bool isManualSave = true)
     {
+        ChartBuilder.ChartBuilder.ClearLanePlacements();
+        InputManager.ResetInputStates();
+        IsSaving = true;
+        
         await using var writer = await Utils.TryWaitForFileStream(path);
         if (writer == null)
         {
@@ -1249,14 +1331,25 @@ public static partial class Chart
         await writer.WriteLineAsync("");
         await WriteMetadata(writer);
         
-        // for some reason there are just some random empty sections here (probably from osu)
-        await writer.WriteLineAsync("\n[Difficulty]\n\n[Events]\n");
+        // difficulty is a holdover from osu and does nothing in unbeatable
+        await writer.WriteLineAsync("\n[Difficulty]\n");
+        
+        // events are only used by unanimated
+        if (Metadata.UnanimatedConfig.Enabled)
+        {
+            Logger.Debug("writing unanimated events");
+            await WriteUnanimatedEvents(writer);
+            await writer.WriteLineAsync("");
+        }
+        else
+        {
+            await writer.WriteLineAsync("[Events]\n");
+        }
 
         Logger.Debug("writing timing points");
         await WriteTimingPoints(writer);
         
-        Logger.Debug("writing hit objects");   
-        await writer.WriteLineAsync("");
+        Logger.Debug("writing hit objects");
         await WriteHitObjects(writer, false);
         
         UserData.LastOpenedChartFile = path;
@@ -1267,6 +1360,8 @@ public static partial class Chart
         {
             _canAutosave = true;
         }
+        
+        IsSaving = false;
         return true;
     }
 
@@ -1326,12 +1421,13 @@ public static partial class Chart
     /// Returns a list of every non-marker note that exists at a timestamp (in milliseconds). List
     /// elements are formatted as <c>(note, index in the main note list)</c>.
     /// </summary>
-    public static List<(Notes.NoteBase, int)> GetNotesAtTime(long time)
+    public static List<(NoteBase, int)> GetNotesAtTime(long time, bool includeUnanimated = false)
     {
-        List<(Notes.NoteBase, int)> notes = [];
-        foreach (Notes.NoteBase note in NonMarkerNotes)
+        List<(NoteBase, int)> notes = [];
+        foreach (NoteBase note in NonMarkerNotes)
         {
-            if (note.Time == time)
+            if (note.Time == time && (note.Type != NoteType.UNANIMATED_EVENT ||
+                                      includeUnanimated))
             {
                 notes.Add((note, NonMarkerNotes.IndexOf(note)));
             }
@@ -1343,17 +1439,18 @@ public static partial class Chart
         return notes;
     }
     
-    public static List<(Notes.NoteBase, int)> GetNotesAtCurrentTime() => GetNotesAtTime(CurrentTime);
+    public static List<(NoteBase, int)> GetNotesAtCurrentTime(bool includeUnanimated = false) =>
+        GetNotesAtTime(CurrentTime, includeUnanimated);
 
     /// <summary>
     /// Returns a list of every non-marker, non-instant note that ends at a timestamp
     /// (in milliseconds). List elements are formatted as <c>(note, index in the main note
     /// list)</c>.
     /// </summary>
-    public static List<(Notes.NoteBase, int)> GetNoteEndsAtTime(long time)
+    public static List<(NoteBase, int)> GetNoteEndsAtTime(long time)
     {
-        List<(Notes.NoteBase, int)> notes = [];
-        foreach (Notes.NoteBase note in NonMarkerNotes)
+        List<(NoteBase, int)> notes = [];
+        foreach (NoteBase note in NonMarkerNotes)
         {
             if (!note.Instant && note.EndTime == time)
             {
@@ -1367,7 +1464,7 @@ public static partial class Chart
     /// <summary>
     /// Returns the note in a specific lane at a specific time, or null if it doesn't exist.
     /// </summary>
-    public static Notes.NoteBase? GetNote(long time, NoteLane lane, long maxDistance = 0)
+    public static NoteBase? GetNote(long time, NoteLane lane, long maxDistance = 0)
         => _notes.FirstOrDefault(n => Math.Abs(n.Time - time) <= maxDistance && n.Lane == lane);
     
     /// <summary>
@@ -1377,7 +1474,7 @@ public static partial class Chart
     ///     If true, an instant note placed at that time will also be returned.
     /// </param>
     /// </summary>
-    public static Notes.NoteBase? GetNoteFromEnd(long time, NoteLane lane, long maxDistance = 0,
+    public static NoteBase? GetNoteFromEnd(long time, NoteLane lane, long maxDistance = 0,
         bool includeInstant = false) =>
         _notes.FirstOrDefault(n => n.Lane == lane &&
                                    ((!n.Instant && Math.Abs(n.EndTime - time) <= maxDistance) ||
@@ -1387,7 +1484,7 @@ public static partial class Chart
     /// <summary>
     /// Returns the note before another note, or null if it doesn't exist.
     /// </summary>
-    public static Notes.NoteBase? GetPreviousNote(Notes.NoteBase note)
+    public static NoteBase? GetPreviousNote(NoteBase note)
     {
         var index = NonMarkerNotes.IndexOf(note);
         return index > 0 ? NonMarkerNotes[index - 1] : null;
@@ -1396,13 +1493,13 @@ public static partial class Chart
     /// <summary>
     /// Returns the note after another note, or null if it doesn't exist.
     /// </summary>
-    public static Notes.NoteBase? GetNextNote(Notes.NoteBase note)
+    public static NoteBase? GetNextNote(NoteBase note)
     {
         var index = NonMarkerNotes.IndexOf(note);
         return index < NonMarkerNotes.Count - 1 ? NonMarkerNotes[index + 1] : null;
     }
     
-    public static int GetNoteIndex(Notes.NoteBase note) => Notes.IndexOf(note);
+    public static int GetNoteIndex(NoteBase note) => Notes.IndexOf(note);
 
     /// <summary>
     /// Returns all the notes between a start and end time.
@@ -1412,7 +1509,7 @@ public static partial class Chart
     ///     lane, except for markers.
     /// </param>
     /// <returns></returns>
-    public static List<Notes.NoteBase> GetNoteRegion(double start, double end,
+    public static List<NoteBase> GetNoteRegion(double start, double end,
         List<NoteLane>? lanes = null)
     {
         lanes ??= [NoteLane.TOP, NoteLane.BOTTOM, NoteLane.CENTER, NoteLane.CAMERA];
@@ -1420,29 +1517,29 @@ public static partial class Chart
                      .ToList();
     }
     
-    public static Notes.NoteBase? GetLastNoteBeforeTime(long time) =>
+    public static NoteBase? GetLastNoteBeforeTime(long time) =>
         NonMarkerNotes.LastOrDefault(n => n.Time <= time);
     
-    public static Notes.NoteBase? GetLastNoteBeforeTime(long time, NoteLane lane) =>
+    public static NoteBase? GetLastNoteBeforeTime(long time, NoteLane lane) =>
         NonMarkerNotes.LastOrDefault(n => n.Time <= time && n.Lane == lane);
     
-    public static Notes.NoteBase? GetLastNoteBeforeTime(long time, List<NoteLane> lanes) =>
+    public static NoteBase? GetLastNoteBeforeTime(long time, List<NoteLane> lanes) =>
         NonMarkerNotes.LastOrDefault(n => n.Time <= time && lanes.Contains(n.Lane));
 
-    public static Notes.NoteBase? GetFirstNoteAfterTime(long time) =>
+    public static NoteBase? GetFirstNoteAfterTime(long time) =>
         NonMarkerNotes.FirstOrDefault(n => n.Time >= time);
     
-    public static Notes.NoteBase? GetFirstNoteAfterTime(long time, NoteLane lane) =>
+    public static NoteBase? GetFirstNoteAfterTime(long time, NoteLane lane) =>
         NonMarkerNotes.FirstOrDefault(n => n.Time >= time && n.Lane == lane);
     
-    public static Notes.NoteBase? GetFirstNoteAfterTime(long time, List<NoteLane> lanes) =>
+    public static NoteBase? GetFirstNoteAfterTime(long time, List<NoteLane> lanes) =>
         NonMarkerNotes.FirstOrDefault(n => n.Time >= time && lanes.Contains(n.Lane));
 
     /// <summary>
     /// Adds a note. If one or more notes already exist at that timestamp, the new note will be
     /// placed in the note list after the existing notes.
     /// </summary>
-    public static void AddNote(Notes.NoteBase note)
+    public static void AddNote(NoteBase note)
     {
         if (_notes.Count == 0 || _notes[^1].Time <= note.Time)
         {
@@ -1463,7 +1560,7 @@ public static partial class Chart
         _jumpTargetsOutOfDate = true;
     }
 
-    public static void RemoveNote(Notes.NoteBase note)
+    public static void RemoveNote(NoteBase note)
     {
         _notes.Remove(note);
         App.MainWindowViewModel.UpdatePriorityListEntries(GetNotesAtCurrentTime());
@@ -1474,7 +1571,7 @@ public static partial class Chart
     /// <summary>
     /// Replaces a note, preserving placement priority.
     /// </summary>
-    public static void ReplaceNote(Notes.NoteBase oldNote, Notes.NoteBase newNote)
+    public static void ReplaceNote(NoteBase oldNote, NoteBase newNote)
     {
         _notes[_notes.IndexOf(oldNote)] = newNote;
         App.MainWindowViewModel.UpdatePriorityListEntries(GetNotesAtCurrentTime());
@@ -1485,7 +1582,7 @@ public static partial class Chart
     /// <summary>
     /// Sets the order of a set of notes in the note list.
     /// </summary>
-    public static void SetNoteOrder(List<Notes.NoteBase> notes)
+    public static void SetNoteOrder(List<NoteBase> notes)
     {
         List<int> indices = [];
         foreach (var note in notes)
@@ -1804,6 +1901,35 @@ public static partial class Chart
             Logger.Warn("Autosave failed.");
         }
     }
+    
+    /// <summary>
+    /// Parses metadata and updates the suggested filename (without extension) for the chart,
+    /// accounting for Unicode characters and brackets/parentheses.
+    /// </summary>
+    public static void UpdateSuggestedFileName()
+    {
+        // difficulty slots have different internal names for some reason
+        var difficultyName = Metadata.DifficultySlot switch
+        {
+            DifficultySlot.BEGINNER => "Beginner",
+            DifficultySlot.NORMAL => "Easy",
+            DifficultySlot.HARD => "Normal",
+            DifficultySlot.EXPERT => "Hard",
+            DifficultySlot.UNBEATABLE => "UNBEATABLE",
+            _ => "Star"
+        };
+
+        if (Config.Settings.ShortFileNames)
+        {
+            ChartFileName = difficultyName.ToLower();
+        }
+        else
+        {
+            ChartFileName =
+                $"{SanitizeString(Metadata.ArtistName)} - {SanitizeString(Metadata.SongName)} " +
+                $"({SanitizeString(Metadata.CharterName)}) [{SanitizeString(difficultyName)}]";
+        }
+    }
 
     private static void InitAudioEngine()
     {
@@ -1911,27 +2037,6 @@ public static partial class Chart
         Playing = false;
         _soundOut?.Pause();
         SetTimeToNearestSnap();
-    }
-    
-    /// <summary>
-    /// Parses metadata and returns the suggested file name (without extension) for the chart,
-    /// accounting for Unicode characters and brackets/parentheses.
-    /// </summary>
-    private static string GetChartFileName()
-    {
-        // difficulty slots have different internal names for some reason
-        var difficultyName = Metadata.DifficultySlot switch
-        {
-            DifficultySlot.BEGINNER => "Beginner",
-            DifficultySlot.NORMAL => "Easy",
-            DifficultySlot.HARD => "Normal",
-            DifficultySlot.EXPERT => "Hard",
-            DifficultySlot.UNBEATABLE => "UNBEATABLE",
-            _ => "Star"
-        };
-        
-        return $"{SanitizeString(Metadata.ArtistName)} - {SanitizeString(Metadata.SongName)} " +
-               $"({SanitizeString(Metadata.CharterName)}) [{SanitizeString(difficultyName)}]";
     }
 
     private static void UpdateWindowTitle()
@@ -2345,6 +2450,61 @@ public static partial class Chart
         }
         return true;
     }
+
+    private static bool TryParseEvents(string[] lines, ref int i, ref List<string> errors)
+    {
+        ++i;
+        // the UNANIMATED category is special and used for setup
+        for (; i < lines.Length; ++i)
+        {
+            if (lines[i].StartsWith("UNANIMATED"))
+            {
+                if (lines[i].Contains("Enable"))
+                {
+                    Metadata.UnanimatedConfig.Enabled = true;
+                }
+                
+                if (lines[i].Contains("ShowBackgroundVideo"))
+                {
+                    Metadata.UnanimatedConfig.ShowBackgroundVideo = true;
+                }
+
+                if (lines[i].Contains("DefaultStageScene"))
+                {
+                    // the default stage is always at the end of the setup event
+                    var stageName = lines[i].Split(":")[lines[i].Split(":").Length - 1].Trim();
+                    var foundStage = false;
+                    foreach (var stage in Enum.GetValues<Stage>())
+                    {
+                        if (stage.InternalName() == stageName)
+                        {
+                            Metadata.UnanimatedConfig.DefaultStage = stage;
+                            foundStage = true;
+                            Logger.Debug("default stage: {0}", stageName);
+                            break;
+                        }
+                    }
+
+                    if (!foundStage)
+                    {
+                        errors.Add($"Invalid default stage: \"{stageName}\"");
+                        Logger.Debug("invalid default stage: \"{0}\"", stageName);
+                    }
+                }
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        if (!Metadata.UnanimatedConfig.Enabled)
+        {
+            return true;
+        }
+
+        return UnanimatedEventBase.ParseEventStrings(lines, ref i, ref errors);
+    }
     
     private static bool TryParseTimingPoints(string[] lines, ref int i, ref List<string> errors)
     {
@@ -2423,8 +2583,7 @@ public static partial class Chart
                 continue;
             }
             
-            var note = UNBUGGABLE.Notes.NoteBase.FromHitObjectString(lines[i].Trim(),
-                                                                     out var noteErrorMessage);
+            var note = NoteBase.FromHitObjectString(lines[i].Trim(), out var noteErrorMessage);
             if (note != null)
             {
                 // merge stacked camera notes into a single note with both flags
@@ -2537,6 +2696,28 @@ public static partial class Chart
         // is pretty printed
         await writer.WriteLineAsync(
             $"Tags:{JsonSerializer.Serialize(tags, MetadataJsonSerializerOptions)}");
+    }
+
+    private static async Task WriteUnanimatedEvents(StreamWriter writer)
+    {
+        await writer.WriteLineAsync("[Events]\nUNANIMATED,0,Enable");
+
+        if (Metadata.UnanimatedConfig.ShowBackgroundVideo)
+        {
+            await writer.WriteLineAsync("UNANIMATED,0,ShowBackgroundVideo");
+        }
+
+        if (Metadata.UnanimatedConfig.DefaultStage != Stage.NONE)
+        {
+            await writer.WriteLineAsync(
+                $"UNANIMATED,0,DefaultStageScene:" +
+                $"{Metadata.UnanimatedConfig.DefaultStage.InternalName()}");
+        }
+
+        foreach (var eventNote in NonMarkerNotes.Where(n => n.Type == NoteType.UNANIMATED_EVENT))
+        {
+            await writer.WriteLineAsync(((UnanimatedEventBase)eventNote).ToEventString());
+        }
     }
     
     private static async Task WriteTimingPoints(StreamWriter writer)

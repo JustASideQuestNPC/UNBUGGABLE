@@ -231,7 +231,10 @@ public class GamePreview : Control
         // render notes
         var viewableNotesFromRight = true;
         CurrentNotesFromRight = true;
-        var viewableZoomedOut = false;
+        
+        // using unanimated forces the game preview to zoom out because i am NOT trying to determine
+        // where the camera actually is
+        var viewableZoomedOut = Chart.Metadata.UnanimatedConfig.Enabled;
         var currentNoteZoomedOut = false;
         
         // draw all marker notes first so they always appear below actual notes
@@ -258,7 +261,8 @@ public class GamePreview : Control
         
         foreach (var note in Chart.NonMarkerNotes)
         {
-            if (note.Type is NoteType.CAMERA_ZOOM or NoteType.CAMERA_SWAP_AND_ZOOM)
+            if (note.Type is NoteType.CAMERA_ZOOM or NoteType.CAMERA_SWAP_AND_ZOOM &&
+                !Chart.Metadata.UnanimatedConfig.Enabled)
             {
                 currentNoteZoomedOut = !currentNoteZoomedOut;
                 if (note.Time < Chart.CurrentTimeRaw)

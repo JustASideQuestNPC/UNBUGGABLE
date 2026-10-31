@@ -27,7 +27,7 @@ namespace UNBUGGABLE.ViewModels;
 
 public class PlacementPriorityListEntry : ViewModelBase
 {
-    public Notes.NoteBase? Note { get; set; }
+    public NoteBase? Note { get; set; }
 
     public string DisplayName
     {
@@ -85,7 +85,6 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty] private string? _cop2State = "";
     [ObservableProperty] private string? _cop3State = "";
     [ObservableProperty] private string? _cop4State = "";
-    [ObservableProperty] private string? _lockedFlagsText = "";
     [ObservableProperty] private string? _previewStartTimeText = "";
     [ObservableProperty] private bool _songLoaded = false;
     [ObservableProperty] private bool _editorUiEnabled = false;
@@ -126,7 +125,7 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     private bool _updatingPriorityList = false;
-    private List<(Notes.NoteBase, int)> _initialNoteOrder = [];
+    private List<(NoteBase, int)> _initialNoteOrder = [];
 
     // used to disable the "reloaded config" event indicator when the app starts
     private bool _firstConfigReload = true;
@@ -224,7 +223,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public void UpdatePriorityListEntries() =>
         UpdatePriorityListEntries(Chart.GetNotesAtCurrentTime());
-    public void UpdatePriorityListEntries(List<(Notes.NoteBase, int)> notes)
+    public void UpdatePriorityListEntries(List<(NoteBase, int)> notes)
     {
         _updatingPriorityList = true;
         ActivePriorityListEntries.Clear();
@@ -530,8 +529,9 @@ public partial class MainWindowViewModel : ViewModelBase
             ShowEventIndicator("Cannot save until metadata is set");
         }
 
-        var fullPath = Path.Combine(Config.CustomSongsDirectory,
+        var fullPath = Path.Combine(Config.CustomSongsDirectory, Chart.ChartFolderName,
                                     $"{Chart.ChartFileName}.txt");
+        Logger.Debug(fullPath);
         if (Chart.ChartFileName == "" || !File.Exists(fullPath))
         {
             await SaveNewStandardFile();

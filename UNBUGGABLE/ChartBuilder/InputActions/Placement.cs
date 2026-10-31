@@ -60,20 +60,25 @@ public class PlaceCenterLaneAction(List<string> keybinds) : InputActionBase(keyb
     }
 }
 
-public class NudgeAction(List<string> keybinds, bool head, int direction) :
+public class NudgeAction(List<string> keybinds, int mode, int direction) :
     InputActionBase(keybinds)
 {
     public override bool CanUseWhilePlacingNotes => false;
 
     public override async Task OnPress()
     {
-        if (head)
+        // 0 = nudge only heads, 1 = nudge only tails, 2 = nudge all
+        switch (mode)
         {
-            ChartBuilder.NudgeNoteHeads(direction);
-        }
-        else
-        {
-            ChartBuilder.NudgeNoteTails(direction);
+            case 0:
+                ChartBuilder.NudgeNoteHeads(direction);
+                break;
+            case 1:
+                ChartBuilder.NudgeNoteTails(direction);
+                break;
+            case 2:
+                ChartBuilder.NudgeNotes(direction);
+                break;
         }
     }
 }
@@ -82,7 +87,7 @@ public class PlaceUnanimatedTriggerAction(List<string> keybinds) : InputActionBa
 {
     public override async Task OnPress()
     {
-        await ChartBuilder.AddLabel();
+        await ChartBuilder.AddOrEditUnanimatedEvent();
     }
 }
 
@@ -90,6 +95,6 @@ public class RemoveUnanimatedTriggerAction(List<string> keybinds) : InputActionB
 {
     public override async Task OnPress()
     {
-        ChartBuilder.RemoveLabel();
+        ChartBuilder.TryRemoveUnanimatedEvent();
     }
 }

@@ -3,7 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using UNBUGGABLE.Notes;
-using UNBUGGABLE.Notes.UnanimatedTriggers;
+using UNBUGGABLE.Notes.UnanimatedEvents;
 using UNBUGGABLE.Views;
 
 namespace UNBUGGABLE.ConfigParser.ColorTheme;
@@ -466,21 +466,37 @@ public static class ThemeManager
         _resources["Notes.Camera.Selected.OutlineColor"] =
             _themeColors["Notes.Camera.Selected.OutlineColor"];
         
-        _themeColors["Notes.UnanimatedTrigger.FillColor"] = new SolidColorBrush();
-        _resources["Notes.UnanimatedTrigger.FillColor"] =
-            _themeColors["Notes.UnanimatedTrigger.FillColor"];
+        _themeColors["Notes.UnanimatedEvent.FillColor"] = new SolidColorBrush();
+        _resources["Notes.UnanimatedEvent.FillColor"] =
+            _themeColors["Notes.UnanimatedEvent.FillColor"];
         
-        _themeColors["Notes.UnanimatedTrigger.OutlineColor"] = new SolidColorBrush();
-        _resources["Notes.UnanimatedTrigger.OutlineColor"] =
-            _themeColors["Notes.UnanimatedTrigger.OutlineColor"];
+        _themeColors["Notes.UnanimatedEvent.OutlineColor"] = new SolidColorBrush();
+        _resources["Notes.UnanimatedEvent.OutlineColor"] =
+            _themeColors["Notes.UnanimatedEvent.OutlineColor"];
         
-        _themeColors["Notes.UnanimatedTrigger.Selected.FillColor"] = new SolidColorBrush();
-        _resources["Notes.UnanimatedTrigger.Selected.FillColor"] =
-            _themeColors["Notes.UnanimatedTrigger.Selected.FillColor"];
+        _themeColors["Notes.UnanimatedEvent.TailColor"] = new SolidColorBrush();
+        _resources["Notes.UnanimatedEvent.TailColor"] =
+            _themeColors["Notes.UnanimatedEvent.TailColor"];
         
-        _themeColors["Notes.UnanimatedTrigger.Selected.OutlineColor"] = new SolidColorBrush();
-        _resources["Notes.UnanimatedTrigger.Selected.OutlineColor"] =
-            _themeColors["Notes.UnanimatedTrigger.Selected.OutlineColor"];
+        _themeColors["Notes.UnanimatedEvent.TailOutlineColor"] = new SolidColorBrush();
+        _resources["Notes.UnanimatedEvent.TailOutlineColor"] =
+            _themeColors["Notes.UnanimatedEvent.TailOutlineColor"];
+        
+        _themeColors["Notes.UnanimatedEvent.Selected.FillColor"] = new SolidColorBrush();
+        _resources["Notes.UnanimatedEvent.Selected.FillColor"] =
+            _themeColors["Notes.UnanimatedEvent.Selected.FillColor"];
+        
+        _themeColors["Notes.UnanimatedEvent.Selected.OutlineColor"] = new SolidColorBrush();
+        _resources["Notes.UnanimatedEvent.Selected.OutlineColor"] =
+            _themeColors["Notes.UnanimatedEvent.Selected.OutlineColor"];
+        
+        _themeColors["Notes.UnanimatedEvent.Selected.TailColor"] = new SolidColorBrush();
+        _resources["Notes.UnanimatedEvent.Selected.TailColor"] =
+            _themeColors["Notes.UnanimatedEvent.Selected.TailColor"];
+        
+        _themeColors["Notes.UnanimatedEvent.Selected.TailOutlineColor"] = new SolidColorBrush();
+        _resources["Notes.UnanimatedEvent.Selected.TailOutlineColor"] =
+            _themeColors["Notes.UnanimatedEvent.Selected.TailOutlineColor"];
         
         _themeColors["Notes.Cop1.FillColor"] = new SolidColorBrush();
         _resources["Notes.Cop1.FillColor"] =
@@ -854,14 +870,22 @@ public static class ThemeManager
             theme.Notes.Camera.Selected.FillColor;
         _themeColors["Notes.Camera.Selected.OutlineColor"].Color =
             theme.Notes.Camera.Selected.OutlineColor;
-        _themeColors["Notes.UnanimatedTrigger.FillColor"].Color =
-            theme.Notes.UnanimatedTrigger.FillColor;
-        _themeColors["Notes.UnanimatedTrigger.OutlineColor"].Color =
-            theme.Notes.UnanimatedTrigger.OutlineColor;
-        _themeColors["Notes.UnanimatedTrigger.Selected.FillColor"].Color =
-            theme.Notes.UnanimatedTrigger.Selected.FillColor;
-        _themeColors["Notes.UnanimatedTrigger.Selected.OutlineColor"].Color =
-            theme.Notes.UnanimatedTrigger.Selected.OutlineColor;
+        _themeColors["Notes.UnanimatedEvent.FillColor"].Color =
+            theme.Notes.UnanimatedEvent.FillColor;
+        _themeColors["Notes.UnanimatedEvent.OutlineColor"].Color =
+            theme.Notes.UnanimatedEvent.OutlineColor;
+        _themeColors["Notes.UnanimatedEvent.TailColor"].Color =
+            theme.Notes.UnanimatedEvent.TailColor;
+        _themeColors["Notes.UnanimatedEvent.TailOutlineColor"].Color =
+            theme.Notes.UnanimatedEvent.TailOutlineColor;
+        _themeColors["Notes.UnanimatedEvent.Selected.FillColor"].Color =
+            theme.Notes.UnanimatedEvent.Selected.FillColor;
+        _themeColors["Notes.UnanimatedEvent.Selected.OutlineColor"].Color =
+            theme.Notes.UnanimatedEvent.Selected.OutlineColor;
+        _themeColors["Notes.UnanimatedEvent.TailColor"].Color =
+            theme.Notes.UnanimatedEvent.Selected.TailColor;
+        _themeColors["Notes.UnanimatedEvent.TailOutlineColor"].Color =
+            theme.Notes.UnanimatedEvent.Selected.TailOutlineColor;
         _themeColors["Notes.Cop1.FillColor"].Color =
             theme.Notes.Cop1.FillColor;
         _themeColors["Notes.Cop1.OutlineColor"].Color =
@@ -1096,10 +1120,14 @@ public static class ThemeManager
             new Thickness(theme.Notes.Camera.OutlineThickness);
         _resources["Notes.Camera.Selected.OutlineThickness"] =
             new Thickness(theme.Notes.Camera.Selected.OutlineThickness);
-        _resources["Notes.UnanimatedTrigger.OutlineThickness"] =
-            new Thickness(theme.Notes.UnanimatedTrigger.OutlineThickness);
-        _resources["Notes.UnanimatedTrigger.Selected.OutlineThickness"] =
-            new Thickness(theme.Notes.UnanimatedTrigger.Selected.OutlineThickness);
+        _resources["Notes.UnanimatedEvent.OutlineThickness"] =
+            new Thickness(theme.Notes.UnanimatedEvent.OutlineThickness);
+        _resources["Notes.UnanimatedEvent.TailOutlineThickness"] =
+            new Thickness(theme.Notes.UnanimatedEvent.TailOutlineThickness);
+        _resources["Notes.UnanimatedEvent.Selected.OutlineThickness"] =
+            new Thickness(theme.Notes.UnanimatedEvent.Selected.OutlineThickness);
+        _resources["Notes.UnanimatedEvent.Selected.TailOutlineThickness"] =
+            new Thickness(theme.Notes.UnanimatedEvent.Selected.TailOutlineThickness);
         _resources["Notes.Cop1.OutlineThickness"] =
             new Thickness(theme.Notes.Cop1.OutlineThickness);
         _resources["Notes.Cop1.TailOutlineThickness"] =
@@ -1141,7 +1169,7 @@ public static class ThemeManager
         
         // update code rendering colors
         CameraChange.UpdateStyles();
-        UnanimatedTriggerBase.UpdateStyles();
+        UnanimatedEventBase.UpdateStyles();
         CopNote.UpdateStyles();
         FreestyleNote.UpdateStyles();
         HoldNote.UpdateStyles();

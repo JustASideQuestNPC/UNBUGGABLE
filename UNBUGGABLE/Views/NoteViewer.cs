@@ -477,7 +477,7 @@ public class NoteViewer : Control
             return false;
         }
         
-        BpmRegion? hoveredRegion = null;
+        BpmRegion? hoveredBpmRegion = null;
         foreach (var bpmRegion in Chart.BpmRegions)
         {
             var rangeStart = TimeToScreenCoords(bpmRegion.StartTime) - 25;
@@ -485,24 +485,24 @@ public class NoteViewer : Control
             if (ChartBuilder.ChartBuilder.MousePosition.Y > rangeStart &&
                 ChartBuilder.ChartBuilder.MousePosition.Y < rangeEnd)
             {
-                hoveredRegion = bpmRegion;
+                hoveredBpmRegion = bpmRegion;
                 break;
             }
         }
 
-        if (hoveredRegion != null)
+        if (hoveredBpmRegion != null)
         {
             if (rightClick)
             {
-                if (hoveredRegion != Chart.BpmRegions[0])
+                if (hoveredBpmRegion != Chart.BpmRegions[0])
                 {
-                    ChartBuilder.ChartBuilder.DeleteBpmRegion(hoveredRegion);
+                    ChartBuilder.ChartBuilder.DeleteBpmRegion(hoveredBpmRegion);
                     return true;
                 }
             }
             else
             {
-                await ChartBuilder.ChartBuilder.EditBpmRegion(hoveredRegion);
+                await ChartBuilder.ChartBuilder.EditBpmRegion(hoveredBpmRegion);
                 return true;
             }
         }
@@ -619,7 +619,7 @@ public class NoteViewer : Control
 
     private void RenderPlacingNotes(DrawingContext dc)
     {
-        Notes.NoteBase? topNote = null, centerNote = null, bottomNote = null;
+        NoteBase? topNote = null, centerNote = null, bottomNote = null;
         // cop id doesn't change the center lane
         if (ChartBuilder.ChartBuilder.CenterLaneStartTime != -1000)
         {
@@ -726,7 +726,7 @@ public class NoteViewer : Control
                                   _visibleRangeEnd * scale - _visibleRangeStart * scale));
     }
 
-    private Notes.NoteBase MakeNotePlaceholder(long start, long end)
+    private NoteBase MakeNotePlaceholder(long start, long end)
     {
         if (ChartBuilder.ChartBuilder.CopId != 0)
         {
