@@ -859,7 +859,6 @@ public static partial class Chart
         List<string> sectionErrors = [];
         List<string> generalErrors = [];
         List<string> officialEditorErrors = [];
-        List<string> unbuggableErrors = [];
         List<string> metadataErrors = [];
         List<string> eventErrors = [];
         List<string> timingPointErrors = [];
@@ -905,13 +904,17 @@ public static partial class Chart
                     
                     Logger.Debug("Parsing official editor data...");
                     hasOfficialEditorData = true;
-                    if (!TryParseOfficialEditorData(chartData, ref i,
+                    // unbuggable 0.14+ saves editor state and markers to the editor section to
+                    // avoid issues with unanimated
+                    if (!TryParseEditorData(chartData, ref i, out lastEditorState,
                                                     ref officialEditorErrors))
                     {
                         Logger.Debug("official editor data parsing failed");
                         success = false;
                     }
                     break;
+                // this section is no longer used because it caused issues with unanimated, but it
+                // still gets parsed for backwards compatability
                 case "[UNBUGGABLE]":
                     if (hasUnbuggableData)
                     {
@@ -922,8 +925,7 @@ public static partial class Chart
                     
                     Logger.Debug("Parsing UNBUGGABLE data...");
                     hasUnbuggableData = true;
-                    if (!TryParseUnbuggableData(chartData, ref i, out lastEditorState,
-                                                ref unbuggableErrors))
+                    if (!TryParseUnbuggableData(chartData, ref i, out lastEditorState))
                     {
                         Logger.Debug("UNBUGGABLE data parsing failed");
                         success = false;
@@ -1249,16 +1251,17 @@ public static partial class Chart
         ChartBuilder.ChartBuilder.ClearLanePlacements();
         InputManager.ResetInputStates();
         IsSaving = true;
-        
-        await using var writer = await Utils.TryWaitForFileStream(path);
-        if (writer == null)
+
+        await using var stream = await Utils.TryWaitForFileStream(path);
+        if (stream == null)
         {
-            Logger.Error("Save failed: file is not accessible");
+            Logger.Error("Failed to open file for writing.");
             return false;
         }
         
+        var writer = new StreamWriter(stream, new UTF8Encoding(true));
+        
         Logger.Info("saving chart to \"{0}\"", path);
-        writer.AutoFlush = true;
         await writer.WriteLineAsync("// Output from NPC's UNBUGGABLE editor\n" +
                                     "// based on TaroNuke's unity editor");
         
@@ -1270,9 +1273,9 @@ public static partial class Chart
         await writer.WriteLineAsync("");
         await WriteOfficialEditorData(writer);
         
-        Logger.Debug("writing unbuggable data");
-        await writer.WriteLineAsync("");
-        await WriteUnbuggableData(writer);
+        // Logger.Debug("writing unbuggable data");
+        // await writer.WriteLineAsync("");
+        // await WriteUnbuggableData(writer);
 
         Logger.Debug("writing metadata");   
         await writer.WriteLineAsync("");
@@ -1321,15 +1324,11 @@ public static partial class Chart
         InputManager.ResetInputStates();
         IsSaving = true;
         
-        await using var writer = await Utils.TryWaitForFileStream(path);
-        if (writer == null)
-        {
-            Logger.Error("Save failed: file is not accessible");
-            return false;
-        }
+        var builder = new StringBuilder();
+        await using var writer = new StringWriter(builder);
+        writer.NewLine = "\r\n";
         
         Logger.Info("saving chart to \"{0}\"", path);
-        writer.AutoFlush = true;
         await writer.WriteLineAsync("// Output from NPC's UNBUGGABLE editor\n" +
                                     "// based on TaroNuke's unity editor");
         
@@ -1374,7 +1373,8 @@ public static partial class Chart
         {
             _canAutosave = true;
         }
-        
+
+        await File.WriteAllTextAsync(path, builder.ToString());
         IsSaving = false;
         return true;
     }
@@ -1876,7 +1876,7 @@ public static partial class Chart
         // var builder = new StringBuilder("jump targets:\r\n");
         // foreach (var target in _jumpTargets)
         // {
-        //     builder.AppendLine(target.ToString());
+        //     await writer.WriteLineAsync(target.ToString());
         // }
         // Logger.Debug(builder.ToString());
     }
@@ -2199,9 +2199,11 @@ public static partial class Chart
         return foundAudioPath;
     }
 
-    private static bool TryParseOfficialEditorData(string[] lines, ref int i, 
-        ref List<string> errors)
+    private static bool TryParseEditorData(string[] lines, ref int i,
+        out (double, int, double, int)? lastEditorState, ref List<string> errors)
     {
+        lastEditorState = null;
+        
         ++i;
         for (; i < lines.Length; ++i)
         {
@@ -2226,6 +2228,40 @@ public static partial class Chart
                     }
                 }
             }
+            else if (lines[i].StartsWith("UNBUGGABLE:"))
+
+            {
+                var split = lines[i]["UNBUGGABLE: ".Length..].Trim().Split('|');
+                if (split.Length != 2)
+                {
+                    Logger.Warn("Nonfatal load error: Invalid UNBUGGABLE data");
+                }
+                else
+                {
+                    var editorState = split[0].Split(',');
+                    if (editorState.Length is 3 or 4 &&
+                        double.TryParse(editorState[0], out var time) &&
+                        int.TryParse(editorState[1], out var beatSnap) &&
+                        double.TryParse(editorState[2], out var zoom))
+                    {
+                        if (editorState.Length == 3)
+                        {
+                            lastEditorState = (time, beatSnap, zoom, 0);
+                        }
+                        else if (int.TryParse(editorState[3], out var copId))
+                        {
+                            lastEditorState = (time, beatSnap, zoom, copId);
+                        }
+                    }
+                    else
+                    {
+                        Logger.Warn("Nonfatal load error: Invalid last editor state \"{0}\"",
+                                    split[0]);
+                    }
+
+                    TryParseMarkerLine(split[1]);
+                }
+            }
             // the "Bookmarks" line just stores the timestamps of every label without their text
             else if (string.IsNullOrWhiteSpace(lines[i]))
             {
@@ -2237,7 +2273,7 @@ public static partial class Chart
     }
     
     private static bool TryParseUnbuggableData(string[] lines, ref int i,
-        out (double, int, double, int)? lastEditorState, ref List<string> errors)
+        out (double, int, double, int)? lastEditorState)
     {
         lastEditorState = null;
 
@@ -2270,66 +2306,19 @@ public static partial class Chart
             }
             else if (lines[i].StartsWith("Markers:"))
             {
+                ++i;
                 // markers are saved across multiple lines (20 markers / line) because a single line
                 // would be hundreds of characters long
                 for (; i < lines.Length - 1; ++i)
                 {
-                    // look ahead 1 line to prevent issues where the start of the next section
-                    // doesn't get picked up
-                    if (lines[i + 1] == "" || lines[i + 1] == "\r" ||
-                        lines[i + 1] == "\n" || lines[i + 1] == "\r\n")
+                    if (lines[i] == "" || lines[i] == "\r" || lines[i] == "\n" ||
+                        lines[i] == "\r\n")
                     {
+                        --i;
                         break;
                     }
                     
-                    var markerData = lines[i + 1].Trim().Split(',');
-                    foreach (var marker in markerData)
-                    {
-                        var split = marker.Split('`');
-                        if (split.Length != 2)
-                        {
-                            Logger.Warn($"Nonfatal load error: Invalid marker string \"{marker}\"");
-                        }
-                        if (long.TryParse(split[0], out var time))
-                        {
-                            // for compatibility with pre 0.13 charts with 1-color markers
-                            var color1 = false;
-                            var color2 = false;
-                            var color3 = false;
-                            if (split[1].Length == 1)
-                            {
-                                switch (split[1])
-                                {
-                                    case "0":
-                                        color1 = true;
-                                        break;
-                                    case "1":
-                                        color2 = true;
-                                        break;
-                                    case "2":
-                                        color3 = true;
-                                        break;
-                                }
-                            }
-                            else if (split[1].Length == 3)
-                            {
-                                color1 = split[1][0] == '1';
-                                color2 = split[1][1] == '1';
-                                color3 = split[1][2] == '1';
-                            }
-                            else
-                            {
-                                Logger.Warn($"Nonfatal load error: Invalid marker string " +
-                                            $"\"{marker}\"");
-                            }
-                            
-                            AddOrUpdateMarker(time, color1, color2, color3);
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
+                    TryParseMarkerLine(lines[i]);
                 }
                 Logger.Debug("Loaded {0} markers", MarkerNotes.Count);
             }
@@ -2341,6 +2330,58 @@ public static partial class Chart
 
         // unbuggable data isn't required for the chart to work, so it never causes a parse error
         return true;
+    }
+
+    private static void TryParseMarkerLine(string line)
+    {
+        var markerData = line.Trim().Split(',');
+        foreach (var marker in markerData)
+        {
+            var split = marker.Split('`');
+            if (split.Length != 2)
+            {
+                Logger.Warn($"Nonfatal load error: Invalid marker string \"{marker}\"");
+            }
+            if (long.TryParse(split[0], out var time))
+            {
+                // for compatibility with pre 0.13 charts with 1-color markers
+                var color1 = false;
+                var color2 = false;
+                var color3 = false;
+                if (split[1].Length == 1)
+                {
+                    switch (split[1])
+                    {
+                        case "0":
+                            color1 = true;
+                            break;
+                        case "1":
+                            color2 = true;
+                            break;
+                        case "2":
+                            color3 = true;
+                            break;
+                    }
+                }
+                else if (split[1].Length == 3)
+                {
+                    color1 = split[1][0] == '1';
+                    color2 = split[1][1] == '1';
+                    color3 = split[1][2] == '1';
+                }
+                else
+                {
+                    Logger.Warn($"Nonfatal load error: Invalid marker string " +
+                                $"\"{marker}\"");
+                }
+                
+                AddOrUpdateMarker(time, color1, color2, color3);
+            }
+            else
+            {
+                break;
+            }
+        }
     }
     
     private static bool TryParseMetadata(string[] lines, ref int i, ref List<string> errors)
@@ -2632,14 +2673,14 @@ public static partial class Chart
         return true;
     }
     
-    private static async Task WriteGeneralChartData(StreamWriter writer)
+    private static async Task WriteGeneralChartData(TextWriter writer)
     {
         await writer.WriteLineAsync("[General]");
         await writer.WriteLineAsync($"AudioFilename: {AudioFileName}");
         await writer.WriteLineAsync($"PreviewTime: {_metadata.PreviewStartTime}");
     }
     
-    private static async Task WriteOfficialEditorData(StreamWriter writer)
+    private static async Task WriteOfficialEditorData(TextWriter writer)
     {
         await writer.WriteLineAsync("[Editor]");
         if (_labels.Count == 0)
@@ -2658,7 +2699,7 @@ public static partial class Chart
         await writer.WriteLineAsync($"BookmarksPlus: {string.Join(",", bookmarksPlus)}");
     }
 
-    private static async Task WriteUnbuggableData(StreamWriter writer)
+    private static async Task WriteUnbuggableData(TextWriter writer)
     {
         await writer.WriteLineAsync("[UNBUGGABLE]");
         await writer.WriteLineAsync(
@@ -2686,7 +2727,7 @@ public static partial class Chart
         }
     }
     
-    private static async Task WriteMetadata(StreamWriter writer)
+    private static async Task WriteMetadata(TextWriter writer)
     {
         await writer.WriteLineAsync("[Metadata]");
         await writer.WriteLineAsync($"Title:{Metadata.SongName}");
@@ -2709,7 +2750,7 @@ public static partial class Chart
             $"Tags:{JsonSerializer.Serialize(tags, MetadataJsonSerializerOptions)}");
     }
 
-    private static async Task WriteUnanimatedEvents(StreamWriter writer)
+    private static async Task WriteUnanimatedEvents(TextWriter writer)
     {
         await writer.WriteLineAsync("[Events]\nUNANIMATED,0,Enable");
 
@@ -2731,7 +2772,7 @@ public static partial class Chart
         }
     }
     
-    private static async Task WriteTimingPoints(StreamWriter writer)
+    private static async Task WriteTimingPoints(TextWriter writer)
     {
         await writer.WriteLineAsync("[TimingPoints]");
         var numberFormat = new NumberFormatInfo
@@ -2754,7 +2795,7 @@ public static partial class Chart
         await writer.WriteLineAsync(lines.ToString());
     }
     
-    private static async Task WriteHitObjects(StreamWriter writer, bool isStandardFile)
+    private static async Task WriteHitObjects(TextWriter writer, bool isStandardFile)
     {
         await writer.WriteLineAsync("[HitObjects]");
         var isFirst = true;

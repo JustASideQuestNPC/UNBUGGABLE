@@ -13,7 +13,7 @@
     </UserControl.Styles>
     
     <Border Classes="Container">
-        <Grid RowDefinitions="50, 50, 50, 50, 50, 50, 50, 50, 50, Auto, Auto, 50"
+        <Grid RowDefinitions="50, 50, 50, 50, 50, 50, 50, 50, 50, 50, Auto, 50"
               ColumnDefinitions="Auto, 400" RowSpacing="5" ColumnSpacing="10">
             <TextBlock Grid.Row="0" Grid.Column="0">song name</TextBlock>
             <TextBox Grid.Row="0" Grid.Column="1" Name="SongNameBox" />
@@ -53,10 +53,10 @@
             <TextBlock Grid.Row="8" Grid.Column="0">flavor text</TextBlock>
             <TextBox Grid.Row="8" Grid.Column="1" Name="FlavorTextBox" />
         
-            <TextBlock Grid.Row="9" Grid.Column="0" IsVisible="False">enable unanimated</TextBlock>
+            <TextBlock Grid.Row="9" Grid.Column="0" IsVisible="True">enable unanimated</TextBlock>
             <ToggleButton Grid.Row="9" Grid.Column="1" Name="UnanimatedToggle"
                           IsCheckedChanged="UnanimatedToggleClicked"
-                          IsEnabled="False" IsVisible="False"/>
+                          IsEnabled="True" IsVisible="True"/>
             
             <Grid Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="2" RowDefinitions="50, 50"
                   ColumnDefinitions="Auto, 400" RowSpacing="5" ColumnSpacing="10"

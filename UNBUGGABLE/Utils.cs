@@ -128,14 +128,14 @@ public static class Utils
         return split.Count > 1 ? string.Join("+", split[..^1]) + "+" + primaryKey : primaryKey;
     }
 
-    public static async Task<StreamWriter?> TryWaitForFileStream(string path)
+    public static async Task<Stream?> TryWaitForFileStream(string path)
     {
         var attempts = 10; // waits for 1 full second
         while (attempts-- > 0)
         {
             try
             {
-                return new StreamWriter(path, false);
+                return File.Open(path, FileMode.Create, FileAccess.Write, FileShare.None);
             }
             catch (IOException)
             {

@@ -52,7 +52,8 @@ public static class EventTypes
 public enum EventType
 {
     [EventType("Reset Camera", typeof(CameraResetAllEvent))] CAMERA_RESET_ALL,
-    [EventType("Move Camera to Preset Position", typeof(CameraPresetPositionEvent))] CAMERA_PRESET_POSITION,
+    [EventType("Move Camera to Preset Position",
+               typeof(CameraPresetPositionEvent))]CAMERA_PRESET_POSITION,
     [EventType("Move Camera Horizontally", typeof(CameraHorizontalEvent))] CAMERA_HORIZONTAL,
     [EventType("3D Camera Movement", typeof(CameraCustomPositionEvent))] CAMERA_CUSTOM_POSITION,
     [EventType("Zoom Camera In/Out", typeof(CameraZoomEvent))] CAMERA_ZOOM,

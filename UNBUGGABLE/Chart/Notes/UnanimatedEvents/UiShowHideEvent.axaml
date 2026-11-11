@@ -10,7 +10,7 @@
     </UserControl.Styles>
     
     <Border Classes="Container">
-        <Grid RowDefinitions="50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50"
+        <Grid RowDefinitions="50, 50, 50, 50, 50, 50, 50, 50, 50, 50"
               ColumnDefinitions="Auto, 80, 10, Auto, 80" RowSpacing="5"
               ColumnSpacing="10">
             <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">

@@ -153,6 +153,7 @@ public partial class UiShowHideEventDialog : BaseDialog<bool>
             "ScoreToggle" => "Score",
             "SpeedLinesToggle" => "SpeedLines",
             "UpNextToggle" => "UpNextIndicators",
+            "NotesToggle" => "Notes",
             _ => throw new Exception("Invalid toggle button")
         };
 
