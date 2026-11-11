@@ -271,34 +271,26 @@ public abstract class UnanimatedEventBase : CameraChange
                             break;
                         }
 
-                        // invert the ui elements back to which ones we want to turn on
-                        if (eventParams[0] == "Hide")
+                        Dictionary<string, ShowHideState> showHideStates = new();
+                        foreach (var e in UiShowHideEvent.UiElementNames)
                         {
-                            affectedElements =
-                                UiShowHideEvent.UiElementNames
-                                               .Where(e => !affectedElements.Contains(e))
-                                               .ToArray();
+                            if (affectedElements.Contains(e))
+                            {
+                                showHideStates[e] = eventParams[0] == "Show" ? ShowHideState.SHOW :
+                                    ShowHideState.HIDE;
+                            }
+                            else
+                            {
+                                showHideStates[e] = ShowHideState.NONE;
+                            }
                         }
 
                         eventNote = new UiShowHideEvent
                         {
                             Time = startTime,
                             EndTime = endTime,
-                            EnabledElements = affectedElements.ToList()
+                            ShowHideStates = showHideStates
                         };
-                        
-                        // unanimated doesn't allow showing and hiding ui elements on the same line,
-                        // so unbuggable does it across two lines and we need to skip the second
-                        if (i + 1 < lines.Length && lines[i + 1].StartsWith("UI"))
-                        {
-                            var nextEventParams = lines[i + 1].Split(',').Select(s => s.Trim())
-                                                              .ToArray();
-                            if (nextEventParams is ["UI", _] &&
-                                (nextEventParams[1] == "Show" || nextEventParams[1] == "Hide"))
-                            {
-                                ++i;
-                            }
-                        }
                     }
                     else if (eventParams[0] is "SlideIn" or "SlideOut")
                     {
@@ -307,35 +299,26 @@ public abstract class UnanimatedEventBase : CameraChange
                             break;
                         }
 
-                        // invert the ui elements back to which ones we want to turn on
-                        if (eventParams[0] == "Hide")
+                        Dictionary<string, SlideState> slideStates = new();
+                        foreach (var e in UiSlideEvent.UiElementNames)
                         {
-                            affectedElements =
-                                UiSlideEvent.UiElementNames
-                                            .Where(e => !affectedElements.Contains(e))
-                                            .ToArray();
+                            if (affectedElements.Contains(e))
+                            {
+                                slideStates[e] = eventParams[0] == "SlideIn" ? SlideState.IN :
+                                    SlideState.OUT;
+                            }
+                            else
+                            {
+                                slideStates[e] = SlideState.NONE;
+                            }
                         }
 
                         eventNote = new UiSlideEvent
                         {
                             Time = startTime,
                             EndTime = endTime,
-                            SlideInElements = affectedElements.ToList()
+                            SlideStates = slideStates
                         };
-                        
-                        // unanimated doesn't allow showing and hiding ui elements on the same line,
-                        // so unbuggable does it across two lines and we need to skip the second
-                        if (i + 1 < lines.Length && lines[i + 1].StartsWith("UI"))
-                        {
-                            var nextEventParams = lines[i + 1].Split(',').Select(s => s.Trim())
-                                                              .ToArray();
-                            if (nextEventParams is ["UI", _] &&
-                                (nextEventParams[1] == "SlideIn" ||
-                                 nextEventParams[1] == "SlideOut"))
-                            {
-                                ++i;
-                            }
-                        }
                     }
                     break;
             }
@@ -355,12 +338,110 @@ public abstract class UnanimatedEventBase : CameraChange
         {
             return false;
         }
+        
+        // some unbuggable events have to become multiple unanimated events, so step through every
+        // loaded event and merge stacked ones
+        if (events.Count > 1)
+        {
+            List<UnanimatedEventBase> mergedEvents = [];
+            var j = 0;
+            for (; j < events.Count - 1; ++j)
+            {
+                var current = events[j];
+                var next = events[j + 1];
 
+                if (current.EventType == next.EventType && current.Time == next.Time &&
+                    current.EndTime == next.EndTime)
+                {
+                    switch (current.EventType)
+                    {
+                        case EventType.UI_SHOW_HIDE:
+                            var currentShowHide = (UiShowHideEvent)current;
+                            var nextShowHide = (UiShowHideEvent)next;
+                            foreach (var (k, v) in nextShowHide.ShowHideStates)
+                            {
+                                if (currentShowHide.ShowHideStates[k] == ShowHideState.NONE)
+                                {
+                                    currentShowHide.ShowHideStates[k] = v;
+                                }
+                            }
+
+                            ++j; // skip the merged element
+                            break;
+                        case EventType.UI_SLIDE:
+                            var currentSlide = (UiSlideEvent)current;
+                            var nextSlide = (UiSlideEvent)next;
+                            foreach (var (k, v) in nextSlide.SlideStates)
+                            {
+                                if (currentSlide.SlideStates[k] == SlideState.NONE)
+                                {
+                                    currentSlide.SlideStates[k] = v;
+                                }
+                            }
+
+                            ++j;
+                            break;
+                    }
+                }
+                
+                mergedEvents.Add(current);
+            }
+
+            if (j == events.Count - 1)
+            {
+                mergedEvents.Add(events[^1]);
+            }
+            
+            events = mergedEvents;
+        }
+
+        // step through again to construct event groups
+        if (events.Count > 1)
+        {
+            List<UnanimatedEventBase> groupedEvents = [];
+            var j = 0;
+            for (; j < events.Count - 1; ++j)
+            {
+                if (events[j].Time == events[j + 1].Time)
+                {
+                    List<UnanimatedEventBase> group = [];
+                    while (events[j].Time == events[j + 1].Time)
+                    {
+                        group.Add(events[j++]);
+                    }
+                    group.Add(events[j]);
+                    
+                    groupedEvents.Add(new EventGroup
+                    {
+                        Time = events[j - 1].Time,
+                        Events = group
+                    });
+                }
+                else
+                {
+                    groupedEvents.Add(events[j]);
+                }
+            }
+
+            if (j == events.Count - 1)
+            {
+                groupedEvents.Add(events[^1]);
+            }
+            
+            events = groupedEvents;
+        }
+        
         foreach (var e in events)
         {
             Chart.AddNote(e);
         }
 
+        // prevents issues where the next section gets skipped
+        // if (events.Count > 0)
+        // {
+        //     --i;
+        // }
+        
         return true;
     }
 

@@ -74,6 +74,21 @@
                 "outlineColor": "",
                 "iconColor": ""
             }
+        },
+        "eventGroupList": {
+            "backgroundColor": "#C9C9A5",
+            "outlineColor": "#FF4B7E",
+            "outlineThickness": 4,
+            "cornerRadius": 0,
+            "listEntries": {
+                "backgroundColor": "#C9C9A5",
+                "outlineColor": "#FF4B7E",
+                "outlineThickness": 2,
+                "cornerRadius": 0,
+                "textColor": "#161616",
+                "textSize": 16,
+                "iconColor": "#161616"
+            }
         }
     },
     "quickInfo": {

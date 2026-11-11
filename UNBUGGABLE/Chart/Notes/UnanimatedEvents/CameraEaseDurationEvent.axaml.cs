@@ -46,7 +46,8 @@ public class CameraEaseDurationEvent : UnanimatedEventBase
     {
         var editDialog = new CameraEaseDurationEventDialog(EndTime);
         var result = await editDialog.ShowAsync();
-        if (result is { HasValue: true, Value: true } && editDialog.NewDuration != Duration)
+        if (result is { HasValue: true, Value: true } &&
+            (editDialog.NewDuration != Duration || isNew))
         {
             return new CameraEaseDurationEvent
             {

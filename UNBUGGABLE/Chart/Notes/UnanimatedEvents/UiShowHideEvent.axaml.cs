@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -12,31 +14,84 @@ using UNBUGGABLE.Views;
 
 namespace UNBUGGABLE.Notes.UnanimatedEvents;
 
+internal class ShowHideStateAttribute : Attribute
+{
+    public string Name { get; }
+    
+    internal ShowHideStateAttribute(string name)
+    {
+        Name = name;
+    }
+}
+
+public static class ShowHideStates
+{
+    public static string Name(this ShowHideState s)
+    {
+        return GetAttr(s)?.Name ?? Enum.GetName(s) ?? "";
+    }
+    
+    private static ShowHideStateAttribute? GetAttr(ShowHideState s)
+    {
+        var a = Attribute.GetCustomAttribute(ForValue(s),
+                                             typeof(ShowHideStateAttribute));
+        return (ShowHideStateAttribute?)a;
+    }
+
+    private static FieldInfo? ForValue(ShowHideState s)
+    {
+        return typeof(ShowHideState).GetField(Enum.GetName(typeof(ShowHideState), s));
+    }
+}
+
+public enum ShowHideState
+{
+    [ShowHideState("none")] NONE,
+    [ShowHideState("show")] SHOW,
+    [ShowHideState("hide")] HIDE,
+}
+
 public partial class UiShowHideEventDialog : BaseDialog<bool>
 {
     public long NewEndTime { get; private set; }
+    public Dictionary<string, ShowHideState> NewShowHideStates { get; set; } = new();
     
     private long _startTime;
     
-    public UiShowHideEventDialog(long startTime, long endTime, List<string> enabledElements)
+    public UiShowHideEventDialog(long startTime, long endTime,
+        Dictionary<string, ShowHideState> showHideStates)
     {
         InitializeComponent();
         _startTime = startTime;
         NewEndTime = endTime;
+        NewShowHideStates = showHideStates;
         
-        AccuracyToggle.IsChecked = enabledElements.Contains("Accuracy");
-        BgBarsToggle.IsChecked = enabledElements.Contains("BlackBGBars");
-        FourByThreeBarsToggle.IsChecked = enabledElements.Contains("FourByThreeBars");
-        VignetteToggle.IsChecked = enabledElements.Contains("VignetteBars");
-        LeftJudgementToggle.IsChecked = enabledElements.Contains("LeftJudgementLine");
-        RightJudgementToggle.IsChecked = enabledElements.Contains("RightJudgementLine");
-        HealthToggle.IsChecked = enabledElements.Contains("Health");
-        MaxComboToggle.IsChecked = enabledElements.Contains("MaxCombo");
-        NotesToggle.IsChecked = enabledElements.Contains("Notes");
-        ReticleToggle.IsChecked = enabledElements.Contains("Reticle");
-        ScoreToggle.IsChecked = enabledElements.Contains("Score");
-        SpeedLinesToggle.IsChecked = enabledElements.Contains("SpeedLines");
-        UpNextToggle.IsChecked = enabledElements.Contains("UpNextIndicators");
+        AccuracyToggleText.Text = showHideStates.TryGetValue("Accuracy", out var value) ?
+            value.Name() : "none";
+        BgBarsToggleText.Text = showHideStates.TryGetValue("BlackBGBars", out value) ?
+            value.Name() : "none";
+        FourByThreeBarsToggleText.Text = showHideStates.TryGetValue("FourByThreeBars", out value) ?
+            value.Name() : "none";
+        VignetteToggleText.Text = showHideStates.TryGetValue("VignetteBars", out value) ?
+            value.Name() : "none";
+        LeftJudgementToggleText.Text = showHideStates.TryGetValue("LeftJudgementLine", out value) ?
+            value.Name() : "none";
+        RightJudgementToggleText.Text =
+            showHideStates.TryGetValue("RightJudgementLine", out value) ? value.Name() : "none";
+        HealthToggleText.Text = showHideStates.TryGetValue("Health", out value) ?
+            value.Name() : "none";
+        MaxComboToggleText.Text = showHideStates.TryGetValue("MaxCombo", out value) ?
+            value.Name() : "none";
+        ReticleToggleText.Text = showHideStates.TryGetValue("Reticle", out value) ?
+            value.Name() : "none";
+        ScoreToggleText.Text = showHideStates.TryGetValue("Score", out value) ?
+            value.Name() : "none";
+        SpeedLinesToggleText.Text = showHideStates.TryGetValue("SpeedLines", out value) ?
+            value.Name() : "none";
+        UpNextToggleText.Text = showHideStates.TryGetValue("UpNextIndicators", out value) ?
+            value.Name() : "none";
+        MeasureBarsToggleText.Text = showHideStates.TryGetValue("MeasureBars", out value) ?
+            value.Name() : "none";
     }
     
     public async Task<Optional<bool>> ShowAsync()
@@ -45,25 +100,6 @@ public partial class UiShowHideEventDialog : BaseDialog<bool>
         var result = await base.ShowAsync();
         App.DialogIsOpen = false;
         return result;
-    }
-
-    public List<string> GetEnabledElements()
-    {
-        List<string> enabledElements = [];
-        if (AccuracyToggle.IsChecked ?? false) enabledElements.Add("Accuracy");
-        if (BgBarsToggle.IsChecked ?? false) enabledElements.Add("BlackBGBars");
-        if (FourByThreeBarsToggle.IsChecked ?? false) enabledElements.Add("FourByThreeBars");
-        if (VignetteToggle.IsChecked ?? false) enabledElements.Add("VignetteBars");
-        if (LeftJudgementToggle.IsChecked ?? false) enabledElements.Add("LeftJudgementLine");
-        if (RightJudgementToggle.IsChecked ?? false) enabledElements.Add("RightJudgementLine");
-        if (HealthToggle.IsChecked ?? false) enabledElements.Add("Health");
-        if (MaxComboToggle.IsChecked ?? false) enabledElements.Add("MaxCombo");
-        if (NotesToggle.IsChecked ?? false) enabledElements.Add("Notes");
-        if (ReticleToggle.IsChecked ?? false) enabledElements.Add("Reticle");
-        if (ScoreToggle.IsChecked ?? false) enabledElements.Add("Score");
-        if (SpeedLinesToggle.IsChecked ?? false) enabledElements.Add("SpeedLines");
-        if (UpNextToggle.IsChecked ?? false) enabledElements.Add("UpNextIndicators");
-        return enabledElements;
     }
     
     protected void ConfirmButtonClick(object? sender, RoutedEventArgs e)
@@ -98,6 +134,34 @@ public partial class UiShowHideEventDialog : BaseDialog<bool>
             EndTimeBox.Text = _startTime.ToString();
         }
     }
+    
+    private void ToggleButtonClick(object? sender, RoutedEventArgs e)
+    {
+        var button = (Button)e.Source;
+        var dictKey = button.Name switch
+        {
+            "AccuracyToggle" => "Accuracy",
+            "BgBarsToggle" => "BlackBGBars",
+            "FourByThreeBarsToggle" => "FourByThreeBars",
+            "VignetteToggle" => "VignetteBars",
+            "MeasureBarsToggle" => "MeasureBars",
+            "LeftJudgementToggle" => "LeftJudgementLine",
+            "RightJudgementToggle" => "RightJudgementLine",
+            "HealthToggle" => "Health",
+            "MaxComboToggle" => "MaxCombo",
+            "ReticleToggle" => "Reticle",
+            "ScoreToggle" => "Score",
+            "SpeedLinesToggle" => "SpeedLines",
+            "UpNextToggle" => "UpNextIndicators",
+            _ => throw new Exception("Invalid toggle button")
+        };
+
+        if (NewShowHideStates.TryGetValue(dictKey, out var value))
+        {
+            NewShowHideStates[dictKey] = (ShowHideState)(((int)value + 1) % 3);
+            ((TextBlock)button.Content).Text = NewShowHideStates[dictKey].Name();
+        }
+    }
 }
 
 public class UiShowHideEvent : UnanimatedEventBase
@@ -119,26 +183,55 @@ public class UiShowHideEvent : UnanimatedEventBase
         "UpNextIndicators"
     ];
     
-    public override EventType EventType => EventType.UI_TOGGLE;
+    public override EventType EventType => EventType.UI_SHOW_HIDE;
     
-    public List<string> EnabledElements { get; set; } = [];
-    public List<string> DisabledElements => UiElementNames.Where(e => !EnabledElements.Contains(e))
-                                                          .ToList();
+    public Dictionary<string, ShowHideState> ShowHideStates { get; set; } = new()
+    {
+        ["Accuracy"] = ShowHideState.NONE,
+        ["BlackBGBars"] = ShowHideState.NONE,
+        ["FourByThreeBars"] = ShowHideState.NONE,
+        ["VignetteBars"] = ShowHideState.NONE,
+        ["MeasureBars"] = ShowHideState.NONE,
+        ["LeftJudgementLine"] = ShowHideState.NONE,
+        ["RightJudgementLine"] = ShowHideState.NONE,
+        ["Health"] = ShowHideState.NONE,
+        ["MaxCombo"] = ShowHideState.NONE,
+        ["Notes"] = ShowHideState.NONE,
+        ["Reticle"] = ShowHideState.NONE,
+        ["Score"] = ShowHideState.NONE,
+        ["SpeedLines"] = ShowHideState.NONE,
+        ["UpNextIndicators"] = ShowHideState.NONE,
+    };
     
     public override async Task<UnanimatedEventBase?> ShowEditDialog(bool isNew = false)
     {
-        var editDialog = new UiShowHideEventDialog(Time, EndTime, EnabledElements);
+        var editDialog = new UiShowHideEventDialog(Time, EndTime, ShowHideStates);
         var result = await editDialog.ShowAsync();
         if (result is { HasValue: true, Value: true })
         {
-            var newEnabledElements = editDialog.GetEnabledElements();
-            if (EnabledElements.SequenceEqual(newEnabledElements))
+            var edited = editDialog.NewEndTime != EndTime || isNew;
+            if (!edited)
+            {
+                foreach (var (key, value) in editDialog.NewShowHideStates)
+                {
+                    if (ShowHideStates.TryGetValue(key, out var oldValue))
+                    {
+                        if (value != oldValue)
+                        {
+                            edited = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (edited)
             {
                 return new UiShowHideEvent
                 {
                     Time = Time,
                     EndTime = editDialog.NewEndTime,
-                    EnabledElements = newEnabledElements
+                    ShowHideStates = editDialog.NewShowHideStates
                 };
             }
         }
@@ -152,14 +245,17 @@ public class UiShowHideEvent : UnanimatedEventBase
             $"UI,{Time + Chart.Metadata.ChartOffset},{EndTime + Chart.Metadata.ChartOffset}," :
             $"UI,{Time + Chart.Metadata.ChartOffset},";
         
+        var showElements = UiElementNames.FindAll(e => ShowHideStates[e] == ShowHideState.SHOW);
+        var hideElements = UiElementNames.FindAll(e => ShowHideStates[e] == ShowHideState.HIDE);
+
         List<string> lines = [];
-        if (EnabledElements.Count > 0)
+        if (showElements.Count > 0)
         {
-            lines.Add(lineStart + "Show:" + string.Join('|', EnabledElements));
+            lines.Add(lineStart + "Show:" + string.Join('|', showElements));
         }
-        if (DisabledElements.Count > 0)
+        if (hideElements.Count > 0)
         {
-            lines.Add(lineStart + "Hide:" + string.Join('|', DisabledElements));
+            lines.Add(lineStart + "Hide:" + string.Join('|', hideElements));
         }
 
         return string.Join('\n', lines);

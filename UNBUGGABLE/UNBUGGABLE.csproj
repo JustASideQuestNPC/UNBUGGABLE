@@ -130,5 +130,9 @@
         <DependentUpon>TimeAndWeatherEvent.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
+      <Compile Update="Chart\Notes\UnanimatedEvents\EventGroup.axaml.cs">
+        <DependentUpon>EventGroup.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
     </ItemGroup>
 </Project>

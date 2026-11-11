@@ -1,0 +1,86 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:events="clr-namespace:UNBUGGABLE.Notes.UnanimatedEvents"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UNBUGGABLE.Notes.UnanimatedEvents.EventGroupDialog">
+    <UserControl.Styles>
+        <StyleInclude Source="/Dialogs/DialogStyles.axaml" />
+    </UserControl.Styles>
+    
+    <Border Classes="Container">
+        <StackPanel Spacing="5">
+            <TextBlock>unanimated: event group</TextBlock>
+            <Border Width="500" Height="400"
+                    BorderBrush="{DynamicResource Dialogs.EventGroupList.OutlineColor}"
+                    BorderThickness="{DynamicResource Dialogs.EventGroupList.OutlineThickness}"
+                    CornerRadius="{DynamicResource Dialogs.EventGroupList.CornerRadius}"
+                    Background="{DynamicResource Dialogs.EventGroupList.BackgroundColor}"
+                    Padding="0" Margin="0" TabIndex="-1">
+                <ListBox Name="EventList">
+                    <ListBox.Styles>
+                        <Style Selector="ListBoxItem">
+                            <Setter Property="(Interaction.Behaviors)">
+                                <BehaviorCollectionTemplate>
+                                    <BehaviorCollection>
+                                        <ListReorderDragBehavior
+                                            Orientation="Vertical" />
+                                    </BehaviorCollection>
+                                </BehaviorCollectionTemplate>
+                            </Setter>
+                        </Style>
+                    </ListBox.Styles>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate DataType="events:EventGroupListEntry">
+                            <Border Padding="0 2"
+                                    BorderBrush="{DynamicResource Dialogs.EventGroupList.ListEntries.OutlineColor}"
+                                    BorderThickness="{DynamicResource Dialogs.EventGroupList.ListEntries.OutlineThickness}"
+                                    CornerRadius="{DynamicResource Dialogs.EventGroupList.ListEntries.CornerRadius}"
+                                    Background="{DynamicResource Dialogs.EventGroupList.ListEntries.BackgroundColor}"
+                                    TabIndex="-1">
+                                <Grid Margin="0" ColumnDefinitions="*, 35, 35, 35"
+                                      RowDefinitions="35" ColumnSpacing="5">
+                                    <TextBlock
+                                               Margin="5 0"
+                                               Foreground="{DynamicResource Dialogs.EventGroupList.ListEntries.TextColor}"
+                                               FontSize="{DynamicResource Dialogs.EventGroupList.ListEntries.TextSize}"
+                                               Text="{Binding Name}" />
+                                    <Button Grid.Column="1" Classes="SquareIconButton"
+                                            Padding="0" Margin="0" Name="EditButton"
+                                            Command="{Binding EditEvent}">
+                                        <materialIcons:MaterialIcon IconSize="16" Kind="Edit" />
+                                    </Button>
+                                    <Button Grid.Column="2" Classes="SquareIconButton"
+                                            Padding="0" Margin="0" Name="RemoveButton"
+                                            Command="{Binding RemoveEvent}">
+                                        <materialIcons:MaterialIcon IconSize="16"
+                                                                    Kind="TrashOutline" />
+                                    </Button>
+                                    <materialIcons:MaterialIcon Grid.Column="3"
+                                            Kind="ReorderHorizontal"
+                                            Foreground="{DynamicResource Dialogs.EventGroupList.ListEntries.IconColor}"
+                                            VerticalAlignment="Stretch"
+                                            HorizontalAlignment="Stretch" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
+            <Button Height="50" Click="AddEventButtonClick">
+                <TextBlock>add event</TextBlock>
+            </Button>
+            <StackPanel Orientation="Horizontal" Height="50">
+                <Button Classes="SquareIconButton" Click="ConfirmButtonClick">
+                    <materialIcons:MaterialIcon Kind="Check" />
+                </Button>
+    
+                <Button Classes="SquareIconButton" Click="CancelButtonClick">
+                    <materialIcons:MaterialIcon Kind="Cancel" />
+                </Button>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

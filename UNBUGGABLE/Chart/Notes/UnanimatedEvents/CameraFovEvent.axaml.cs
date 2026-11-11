@@ -65,7 +65,7 @@ public class CameraFovEvent : UnanimatedEventBase
         var result = await editDialog.ShowAsync();
         if (result is { HasValue: true, Value: true } &&
             (editDialog.NewEndTime != EndTime || editDialog.NewFov != Fov ||
-             editDialog.NewOffset != Offset))
+             editDialog.NewOffset != Offset || isNew))
         {
             return new CameraFovEvent
             {

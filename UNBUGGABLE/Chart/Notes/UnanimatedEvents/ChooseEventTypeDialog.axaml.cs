@@ -65,9 +65,10 @@ public enum EventType
     [EventType("Change Primary/Assist Character", typeof(ChangeCharacterEvent))] CHARACTER_CHANGE,
     [EventType("Change Stage", typeof(ChangeStageEvent))] STAGE_CHANGE,
     [EventType("Lock UI Position", typeof(UiLockEvent))] UI_LOCK,
-    [EventType("Show/Hide UI Elements", typeof(UiShowHideEvent))] UI_TOGGLE,
+    [EventType("Show/Hide UI Elements", typeof(UiShowHideEvent))] UI_SHOW_HIDE,
     [EventType("Slide UI Elements In/Out", typeof(UiSlideEvent))] UI_SLIDE,
-    [EventType("Time and Weather", typeof(WeatherEvent))] WEATHER
+    [EventType("Time and Weather", typeof(WeatherEvent))] WEATHER,
+    [EventType("Event Group", typeof(EventGroup))] EVENT_GROUP,
 }
 
 public class EventTypeSelectorBoxItem(EventType eventType)
@@ -79,14 +80,17 @@ public class EventTypeSelectorBoxItem(EventType eventType)
 public partial class ChooseEventTypeDialog : BaseDialog<EventType?>
 {
     private ObservableCollection<EventTypeSelectorBoxItem> _triggerTypeSelectors = [];
-    
-    public ChooseEventTypeDialog()
+
+    public ChooseEventTypeDialog(bool includeEventGroup = true)
     {
         InitializeComponent();
 
         foreach (var triggerType in Enum.GetValues<EventType>())
         {
-            _triggerTypeSelectors.Add(new EventTypeSelectorBoxItem(triggerType));
+            if (triggerType != EventType.EVENT_GROUP || includeEventGroup)
+            {
+                _triggerTypeSelectors.Add(new EventTypeSelectorBoxItem(triggerType));
+            }
         }
         
         EventTypeSelectorBox.ItemsSource = _triggerTypeSelectors;

@@ -66,7 +66,7 @@ public class CameraCustomRotateEvent : UnanimatedEventBase
         if (result is { HasValue: true, Value: true } &&
             (editDialog.NewOffset != Offset || editDialog.NewUseStart != UseStart ||
              editDialog.NewInstant != Instant || !editDialog.NewAngleVector.Equals(AngleVector) ||
-             !editDialog.NewStartAngleVector.Equals(StartAngleVector)))
+             !editDialog.NewStartAngleVector.Equals(StartAngleVector) || isNew))
         {
             return new CameraCustomRotateEvent
             {

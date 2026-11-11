@@ -65,7 +65,7 @@ public class CameraZoomEvent : UnanimatedEventBase
         var result = await editDialog.ShowAsync();
         if (result is { HasValue: true, Value: true } &&
             (editDialog.NewEndTime != EndTime || editDialog.NewZoom != Zoom ||
-             editDialog.NewOffset != Offset))
+             editDialog.NewOffset != Offset || isNew))
         {
             return new CameraZoomEvent
             {

@@ -65,7 +65,7 @@ public class CameraHorizontalEvent : UnanimatedEventBase
         var result = await editDialog.ShowAsync();
         if (result is { HasValue: true, Value: true } &&
             (editDialog.NewEndTime != EndTime || editDialog.NewDistance != Distance ||
-             editDialog.NewOffset != Offset))
+             editDialog.NewOffset != Offset || isNew))
         {
             return new CameraHorizontalEvent
             {

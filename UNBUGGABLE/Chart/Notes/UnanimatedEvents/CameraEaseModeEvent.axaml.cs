@@ -132,7 +132,8 @@ public class CameraEaseModeEvent : UnanimatedEventBase
     {
         var editDialog = new CameraEaseModeEventDialog(EaseMode);
         var result = await editDialog.ShowAsync();
-        if (result is { HasValue: true, Value: true } && editDialog.NewEaseMode != EaseMode)
+        if (result is { HasValue: true, Value: true } &&
+            (editDialog.NewEaseMode != EaseMode || isNew))
         {
             return new CameraEaseModeEvent
             {

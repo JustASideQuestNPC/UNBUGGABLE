@@ -66,7 +66,7 @@ public class CameraCustomPositionEvent : UnanimatedEventBase
         if (result is { HasValue: true, Value: true } &&
             (editDialog.NewOffset != Offset || editDialog.NewUseStart != UseStart ||
              editDialog.NewInstant != Instant || !editDialog.NewPosition.Equals(Position) ||
-             !editDialog.NewStartPosition.Equals(StartPosition)))
+             !editDialog.NewStartPosition.Equals(StartPosition) || isNew))
         {
             return new CameraCustomPositionEvent
             {

@@ -65,7 +65,7 @@ public class CameraRotateEvent : UnanimatedEventBase
         var result = await editDialog.ShowAsync();
         if (result is { HasValue: true, Value: true } &&
             (editDialog.NewEndTime != EndTime || editDialog.NewAngle != Angle ||
-             editDialog.NewOffset != Offset))
+             editDialog.NewOffset != Offset || isNew))
         {
             return new CameraRotateEvent
             {

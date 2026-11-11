@@ -24,6 +24,7 @@
         <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/ChangeCharacterTrigger.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
         <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/ChangeStageEvent.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
         <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/ChooseEventTypeDialog.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
+        <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/EventGroup.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
         <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/EventTemplate.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
         <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/GameplayMotionEvent.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />
         <entry key="UNBUGGABLE/Chart/Notes/UnanimatedEvents/TimeAndWeatherEvent.axaml" value="UNBUGGABLE/UNBUGGABLE.csproj" />

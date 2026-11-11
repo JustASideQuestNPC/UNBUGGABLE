@@ -11,37 +11,70 @@
     
     <Border Classes="Container">
         <Grid RowDefinitions="50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50"
-              ColumnDefinitions="Auto, 60, 10, Auto, 60" RowSpacing="5"
+              ColumnDefinitions="Auto, 80, 10, Auto, 80" RowSpacing="5"
               ColumnSpacing="10">
             <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
-                unanimated: toggle gameplay motion
+                unanimated: show/hide ui
             </TextBlock>
             <TextBlock Grid.Row="1" Grid.Column="0">accuracy</TextBlock>
-            <ToggleButton Grid.Row="1" Grid.Column="1" Name="AccuracyToggle" />
+            <Button Grid.Row="1" Grid.Column="1" Name="AccuracyToggle" Click="ToggleButtonClick">
+                <TextBlock Name="AccuracyToggleText">none</TextBlock>
+            </Button>
             <TextBlock Grid.Row="1" Grid.Column="3">bg bars</TextBlock>
-            <ToggleButton Grid.Row="1" Grid.Column="4" Name="BgBarsToggle" />
+            <Button Grid.Row="1" Grid.Column="4" Name="BgBarsToggle" Click="ToggleButtonClick">
+                <TextBlock Name="BgBarsToggleText">none</TextBlock>
+            </Button>
             <TextBlock Grid.Row="2" Grid.Column="0">4x3 bars</TextBlock>
-            <ToggleButton Grid.Row="2" Grid.Column="1" Name="FourByThreeBarsToggle" />
+            <Button Grid.Row="2" Grid.Column="1" Name="FourByThreeBarsToggle"
+                    Click="ToggleButtonClick">
+                <TextBlock Name="FourByThreeBarsToggleText">none</TextBlock>
+            </Button>
             <TextBlock Grid.Row="2" Grid.Column="3">vignette</TextBlock>
-            <ToggleButton Grid.Row="2" Grid.Column="4" Name="VignetteToggle" />
+            <Button Grid.Row="2" Grid.Column="4" Name="VignetteToggle" Click="ToggleButtonClick">
+                <TextBlock Name="VignetteToggleText">none</TextBlock>
+            </Button>
             <TextBlock Grid.Row="3" Grid.Column="0">left judgement</TextBlock>
-            <ToggleButton Grid.Row="3" Grid.Column="1" Name="LeftJudgementToggle" />
+            <Button Grid.Row="3" Grid.Column="1" Name="LeftJudgementToggle"
+                    Click="ToggleButtonClick">
+                <TextBlock Name="LeftJudgementToggleText">none</TextBlock>
+            </Button>
             <TextBlock Grid.Row="3" Grid.Column="3">right judgment</TextBlock>
-            <ToggleButton Grid.Row="3" Grid.Column="4" Name="RightJudgementToggle" />
+            <Button Grid.Row="3" Grid.Column="4" Name="RightJudgementToggle"
+                    Click="ToggleButtonClick">
+                <TextBlock Name="RightJudgementToggleText">none</TextBlock>
+            </Button>
             <TextBlock Grid.Row="4" Grid.Column="0">health</TextBlock>
-            <ToggleButton Grid.Row="4" Grid.Column="1" Name="HealthToggle" />
+            <Button Grid.Row="4" Grid.Column="1" Name="HealthToggle" Click="ToggleButtonClick">
+                <TextBlock Name="HealthToggleText">none</TextBlock>
+            </Button>
             <TextBlock Grid.Row="4" Grid.Column="3">max combo</TextBlock>
-            <ToggleButton Grid.Row="4" Grid.Column="4" Name="MaxComboToggle" />
+            <Button Grid.Row="4" Grid.Column="4" Name="MaxComboToggle" Click="ToggleButtonClick">
+                <TextBlock Name="MaxComboToggleText">none</TextBlock>
+            </Button>
             <TextBlock Grid.Row="5" Grid.Column="0">notes</TextBlock>
-            <ToggleButton Grid.Row="5" Grid.Column="1" Name="NotesToggle" />
+            <Button Grid.Row="5" Grid.Column="1" Name="NotesToggle" Click="ToggleButtonClick">
+                <TextBlock Name="NotesToggleText">none</TextBlock>
+            </Button>
             <TextBlock Grid.Row="5" Grid.Column="3">reticle</TextBlock>
-            <ToggleButton Grid.Row="5" Grid.Column="4" Name="ReticleToggle" />
+            <Button Grid.Row="5" Grid.Column="4" Name="ReticleToggle" Click="ToggleButtonClick">
+                <TextBlock Name="ReticleToggleText">none</TextBlock>
+            </Button>
             <TextBlock Grid.Row="6" Grid.Column="0">score</TextBlock>
-            <ToggleButton Grid.Row="6" Grid.Column="1" Name="ScoreToggle" />
+            <Button Grid.Row="6" Grid.Column="1" Name="ScoreToggle" Click="ToggleButtonClick">
+                <TextBlock Name="ScoreToggleText">none</TextBlock>
+            </Button>
             <TextBlock Grid.Row="6" Grid.Column="3">speed lines</TextBlock>
-            <ToggleButton Grid.Row="6" Grid.Column="4" Name="SpeedLinesToggle" />
+            <Button Grid.Row="6" Grid.Column="4" Name="SpeedLinesToggle" Click="ToggleButtonClick">
+                <TextBlock Name="SpeedLinesToggleText">none</TextBlock>
+            </Button>
             <TextBlock Grid.Row="7" Grid.Column="0">up next</TextBlock>
-            <ToggleButton Grid.Row="7" Grid.Column="1" Name="UpNextToggle" />
+            <Button Grid.Row="7" Grid.Column="1" Name="UpNextToggle" Click="ToggleButtonClick">
+                <TextBlock Name="UpNextToggleText">none</TextBlock>
+            </Button>
+            <TextBlock Grid.Row="7" Grid.Column="3">measure bars</TextBlock>
+            <Button Grid.Row="7" Grid.Column="4" Name="MeasureBarsToggle" Click="ToggleButtonClick">
+                <TextBlock Name="MeasureBarsToggleText">none</TextBlock>
+            </Button>
             <TextBlock Grid.Row="8" Grid.Column="0">end time</TextBlock>
             <TextBox Grid.Row="8" Grid.Column="1" Name="EndTimeBox"
                      LostFocus="EndTimeBoxLostFocus" />

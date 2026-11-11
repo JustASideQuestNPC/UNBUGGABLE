@@ -118,6 +118,30 @@ public static class ThemeManager
         _resources["Dialogs.InputBoxes.OutlineColor"] =
             _themeColors["Dialogs.InputBoxes.OutlineColor"];
         
+        _themeColors["Dialogs.EventGroupList.BackgroundColor"] = new SolidColorBrush();
+        _resources["Dialogs.EventGroupList.BackgroundColor"] =
+            _themeColors["Dialogs.EventGroupList.BackgroundColor"];
+        
+        _themeColors["Dialogs.EventGroupList.OutlineColor"] = new SolidColorBrush();
+        _resources["Dialogs.EventGroupList.OutlineColor"] =
+            _themeColors["Dialogs.EventGroupList.OutlineColor"];
+        
+        _themeColors["Dialogs.EventGroupList.ListEntries.BackgroundColor"] = new SolidColorBrush();
+        _resources["Dialogs.EventGroupList.ListEntries.BackgroundColor"] =
+            _themeColors["Dialogs.EventGroupList.ListEntries.BackgroundColor"];
+        
+        _themeColors["Dialogs.EventGroupList.ListEntries.OutlineColor"] = new SolidColorBrush();
+        _resources["Dialogs.EventGroupList.ListEntries.OutlineColor"] =
+            _themeColors["Dialogs.EventGroupList.ListEntries.OutlineColor"];
+        
+        _themeColors["Dialogs.EventGroupList.ListEntries.TextColor"] = new SolidColorBrush();
+        _resources["Dialogs.EventGroupList.ListEntries.TextColor"] =
+            _themeColors["Dialogs.EventGroupList.ListEntries.TextColor"];
+        
+        _themeColors["Dialogs.EventGroupList.ListEntries.IconColor"] = new SolidColorBrush();
+        _resources["Dialogs.EventGroupList.ListEntries.IconColor"] =
+            _themeColors["Dialogs.EventGroupList.ListEntries.IconColor"];
+        
         _themeColors["Dialogs.InputBoxes.TextColor"] = new SolidColorBrush();
         _resources["Dialogs.InputBoxes.TextColor"] =
             _themeColors["Dialogs.InputBoxes.TextColor"];
@@ -710,6 +734,16 @@ public static class ThemeManager
             theme.Dialogs.Buttons.Hovered.OutlineColor;
         _themeColors["Dialogs.Buttons.Hovered.IconColor"].Color =
             theme.Dialogs.Buttons.Hovered.IconColor;
+        _themeColors["Dialogs.EventGroupList.BackgroundColor"].Color =
+            theme.Dialogs.EventGroupList.BackgroundColor;
+        _themeColors["Dialogs.EventGroupList.OutlineColor"].Color =
+            theme.Dialogs.EventGroupList.OutlineColor;
+        _themeColors["Dialogs.EventGroupList.ListEntries.BackgroundColor"].Color =
+            theme.Dialogs.EventGroupList.ListEntries.BackgroundColor;
+        _themeColors["Dialogs.EventGroupList.ListEntries.OutlineColor"].Color =
+            theme.Dialogs.EventGroupList.ListEntries.OutlineColor;
+        _themeColors["Dialogs.EventGroupList.ListEntries.TextColor"].Color =
+            theme.Dialogs.EventGroupList.ListEntries.TextColor;
         _themeColors["QuickInfo.TitleColor"].Color =
             theme.QuickInfo.TitleColor;
         _themeColors["QuickInfo.InfoColor"].Color =
@@ -722,8 +756,6 @@ public static class ThemeManager
             theme.NoteViewer.SelectDragColor;
         _themeColors["NoteViewer.DeleteDragColor"].Color =
             theme.NoteViewer.DeleteDragColor;
-        // _themeColors["NoteViewer.NoteDirectionArrowColor"].Color =
-        //     theme.NoteViewer.NoteDirectionArrowColor;
         _themeColors["NoteViewer.NoteLanes.TopColor"].Color =
             theme.NoteViewer.NoteLanes.TopColor;
         _themeColors["NoteViewer.NoteLanes.BottomColor"].Color =
@@ -1002,6 +1034,16 @@ public static class ThemeManager
             new Thickness(theme.Dialogs.Buttons.OutlineThickness);
         _resources["Dialogs.Buttons.CornerRadius"] =
             new CornerRadius(theme.Dialogs.Buttons.CornerRadius);
+        _resources["Dialogs.EventGroupList.OutlineThickness"] =
+            new Thickness(theme.Dialogs.EventGroupList.OutlineThickness);
+        _resources["Dialogs.EventGroupList.CornerRadius"] =
+            new CornerRadius(theme.Dialogs.EventGroupList.CornerRadius);
+        _resources["Dialogs.EventGroupList.ListEntries.OutlineThickness"] =
+            new Thickness(theme.Dialogs.EventGroupList.ListEntries.OutlineThickness);
+        _resources["Dialogs.EventGroupList.ListEntries.CornerRadius"] =
+            new CornerRadius(theme.Dialogs.EventGroupList.ListEntries.CornerRadius);
+        _resources["Dialogs.EventGroupList.ListEntries.TextSize"] =
+            theme.Dialogs.EventGroupList.ListEntries.TextSize;
         _resources["QuickInfo.TitleSize"] =
             theme.QuickInfo.TitleSize;
         _resources["QuickInfo.InfoSize"] =
@@ -1012,8 +1054,6 @@ public static class ThemeManager
             new CornerRadius(theme.NoteViewer.CornerRadius);
         _resources["NoteViewer.LaneNumbers.OutlineThickness"] =
             new Thickness(theme.NoteViewer.LaneNumbers.OutlineThickness);
-        // _resources["NoteViewer.NoteDirectionArrowScale"] =
-        //     theme.NoteViewer.NoteDirectionArrowScale;
         _resources["NoteViewer.NoteLanes.TopWidth"] =
             theme.NoteViewer.NoteLanes.TopWidth;
         _resources["NoteViewer.NoteLanes.BottomWidth"] =

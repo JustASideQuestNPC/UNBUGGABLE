@@ -121,7 +121,7 @@ public partial class ChangeStageEventDialog : UnanimatedEventBaseDialog
             _stageSelectors.Add(new StageSelectorBoxItem(stage));
         }
         StageSelectorBox.ItemsSource = _stageSelectors;
-        StageSelectorBox.SelectedIndex = (int)currentStage;
+        StageSelectorBox.SelectedIndex = Math.Max((int)currentStage - 1, 0);
         RequiresDlcAlertIcon.IsVisible = currentStage.RequiresDlc();
     }
 
@@ -143,11 +143,11 @@ public class ChangeStageEvent : UnanimatedEventBase
 
     public override EventType EventType => EventType.STAGE_CHANGE;
 
-    public override async Task<UnanimatedEventBase?> ShowEditDialog(bool _ = false)
+    public override async Task<UnanimatedEventBase?> ShowEditDialog(bool isNew = false)
     {
         var editDialog = new ChangeStageEventDialog(Stage);
         var result = await editDialog.ShowAsync();
-        if (result is { HasValue: true, Value: true } && editDialog.NewStage != Stage)
+        if (result is { HasValue: true, Value: true } && (editDialog.NewStage != Stage || isNew))
         {
             return new ChangeStageEvent
             {

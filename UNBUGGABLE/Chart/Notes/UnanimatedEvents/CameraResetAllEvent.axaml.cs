@@ -54,7 +54,7 @@ public class CameraResetAllEvent : UnanimatedEventBase
     {
         var editDialog = new CameraResetAllEventDialog(Time, EndTime);
         var result = await editDialog.ShowAsync();
-        if (result is { HasValue: true, Value: true } && editDialog.NewEndTime != EndTime)
+        if (result is { HasValue: true, Value: true } && editDialog.NewEndTime != EndTime || isNew)
         {
             return new CameraResetAllEvent
             {

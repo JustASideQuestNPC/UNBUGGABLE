@@ -98,10 +98,24 @@ public class TopBarThemeJson
 
 public class DialogThemeJson : TextElementThemeJson
 {
+    public class EventGroupListThemeJson : ElementThemeJson
+    {
+        public class ListEntryThemeJson : TextElementThemeJson
+        {
+            [JsonPropertyName("iconColor")]
+            public string IconColor { get; set; } = "";  
+        }
+        
+        [JsonPropertyName("listEntries")]
+        public ListEntryThemeJson ListEntries { get; set; } = new(); 
+    }
+    
     [JsonPropertyName("inputBoxes")]
     public TextElementThemeJson InputBoxes { get; set; } = new();
     [JsonPropertyName("buttons")]
     public ButtonThemeJson Buttons { get; set; } = new();
+    [JsonPropertyName("eventGroupList")]
+    public EventGroupListThemeJson EventGroupList { get; set; } = new();
 }
 
 public class QuickInfoThemeJson {
@@ -492,6 +506,23 @@ public class ColorThemeJson
                 IconColor = ""
             }
         },
+        EventGroupList = new()
+        {
+            BackgroundColor = "#C9C9A5",
+            OutlineColor = "#FF4B7E",
+            OutlineThickness = 2,
+            CornerRadius = 0,
+            ListEntries = new()
+            {
+                BackgroundColor = "#C9C9A5",
+                OutlineColor = "#FF4B7E",
+                OutlineThickness = 2,
+                CornerRadius = 0,
+                TextColor = "#161616",
+                TextSize = 16,
+                IconColor = "#161616"
+            }
+        }
     };
     [JsonPropertyName("quickInfo")]
     public QuickInfoThemeJson QuickInfo { get; set; } = new()

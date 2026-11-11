@@ -141,13 +141,13 @@ public class ChangeCharacterEvent : UnanimatedEventBase
 
     public override EventType EventType => EventType.CHARACTER_CHANGE;
 
-    public override async Task<UnanimatedEventBase?> ShowEditDialog(bool _ = false)
+    public override async Task<UnanimatedEventBase?> ShowEditDialog(bool isNew = false)
     {
         var editDialog = new ChangeCharacterEventDialog(PrimaryCharacter, AssistCharacter);
         var result = await editDialog.ShowAsync();
         if (result is { HasValue: true, Value: true } &&
             (editDialog.NewPrimary != PrimaryCharacter ||
-             editDialog.NewAssist != AssistCharacter))
+             editDialog.NewAssist != AssistCharacter || isNew))
         {
             return new ChangeCharacterEvent
             {

@@ -134,7 +134,7 @@ public class CameraPresetPositionEvent : UnanimatedEventBase
         var editDialog = new CameraPresetPositionEventDialog(Time, EndTime, Position);
         var result = await editDialog.ShowAsync();
         if (result is { HasValue: true, Value: true } &&
-            (editDialog.NewEndTime != EndTime || editDialog.NewPosition != Position))
+            (editDialog.NewEndTime != EndTime || editDialog.NewPosition != Position || isNew))
         {
             return new CameraPresetPositionEvent
             {

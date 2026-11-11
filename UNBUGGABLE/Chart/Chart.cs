@@ -1196,6 +1196,14 @@ public static partial class Chart
             {
                 e.Time -= Metadata.ChartOffset;
                 e.EndTime -= Metadata.ChartOffset;
+                if (((UnanimatedEventBase)e).EventType == EventType.EVENT_GROUP)
+                {
+                    foreach (var grouped in ((EventGroup)e).Events)
+                    {
+                        grouped.Time -= Metadata.ChartOffset;
+                        grouped.EndTime -= Metadata.ChartOffset;
+                    }
+                }
             }
             
             App.MainWindowViewModel.PreviewStartTimeText =

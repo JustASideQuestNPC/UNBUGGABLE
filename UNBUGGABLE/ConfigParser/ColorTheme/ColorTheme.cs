@@ -321,9 +321,31 @@ public class TopBarTheme(TopBarThemeJson json, ref List<string> errorMessages)
 public class DialogTheme(DialogThemeJson json, ref List<string> errorMessages) :
     TextElementTheme(json, "dialogs", ref errorMessages)
 {
+    public class EventGroupListTheme(DialogThemeJson.EventGroupListThemeJson json,
+        ref List<string> errorMessages) : ElementTheme(json, "dialogs.eventGroupList",
+                                                       ref errorMessages)
+    {
+        public class ListEntryTheme(
+            DialogThemeJson.EventGroupListThemeJson.ListEntryThemeJson json,
+            ref List<string> errorMessages) : TextElementTheme(json,
+                                                               "dialogs.eventGroupList.listEntries",
+                                                               ref errorMessages)
+        {
+            public readonly Color IconColor =
+                ThemeUtils.ParseColor(json.IconColor,
+                                      "dialogs.eventGroupList.listEntries.iconColor",
+                                      ref errorMessages);
+        }
+
+        public readonly ListEntryTheme ListEntries = new(json.ListEntries, ref errorMessages);
+    }
+    
     public readonly TextElementTheme InputBoxes = new(json.InputBoxes, "dialogs.inputBoxes",
                                                       ref errorMessages);
     public readonly ButtonTheme Buttons = new(json.Buttons, "dialogs.buttons", ref errorMessages);
+    
+    public readonly EventGroupListTheme EventGroupList = new(json.EventGroupList,
+                                                             ref errorMessages);
     
     public override string ToString(int indent = 0)
     {
